@@ -35,4 +35,15 @@ You can deploy the `dist` folder to any static host provider (netlify, surge, no
 
 
 ## Also look at...
-- https://github.com/solidjs/solid-realworld
+- https://github.com/solidjs/solid-realworld example app
+
+
+## used tech
+- Typescript
+- Tailwind CSS
+- SUID component library (http://suid.io)
+
+## tutorial content online
+- YouTube channel: 'Native Notify'
+- https://blog.logrocket.com/build-task-tracker-solidjs-typescript/
+- 
