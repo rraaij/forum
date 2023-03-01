@@ -1,0 +1,13 @@
+<!--        strokeWidth="1"-->
+<!--        strokeLinecap="round"-->
+<!--        strokeLinejoin="round"-->
+<svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        stroke="#A0AEC0"
+        fill="none"
+        >
+<path stroke="none" d="M0 0h24v24H0z" />
+<circle cx="10" cy="10" r="7" />
+<line x1="21" y1="21" x2="15" y2="15" />
+        </svg>
