@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "start": "next dev",
     "build": "next build",
-    "start": "next start",
+    "prod": "next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -14,7 +14,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.43.9",
     "@prisma/client": "^4.13.0",
-    "next-intl": "^2.13.2",
+    "next-intl": "^2.14.0-beta.3",
     "zustand": "^4.3.8"
   },
   "devDependencies": {
@@ -25,6 +25,7 @@
     "eslint": "^8.39.0",
     "eslint-config-next": "^13.4.0",
     "zod": "^3.21.4",
+    "query-string": "^8.1.0",
     "primereact": "^9.3.1",
     "primeicons": "^6.0.1",
     "primeflex": "^3.3.0",
