@@ -1,0 +1,35 @@
+{
+  "name": "forum",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^13.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.43.9",
+    "@prisma/client": "^4.13.0",
+    "next-intl": "^2.13.2",
+    "zustand": "^4.3.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.5",
+    "@types/react-dom": "^18.2.3",
+    "@hookform/resolvers": "^3.1.0",
+    "eslint": "^8.39.0",
+    "eslint-config-next": "^13.4.0",
+    "zod": "^3.21.4",
+    "primereact": "^9.3.1",
+    "primeicons": "^6.0.1",
+    "primeflex": "^3.3.0",
+    "prisma": "^4.13.0",
+    "typescript": "^5.0.4",
+    "prettier": "^2.8.8"
+  }
+}
