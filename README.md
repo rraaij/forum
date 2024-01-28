@@ -11,3 +11,6 @@ youtube: https://www.youtube.com/watch?v=_B093QdDO7g
 
 ### to add package to nest.js server app
 ```pnpm add @nestjs/config --filter=server```
+
+### deployment to Railway
+see end of Youtube video (linked above) for deployment instructions
