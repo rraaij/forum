@@ -101,42 +101,48 @@ importers:
 
   apps/web:
     dependencies:
+      '@trpc/client':
+        specifier: ^10.45.0
+        version: 10.45.0(@trpc/server@10.45.0)
+      '@trpc/server':
+        specifier: ^10.45.0
+        version: 10.45.0
       next:
-        specifier: 14.1.0
+        specifier: ^14.1.0
         version: 14.1.0(react-dom@18.2.0)(react@18.2.0)
       react:
-        specifier: ^18
+        specifier: ^18.2.0
         version: 18.2.0
       react-dom:
-        specifier: ^18
+        specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
     devDependencies:
       '@types/node':
-        specifier: ^20
+        specifier: ^20.11.9
         version: 20.11.9
       '@types/react':
-        specifier: ^18
+        specifier: ^18.2.48
         version: 18.2.48
       '@types/react-dom':
-        specifier: ^18
+        specifier: ^18.2.18
         version: 18.2.18
       autoprefixer:
         specifier: ^10.0.1
         version: 10.4.17(postcss@8.4.33)
       eslint:
-        specifier: ^8
+        specifier: ^8.56.0
         version: 8.56.0
       eslint-config-next:
         specifier: 14.1.0
         version: 14.1.0(eslint@8.56.0)(typescript@5.3.3)
       postcss:
-        specifier: ^8
+        specifier: ^8.4.33
         version: 8.4.33
       tailwindcss:
         specifier: ^3.3.0
         version: 3.4.1
       typescript:
-        specifier: ^5
+        specifier: ^5.3.3
         version: 5.3.3
 
 packages:
@@ -1223,6 +1229,14 @@ packages:
     resolution: {integrity: sha512-E4KcWTpoLHqwPHLxidpOqQbcrZVgi0rsmmZXUle1jXmJfuIf/UWpczUJ7MZZ5tlxytgJXyp0w4PGkkeLiuIdZw==}
     dependencies:
       tslib: 2.6.2
+    dev: false
+
+  /@trpc/client@10.45.0(@trpc/server@10.45.0):
+    resolution: {integrity: sha512-m091R1qte9rvkvL8N1e/mzrbb8S4gb+Q4ZNJnEGDgd7kic/6a8DFgSciBTiCoSp0YwOTVhyQzSrrA/sZI6PhBg==}
+    peerDependencies:
+      '@trpc/server': 10.45.0
+    dependencies:
+      '@trpc/server': 10.45.0
     dev: false
 
   /@trpc/server@10.45.0:
