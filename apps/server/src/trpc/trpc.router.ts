@@ -1,7 +1,7 @@
-import { INestApplication, Injectable } from '@nestjs/common';
-import { TrpcService } from '@server/trpc/trpc.service';
-import { z } from 'zod';
-import * as trpcExpress from '@trpc/server/adapters/express';
+import { INestApplication, Injectable } from "@nestjs/common";
+import { TrpcService } from "@server/trpc/trpc.service";
+import { z } from "zod";
+import * as trpcExpress from "@trpc/server/adapters/express";
 
 @Injectable()
 export class TrpcRouter {
@@ -12,7 +12,7 @@ export class TrpcRouter {
     hello: this.trpc.procedure
       .input(z.object({ name: z.string().optional() }))
       .query(({ input }) => {
-        return `Hello ${input.name ? input.name : 'Bilbo'}`;
+        return `Hello ${input.name ? input.name : "Bilbo"}`;
       }),
   });
 
@@ -25,4 +25,4 @@ export class TrpcRouter {
   }
 }
 
-export type AppRouter = TrpcRouter['appRouter'];
+export type AppRouter = TrpcRouter["appRouter"];
