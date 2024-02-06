@@ -1,10 +1,17 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
+import { Link } from "expo-router";
 
-const Home = () => {
+const LoginPage = () => {
   return (
-    <View>
-      <Text>Home</Text>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>LoginPage</Text>
+      <Link href={"/register"}>
+        Create
+        {/*<Pressable>*/}
+        {/*  <Text>Create account</Text>*/}
+        {/*</Pressable>*/}
+      </Link>
     </View>
   );
 };
-export default Home;
+export default LoginPage;
