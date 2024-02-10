@@ -22,7 +22,8 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
-    "qwik": "qwik"
+    "qwik": "qwik",
+    "json-server": "json-server -w ./data/db.json"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.4.4",
@@ -37,6 +38,7 @@
     "typescript": "5.3.3",
     "undici": "*",
     "vite": "^5.0.12",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "json-server": "1.0.0-alpha.23"
   }
 }
