@@ -22,8 +22,8 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
-    "qwik": "qwik",
-    "json-server": "json-server -w ./data/db.json"
+    "json-server": "json-server -w ./data/db.json",
+    "qwik": "qwik"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.4.4",
@@ -32,13 +32,17 @@
     "@types/node": "^20.11.6",
     "@typescript-eslint/eslint-plugin": "^6.19.1",
     "@typescript-eslint/parser": "^6.19.1",
+    "autoprefixer": "^10.4.14",
     "eslint": "^8.56.0",
     "eslint-plugin-qwik": "^1.4.4",
+    "json-server": "1.0.0-alpha.23",
+    "postcss": "^8.4.31",
     "prettier": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.4",
+    "tailwindcss": "3.3.3",
     "typescript": "5.3.3",
     "undici": "*",
     "vite": "^5.0.12",
-    "vite-tsconfig-paths": "^4.2.1",
-    "json-server": "1.0.0-alpha.23"
+    "vite-tsconfig-paths": "^4.2.1"
   }
 }
