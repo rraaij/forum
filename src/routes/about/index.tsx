@@ -1,45 +1,37 @@
-import { component$, useSignal, useStyles$, $ } from "@builder.io/qwik";
-import styles from "./about.module.css?inline";
-import Modal from "~/components/modal/modal";
-export default component$(() => {
-  useStyles$(styles);
+import { $, component$, useSignal, useStyles$ } from "@builder.io/qwik"
+import AboutStyles from './about.css?inline'
+import Modal from "~/components/modal/modal"
 
-  const modalVisible = useSignal(false);
+export default component$(() => {
+  useStyles$(AboutStyles)
+
+  const modalVisible = useSignal(false)
 
   const closeModal = $(() => {
-    modalVisible.value = false;
-  });
+    modalVisible.value = false
+  })
+
   return (
     <article>
       <h2>About</h2>
-      <p>So, here's my list of questions lol:</p>
-      <p>
-        What was the general pocket size for pro-speed tournaments? What were
-        table conditions like? What was the belief behind forward balanced/steel
-        joint cues?
-      </p>
-      <p>
-        I've noticed players of this era (Varner, Hall, Sigel, etc) playing with
-        steel joint.
-      </p>
-      <p>
-        Is the information that's available today (pocket lines, cue ball
-        physics, navigating the table, etc. Advanced details, so to speak), the
-        same information as back then? If not, what has changed?
-      </p>
+      <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Qui, fugiat. Doloremque repellat harum recusandae asperiores corporis aspernatur nesciunt! Nam, ratione tempore? Quod, error fuga maxime consectetur dolorum consequuntur labore numquam.</p>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Est alias nulla dolorem quod magnam tenetur veniam laboriosam qui. Vero voluptatem facilis, quisquam debitis fugiat tenetur repellat iste necessitatibus culpa sit.</p>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Necessitatibus illo nesciunt, fuga beatae tenetur, delectus cumque asperiores vitae earum ad et eum officia quo aspernatur cum unde nemo assumenda soluta?</p>
 
-      <button onClick$={() => (modalVisible.value = true)}>Open Modal</button>
+      <button onClick$={() => modalVisible.value = true}>Open Modal</button>
 
       {modalVisible.value && (
-        <Modal size={"sm"} frosted close={closeModal}>
-          <div q:slot={"content"}>
-            <h2>Great news</h2>
+        <Modal size="sm" frosted={true} close={closeModal}>
+          <div>some modal content</div>
+          <div q:slot="content">
+            <h3>Great News!!</h3>
+            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Amet aspernatur itaque praesentium quasi aut culpa? Maiores enim repellendus inventore eius alias, impedit sit fugiat laudantium nobis at illum ipsum non.</p>
           </div>
-          <div q:slot={"footer"}>
+          <div q:slot="footer">
             <button>Sign up now!</button>
           </div>
         </Modal>
       )}
     </article>
-  );
-});
+  )
+})
