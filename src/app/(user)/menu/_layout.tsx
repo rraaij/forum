@@ -1,9 +1,9 @@
-import { Link, Stack } from "expo-router";
-import Colors from "@/constants/Colors";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Pressable } from "react-native";
+import Colors from '@/constants/Colors';
+import { FontAwesome } from '@expo/vector-icons';
+import { Link, Stack } from 'expo-router';
+import { Pressable } from 'react-native';
 
-const MenuStack = () => {
+export default function MenuStack() {
   return (
     <Stack
       screenOptions={{
@@ -23,9 +23,7 @@ const MenuStack = () => {
         ),
       }}
     >
-      <Stack.Screen name={"index"} options={{ title: "Menu" }} />
+      <Stack.Screen name="index" options={{ title: 'Menu' }} />
     </Stack>
   );
-};
-
-export default MenuStack;
+}

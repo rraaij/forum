@@ -1,19 +1,27 @@
-import { Image, StyleSheet, Text, TextInput, View } from "react-native";
-import Button from "@components/Button";
-import { useState } from "react";
-import { defaultPizzaImage } from "@components/ProductListItem";
+import Button from "@/components/Button";
+import { defaultPizzaImage } from "@/components/ProductListItem";
 import Colors from "@/constants/Colors";
+import { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TextInput, Image, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+
+import * as FileSystem from "expo-file-system";
+import { randomUUID } from "expo-crypto";
 
 const CreateProductScreen = () => {
-  const [name, setName] = useState<string>("");
-  const [price, setPrice] = useState<string>("");
-  const [errors, setErrors] = useState<string>("");
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [errors, setErrors] = useState("");
   const [image, setImage] = useState<string | null>(null);
 
   const { id } = useLocalSearchParams();
+  // const id = parseFloat(
+  //   typeof idString === "string" ? idString : idString?.[0],
+  // );
   const isUpdating = !!id;
+
+  const router = useRouter();
 
   const resetFields = () => {
     setName("");
@@ -37,6 +45,41 @@ const CreateProductScreen = () => {
     return true;
   };
 
+  const onSubmit = () => {
+    if (isUpdating) {
+      // update
+      onUpdate();
+    } else {
+      onCreate();
+    }
+  };
+  const onCreate = () => {
+    if (!validateInput()) {
+      return;
+    }
+    console.warn("creating product: ", name);
+    // save in database
+    resetFields();
+  };
+
+  const onUpdate = () => {
+    if (!validateInput()) {
+      return;
+    }
+    //
+    //   const imagePath = await uploadImage();
+    //
+    //   updateProduct(
+    //     { id, name, price: parseFloat(price), image: imagePath },
+    //     {
+    //       onSuccess: () => {
+    //         resetFields();
+    //         router.back();
+    //       },
+    //     },
+    //   );
+  };
+
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -46,59 +89,104 @@ const CreateProductScreen = () => {
       quality: 1,
     });
 
-    console.log(result);
-
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
   };
 
-  const onCreate = () => {
-    if (!validateInput()) {
-      return;
-    }
-    console.warn("creating...");
-    // save in database
-    resetFields();
+  const onDelete = () => {
+    console.warn("DELETE!!");
+    // deleteProduct(id, {
+    //   onSuccess: () => {
+    //     resetFields();
+    //     router.replace("/(admin)");
+    //   },
+    // });
   };
+
+  const confirmDelete = () => {
+    Alert.alert("Confirm", "Are you sure you want to delete this product", [
+      {
+        text: "Cancel",
+      },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: onDelete,
+      },
+    ]);
+  };
+
+  // const uploadImage = async () => {
+  //   if (!image?.startsWith("file://")) {
+  //     return;
+  //   }
+  //
+  //   const base64 = await FileSystem.readAsStringAsync(image, {
+  //     encoding: "base64",
+  //   });
+  //   const filePath = `${randomUUID()}.png`;
+  //   const contentType = "image/png";
+  //
+  //   const { data, error } = await supabase.storage
+  //     .from("product-images")
+  //     .upload(filePath, decode(base64), { contentType });
+  //
+  //   console.log(error);
+  //
+  //   if (data) {
+  //     return data.path;
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
       <Stack.Screen
-        options={{ title: isUpdating ? "Updating Product" : "Create Product" }}
+        options={{ title: isUpdating ? "Update Product" : "Create Product" }}
       />
 
       <Image
         source={{ uri: image || defaultPizzaImage }}
         style={styles.image}
       />
-      <Text onPress={pickImage} style={styles.imageButton}>
-        Select image
+      <Text onPress={pickImage} style={styles.textButton}>
+        Select Image
       </Text>
 
       <Text style={styles.label}>Name</Text>
       <TextInput
-        placeholder={"Name"}
-        style={styles.input}
         value={name}
         onChangeText={setName}
+        placeholder="Name"
+        style={styles.input}
       />
 
-      <Text style={styles.label}>Price</Text>
+      <Text style={styles.label}>Price ($)</Text>
       <TextInput
-        placeholder={"9.99"}
-        style={styles.input}
-        inputMode={"numeric"}
         value={price}
         onChangeText={setPrice}
+        placeholder="9.99"
+        style={styles.input}
+        keyboardType="numeric"
       />
 
       <Text style={{ color: "red" }}>{errors}</Text>
-      <Button text={"Create"} onPress={onCreate} />
+      <Button text={isUpdating ? "update" : "Create"} onPress={onSubmit} />
+      {/*<Button onPress={onSubmit} text={isUpdating ? "Update" : "Create"} />*/}
+      {isUpdating && (
+        <Text onPress={confirmDelete} style={styles.textButton}>
+          Delete
+        </Text>
+      )}
+      {/*  <Text onPress={confirmDelete} style={styles.textButton}>*/}
+      {/*    Delete*/}
+      {/*  </Text>*/}
+      {/*)}*/}
     </View>
   );
 };
 
+export default CreateProductScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -110,13 +198,13 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     alignSelf: "center",
   },
-  imageButton: {
+  textButton: {
     alignSelf: "center",
     fontWeight: "bold",
     color: Colors.light.tint,
     marginVertical: 10,
   },
-  label: { color: "gray", fontSize: 16 },
+
   input: {
     backgroundColor: "white",
     padding: 10,
@@ -124,5 +212,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 20,
   },
+  label: {
+    color: "gray",
+    fontSize: 16,
+  },
 });
-export default CreateProductScreen;

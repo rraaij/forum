@@ -1,18 +1,42 @@
-import { View, Text, Image, StyleSheet, Pressable } from "react-native";
-import { Link, Stack, useLocalSearchParams } from "expo-router";
-import { defaultPizzaImage } from "@components/ProductListItem";
-import products from "@assets/data/products";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { defaultPizzaImage } from "@/components/ProductListItem";
+import { useState } from "react";
+import { useCart } from "@/providers/CartProvider";
+import { PizzaSize } from "@/types";
+import { FontAwesome } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
+import products from "@assets/data/products";
 
-const AdminProductDetailScreen = () => {
+const sizes: PizzaSize[] = ["S", "M", "L", "XL"];
+
+const ProductDetailsScreen = () => {
   const { id } = useLocalSearchParams();
-
   const product = products.find((p) => p.id.toString() === id);
+  // const id = parseFloat(typeof idString === "string" ? idString : idString[0]);
+  // const { data: product, error, isLoading } = useProduct(id);
 
-  if (!product) {
-    return <Text>Product not found</Text>;
-  }
+  const { addItem } = useCart();
+
+  const router = useRouter();
+
+  const [selectedSize, setSelectedSize] = useState<PizzaSize>("M");
+
+  const addToCart = () => {
+    if (!product) {
+      return;
+    }
+    addItem(product, selectedSize);
+    router.push("/cart");
+  };
+
   return (
     <View style={styles.container}>
       <Stack.Screen
@@ -36,21 +60,35 @@ const AdminProductDetailScreen = () => {
       />
       <Stack.Screen options={{ title: product?.name }} />
       <Image
-        source={{ uri: product.image || defaultPizzaImage }}
+        source={{ uri: product?.image || defaultPizzaImage }}
         style={styles.image}
         resizeMode={"contain"}
       />
-      <Text style={styles.title}>${product.name}</Text>
-      <Text style={styles.price}>${product.price}</Text>
+      <Text style={styles.title}>${product?.name}</Text>
+      <Text style={styles.price}>${product?.price}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { backgroundColor: "white", flex: 1, padding: 10 },
-  image: { width: "100%", aspectRatio: 1 },
-  title: { fontSize: 20, fontWeight: "bold" },
-  price: { fontSize: 18, fontWeight: "bold" },
+  container: {
+    backgroundColor: "white",
+    flex: 1,
+    padding: 10,
+  },
+  image: {
+    width: "100%",
+    aspectRatio: 1,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: "500",
+  },
 });
 
-export default AdminProductDetailScreen;
+export default ProductDetailsScreen;
