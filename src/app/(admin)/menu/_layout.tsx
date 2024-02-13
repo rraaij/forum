@@ -10,6 +10,7 @@ export default function MenuStack() {
         name="index"
         options={{
           title: "Menu",
+          headerBackVisible: true,
           headerRight: () => (
             <Link href="/(admin)/menu/create" asChild>
               <Pressable>

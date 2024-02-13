@@ -40,14 +40,14 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/*<Tabs.Screen*/}
-      {/*  name="orders"*/}
-      {/*  options={{*/}
-      {/*    title: "Orders",*/}
-      {/*    headerShown: false,*/}
-      {/*    tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,*/}
-      {/*  }}*/}
-      {/*/>*/}
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: "Orders",
+          headerShown: false,
+          tabBarIcon: ({ color }) => <TabBarIcon name="list" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
