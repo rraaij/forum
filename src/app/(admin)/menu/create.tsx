@@ -204,7 +204,6 @@ const styles = StyleSheet.create({
     color: Colors.light.tint,
     marginVertical: 10,
   },
-
   input: {
     backgroundColor: "white",
     padding: 10,
