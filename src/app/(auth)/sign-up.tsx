@@ -1,13 +1,15 @@
 import { Link, Stack } from "expo-router";
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { useState } from "react";
 import Button from "@components/Button";
 import Colors from "@/constants/Colors";
+import { supabase } from "@/lib/supabase";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const validateInput = () => {
     setErrors("");
@@ -23,11 +25,18 @@ const SignUp = () => {
     return true;
   };
 
-  const onCreateAccount = () => {
+  const onCreateAccount = async () => {
     if (!validateInput()) {
       return;
     }
-    console.log("[CREATE ACCOUNT]");
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (error) Alert.alert(error.message);
+    setLoading(false);
   };
 
   return (
