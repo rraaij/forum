@@ -14,7 +14,7 @@ $ npm install # or pnpm install or yarn install
 
 In the project directory, you can run:
 
-### `npm dev` or `npm start`
+### `npm run dev` or `npm start`
 
 Runs the app in the development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -33,10 +33,8 @@ Your app is ready to be deployed!
 
 You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
 
-
 ## Also look at...
 - https://github.com/solidjs/solid-realworld example app
-
 
 ## used tech
 - Typescript

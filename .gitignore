@@ -1,18 +1,4 @@
-public/*
-!public/index.html
+node_modules
+dist
 
-# dependencies
-/node_modules
-/dist
-
-# IDEs and editors
-/.idea
-.project
-.classpath
-*.launch
-.settings/
-
-
-#System Files
-.DS_Store
-Thumbs.db
+.idea/
