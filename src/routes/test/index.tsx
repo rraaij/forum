@@ -8,8 +8,8 @@ export default component$(() => {
   return (
     <>
       <p class="text-center">
-        <a href="/test/" class="text-blue-600 hover:underline">
-          Go to another test page
+        <a href="/" class="text-blue-600 hover:underline">
+          Go back to homepage.
         </a>
       </p>
       <Hero />

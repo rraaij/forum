@@ -38,6 +38,8 @@ Use the `pnpm qwik add` command to add additional integrations. Some examples of
 pnpm qwik add # or `pnpm qwik add`
 ```
 
+see [Qwik documentation](https://qwik.dev/docs/integrations/tailwind/) to find all the integrations you can use!
+
 ## Development
 
 Development mode uses [Vite's development server](https://vitejs.dev/). The `dev` command will server-side render (SSR) the output during development.
