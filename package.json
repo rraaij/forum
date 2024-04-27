@@ -1,25 +1,41 @@
 {
-  "name": "example-with-tailwindcss",
+  "name": "solid-forum",
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
-    "start": "vinxi start"
-  },
-  "dependencies": {
-    "@solidjs/router": "^0.13.1",
-    "@solidjs/start": "^1.0.0-rc.0",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.26",
-    "solid-js": "^1.8.16",
-    "tailwindcss": "^3.3.3",
-    "vinxi": "^0.3.10"
-  },
-  "devDependencies": {
-    "prettier": "^3.2.5"
+    "start": "vinxi start",
+    "test": "vitest run",
+    "test-watch": "vitest",
+    "test-ui": "vitest --ui",
+    "coverage": "vitest run --coverage"
   },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@8.15.6+sha256.01c01eeb990e379b31ef19c03e9d06a14afa5250b82e81303f88721c99ff2e6f"
+  "dependencies": {
+    "@supabase/supabase-js": "^2.42.7",
+    "flowbite": "^2.3.0",
+    "solid-js": "^1.8.17",
+    "vinxi": "^0.3.11"
+  },
+  "devDependencies": {
+    "@solidjs/router": "^0.13.2",
+    "@solidjs/start": "^1.0.0-rc.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "prettier": "^3.2.5",
+    "tailwindcss": "^3.4.3",
+    "@solidjs/meta": "^0.29.3",
+    "@solidjs/testing-library": "^0.8.7",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@vitest/ui": "^1.5.2",
+    "jsdom": "^24.0.0",
+    "vite": "^5.2.10",
+    "vite-plugin-solid": "~2.10.2",
+    "vitest": "^1.5.2",
+    "typescript": "^5.4.5"
+  },
+  "packageManager": "pnpm@9.0.5+sha256.61bd66913b52012107ec25a6ee4d6a161021ab99e04f6acee3aa50d0e34b4af9"
 }
