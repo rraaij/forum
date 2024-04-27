@@ -13,7 +13,7 @@ export default async function ProtectedPage() {
     return redirect("/login");
   }
 
-  const { data: notes } = await supabase.from("notes").select();
+  const { data: notes } = await supabase.from("tweets").select();
 
   return (
     <div className="flex-1 w-full flex flex-col gap-20 items-center">
