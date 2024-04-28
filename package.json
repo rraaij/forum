@@ -1,4 +1,9 @@
 {
+  "name": "forum",
+  "version": "0.0.1",
+  "description": "forum",
+  "license": "MIT",
+  "author": "ramon.van.raaij@gmail.com",
   "private": true,
   "scripts": {
     "dev": "next dev",
