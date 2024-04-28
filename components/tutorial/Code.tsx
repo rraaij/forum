@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 const CopyIcon = () => (
+  // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="20"
@@ -14,12 +15,13 @@ const CopyIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </svg>
 );
 
 const CheckIcon = () => (
+  // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="20"
@@ -31,7 +33,7 @@ const CheckIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <polyline points="20 6 9 17 4 12"></polyline>
+    <polyline points="20 6 9 17 4 12" />
   </svg>
 );
 
@@ -47,6 +49,7 @@ export default function Code({ code }: { code: string }) {
   return (
     <pre className="bg-foreground/5 rounded-md p-8 my-8 relative">
       <button
+        type={"button"}
         onClick={copy}
         className="absolute top-4 right-4  p-2 rounded-md bg-foreground/5 hover:bg-foreground/10"
       >

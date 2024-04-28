@@ -85,17 +85,23 @@ If you wish to just develop locally and not deploy to Vercel, [follow the steps 
 > Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
 
 ## Feedback and issues
-
 Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
 
 ## More Supabase examples
-
 - [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
 - [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
 - [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
 
 ## Used Tech
-
 - [Next.js](http://nextjs.org) 14.x wilth App Router, [Typescript](http://typescriptlang.org) and [Tailwind CSS](http://tailwindcss.com)
 - component library: [UI.shadcn](http://ui.shadcn.com)
 - database, auth, file storage: [Supabase](http://supabase.com)
+- Code formatting and linting: [Biome](https://biomejs.dev/)
+
+## Want to use tech
+- [Drizzle ORM](https://orm.drizzle.team/)
+
+# TODO
+[ ] setup build project on Vercel.com [connect github repo]
+[ ] connect Supabase to Vercel project
+[ ] create database schema with Drizzle ORM

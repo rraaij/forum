@@ -1,19 +1,20 @@
 import AuthButton from "@/components/AuthButton";
-import { createClient } from "@/lib/supabase/server";
-import FetchDataSteps from "@/components/tutorial/FetchDataSteps";
 import Header from "@/components/Header";
+import FetchDataSteps from "@/components/tutorial/FetchDataSteps";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedPage() {
   const supabase = createClient();
 
-  const { data } = await supabase.auth.getUser();
+  const { data: user } = await supabase.auth.getUser();
+  const { data: session } = await supabase.auth.getSession();
 
-  if (!data.user) {
+  if (!user.user) {
     return redirect("/login");
   }
 
-  const { data: notes } = await supabase.from("tweets").select();
+  const { data: tweets } = await supabase.from("tweets").select();
 
   return (
     <div className="flex-1 w-full flex flex-col gap-20 items-center">
@@ -28,10 +29,15 @@ export default async function ProtectedPage() {
           </div>
         </nav>
       </div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-      <pre>{JSON.stringify(notes, null, 2)}</pre>
+      <pre className={"text-xs"}>USER: {JSON.stringify(user, null, 2)}</pre>
+      <pre className={"text-xs w-[300px]"}>
+        SESSION: {JSON.stringify(session, null, 2)}
+      </pre>
+      <pre className={"text-xs w-[300px]"}>
+        TWEETS: {JSON.stringify(tweets, null, 2)}
+      </pre>
 
-      <div className="animate-in flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3">
+      <div className="flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3">
         <Header />
         <main className="flex-1 flex flex-col gap-6">
           <h2 className="font-bold text-4xl mb-4">Next steps</h2>

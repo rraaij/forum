@@ -1,5 +1,6 @@
 export default function SupabaseLogo() {
   return (
+    // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
     <svg
       aria-label="Supabase logo"
       width="140"
