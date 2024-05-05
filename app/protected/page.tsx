@@ -1,7 +1,7 @@
 import AuthButton from "@/components/AuthButton";
-import Header from "@/components/Header";
 import FetchDataSteps from "@/components/tutorial/FetchDataSteps";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedPage() {
@@ -17,47 +17,74 @@ export default async function ProtectedPage() {
   const { data: tweets } = await supabase.from("tweets").select();
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-20 items-center">
-      <div className="w-full">
-        <div className="py-6 font-bold bg-purple-950 text-center">
-          This is a protected page that you can only see as an authenticated
-          user
-        </div>
-        <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-          <div className="w-full max-w-4xl flex justify-between items-center p-3 text-sm">
-            <AuthButton />
-          </div>
+    <>
+      <header className="bg-gray-800 text-white p-4 flex justify-between">
+        <h1 className="text-xl font-bold">My Forum</h1>
+        <nav className="flex space-x-4">
+          <Link href="#" className="hover:text-gray-400">
+            Home
+          </Link>
+          <Link href="#" className="hover:text-gray-400">
+            Categories
+          </Link>
+          <Link href="#" className="hover:text-gray-400">
+            Login
+          </Link>
+          <Link href="#" className="hover:text-gray-400">
+            Register
+          </Link>
         </nav>
-      </div>
-      <pre className={"text-xs"}>USER: {JSON.stringify(user, null, 2)}</pre>
-      <pre className={"text-xs w-[300px]"}>
-        SESSION: {JSON.stringify(session, null, 2)}
-      </pre>
-      <pre className={"text-xs w-[300px]"}>
-        TWEETS: {JSON.stringify(tweets, null, 2)}
-      </pre>
+        <AuthButton />
+      </header>
 
-      <div className="flex-1 flex flex-col gap-20 opacity-0 max-w-4xl px-3">
-        <Header />
-        <main className="flex-1 flex flex-col gap-6">
-          <h2 className="font-bold text-4xl mb-4">Next steps</h2>
-          <FetchDataSteps />
-        </main>
-      </div>
+      <main className="container mx-auto px-4 py-8">
+        <aside className="w-1/4 float-left mr-4">
+          <h2 className="text-lg font-bold mb-2">Categories</h2>
+          <ul className="list-none space-y-2">
+            <li className="hover:bg-gray-200 p-2 rounded">
+              <Link href="#">General Discussion</Link>
+            </li>
+            <li className="hover:bg-gray-200 p-2 rounded">
+              <Link href="#">Tech</Link>
+            </li>
+            <li className="hover:bg-gray-200 p-2 rounded">
+              <Link href="#">Entertainment</Link>
+            </li>
+          </ul>
+        </aside>
 
-      <footer className="w-full border-t border-t-foreground/10 p-8 flex justify-center text-center text-xs">
-        <p>
-          Powered by{" "}
-          <a
-            href="https://supabase.com/?utm_source=create-next-app&utm_medium=template&utm_term=nextjs"
-            target="_blank"
-            className="font-bold hover:underline"
-            rel="noreferrer"
-          >
-            Supabase
-          </a>
-        </p>
+        <section className="w-3/4 float-left">
+          <h2 className="text-lg font-bold mb-2">Latest Threads</h2>
+          <article className="border border-gray-300 p-4 rounded mb-4">
+            <h3 className="text-base font-bold hover:text-blue-500">
+              <Link href="#">Sample Thread Title</Link>
+            </h3>
+            <div className="flex items-center mb-2">
+              <span className="text-gray-500 mr-2">By: User123</span>
+              <span className="text-gray-500">2 days ago</span>
+            </div>
+            <p className="text-gray-700">
+              Here's a short description of the thread content.
+            </p>
+          </article>
+
+          <article className="border border-gray-300 p-4 rounded mb-4">
+            <pre className={"text-xs"}>
+              USER: {JSON.stringify(user, null, 2)}
+            </pre>
+            <pre className={"text-xs w-[300px]"}>
+              SESSION: {JSON.stringify(session, null, 2)}
+            </pre>
+            <pre className={"text-xs w-[300px]"}>
+              TWEETS: {JSON.stringify(tweets, null, 2)}
+            </pre>
+          </article>
+        </section>
+      </main>
+
+      <footer className="bg-gray-800 text-white text-center p-4">
+        <p>&copy; My Forum 2024</p>
       </footer>
-    </div>
+    </>
   );
 }
