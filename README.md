@@ -1,107 +1,163 @@
-# forum
+Welcome to your new TanStack app! 
 
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-</a>
+# Getting Started
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+To run this application:
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> 揃
-  <a href="#demo"><strong>Demo</strong></a> 揃
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> 揃
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> 揃
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+```bash
+bun install
+bun --bun run dev
+```
 
-## Features
+# Building For Production
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-    - App Router
-    - Pages Router
-    - Middleware
-    - Client
-    - Server
-    - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-    - Environment variables automatically assigned to Vercel project
+To build this application for production:
 
-## Demo
+```bash
+bun --bun run build
+```
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Styling
 
-## Deploy to Vercel
+This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
-Vercel deployment will guide you through creating a Supabase account and project.
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+## Setting up Convex
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This%20starter%20configures%20Supabase%20Auth%20to%20use%20cookies%2C%20making%20the%20user's%20session%20available%20throughout%20the%20entire%20Next.js%20app%20-%20Client%20Components%2C%20Server%20Components%2C%20Route%20Handlers%2C%20Server%20Actions%20and%20Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png&integration-ids=oac_VqOgBHqhEoFTPzGkPd7L0iH6)
+- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex init` to set them automatically.)
+- Run `npx convex dev` to start the Convex server.
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
 
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
+## T3Env
 
-## Clone and run locally
+- You can use T3Env to add type safety to your environment variables.
+- Add Environment variables to the `src/env.mjs` file.
+- Use the environment variables in your code.
 
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
+### Usage
 
-2. Create a Next.js app using the Supabase Starter template npx command
+```ts
+import { env } from "@/env";
 
-   ```bash
-   npx create-next-app -e with-supabase
-   ```
+console.log(env.VITE_APP_TITLE);
+```
 
-3. Use `cd` to change into the app's directory
 
-   ```bash
-   cd name-of-new-app
-   ```
 
-4. Rename `.env.local.example` to `.env.local` and update the following:
 
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
-   ```
 
-   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
 
-5. You can now run the Next.js local development server:
+## Routing
+This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
 
-   ```bash
-   npm run dev
-   ```
+### Adding A Route
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+To add a new route to your application just add another a new file in the `./src/routes` directory.
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+TanStack will automatically generate the content of the route file for you.
 
-## Feedback and issues
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+Now that you have two routes you can use a `Link` component to navigate between them.
 
-## More Supabase examples
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+### Adding Links
 
-## Used Tech
-- [Next.js](http://nextjs.org) 14.x wilth App Router, [Typescript](http://typescriptlang.org) and [Tailwind CSS](http://tailwindcss.com)
-- component library: [UI.shadcn](http://ui.shadcn.com)
-- database, auth, file storage: [Supabase](http://supabase.com)
-- Code formatting and linting: [Biome](https://biomejs.dev/)
+To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/solid-router`.
 
-## Want to use tech
-- [Drizzle ORM](https://orm.drizzle.team/)
+```tsx
+import { Link } from "@tanstack/solid-router";
+```
 
-# TODO
-[ ] setup build project on Vercel.com [connect github repo]
-[ ] connect Supabase to Vercel project
-[ ] create database schema with Drizzle ORM
+Then anywhere in your JSX you can use it like so:
+
+```tsx
+<Link to="/about">About</Link>
+```
+
+This will create a link that will navigate to the `/about` route.
+
+More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/solid/api/router/linkComponent).
+
+### Using A Layout
+
+In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
+
+Here is an example layout that includes a header:
+
+```tsx
+import { Outlet, createRootRoute } from '@tanstack/solid-router'
+import { TanStackRouterDevtools } from '@tanstack/solid-router-devtools'
+
+import { Link } from "@tanstack/solid-router";
+
+export const Route = createRootRoute({
+  component: () => (
+    <>
+      <header>
+        <nav>
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
+        </nav>
+      </header>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+})
+```
+
+The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
+
+More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/solid/guide/routing-concepts#layouts).
+
+## Data Fetching
+
+There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
+
+For example:
+
+```tsx
+const peopleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/people",
+  loader: async () => {
+    const response = await fetch("https://swapi.dev/api/people");
+    return response.json() as Promise<{
+      results: {
+        name: string;
+      }[];
+    }>;
+  },
+  component: () => {
+    const data = peopleRoute.useLoaderData();
+    return (
+      <ul>
+        {data.results.map((person) => (
+          <li key={person.name}>{person.name}</li>
+        ))}
+      </ul>
+    );
+  },
+});
+```
+
+Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/solid/guide/data-loading#loader-parameters).
+
+# Demo files
+
+Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+
+
+## Linting & Formatting
+
+This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
+
+
+```bash
+bun --bun run lint
+bun --bun run format
+bun --bun run check
+```
+
+
+# Learn More
+
+You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).

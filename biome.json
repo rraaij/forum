@@ -1,35 +1,78 @@
 {
-  "organizeImports": {
-    "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": false
   },
   "files": {
-    "ignore": ["node_modules/**", ".next/**"]
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+    "ignoreUnknown": false,
+    "includes": [
+      "**/*",
+      "**/src/**/*",
+      "**/convex/**/*",
+      "**/vite.config.ts",
+      "!**/src/routeTree.gen.ts",
+      "!**/convex/_generated/**/*",
+      "!**/.output/**/*",
+      "!**/.tanstack/**/*",
+      "!**/node_modules/**/*",
+      "!**/dist/**/*",
+      "!**/dev-dist/**/*",
+      "!**/src/styles.css",
+      "!**/worker-configuration.d.ts",
+      "!**/.vite/**/*",
+      "!**/src-tauri/**/*"
+    ]
   },
   "formatter": {
     "enabled": true,
-    "formatWithErrors": true,
-    "ignore": [],
-    "attributePosition": "auto",
     "indentStyle": "space",
     "indentWidth": 2,
     "lineEnding": "lf",
     "lineWidth": 80
   },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useButtonType": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off"
+      },
+      "style": {
+        "noParameterAssign": "error",
+        "useAsConstAssertion": "error",
+        "useDefaultParameterLast": "error",
+        "useEnumInitializers": "error",
+        "useSelfClosingElements": "error",
+        "useSingleVarDeclarator": "error",
+        "noUnusedTemplateLiteral": "error",
+        "useNumberNamespace": "error",
+        "noInferrableTypes": "error",
+        "noUselessElse": "error"
+      }
+    }
+  },
   "javascript": {
     "formatter": {
+      "quoteStyle": "double",
       "arrowParentheses": "always",
       "bracketSameLine": false,
       "bracketSpacing": true,
       "jsxQuoteStyle": "double",
       "quoteProperties": "asNeeded",
       "semicolons": "always",
-      "trailingComma": "all"
+      "trailingCommas": "all"
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "json": {
