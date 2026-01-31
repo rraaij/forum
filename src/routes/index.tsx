@@ -1,118 +1,94 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { For } from 'solid-js'
-import {
-  Zap,
-  Server,
-  Route as RouteIcon,
-  Shield,
-  Waves,
-  Sparkles,
-} from 'lucide-solid'
+import { createFileRoute, Link } from "@tanstack/solid-router";
+import { createQuery, createMutation } from "@tanstack/solid-query";
+import { forumApi } from "../lib/api";
+import { For, Show } from "solid-js";
+import { ChevronRight, FolderIcon, MessageSquare, Loader2 } from "lucide-solid";
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute("/")({
+  component: HomePage,
+});
 
-function App() {
-  const features = [
-    {
-      icon: <Zap class="w-12 h-12 text-cyan-400" />,
-      title: 'Powerful Server Functions',
-      description:
-        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
-    },
-    {
-      icon: <Server class="w-12 h-12 text-cyan-400" />,
-      title: 'Flexible Server Side Rendering',
-      description:
-        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
-    },
-    {
-      icon: <RouteIcon class="w-12 h-12 text-cyan-400" />,
-      title: 'API Routes',
-      description:
-        'Build type-safe API endpoints alongside your application. No separate backend needed.',
-    },
-    {
-      icon: <Shield class="w-12 h-12 text-cyan-400" />,
-      title: 'Strongly Typed Everything',
-      description:
-        'End-to-end type safety from server to client. Catch errors before they reach production.',
-    },
-    {
-      icon: <Waves class="w-12 h-12 text-cyan-400" />,
-      title: 'Full Streaming Support',
-      description:
-        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
-    },
-    {
-      icon: <Sparkles class="w-12 h-12 text-cyan-400" />,
-      title: 'Next Generation Ready',
-      description:
-        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
-    },
-  ]
+function HomePage() {
+  const categories = createQuery(() => ({
+    queryKey: ["categories", "main"],
+    queryFn: () => forumApi.listCategories(),
+  }));
+
+  const seed = createMutation(() => ({
+    mutationFn: () => forumApi.seed(),
+    onSuccess: () => {
+      categories.refetch();
+    }
+  }));
+
+  const handleSeed = async () => {
+    try {
+      await seed.mutateAsync();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
-    <div class="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section class="relative py-20 px-6 text-center overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div class="relative max-w-5xl mx-auto">
-          <div class="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              class="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 class="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span class="text-gray-300">TANSTACK</span>{' '}
-              <span class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
-          <p class="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p class="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div class="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
-            >
-              Documentation
-            </a>
-            <p class="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{' '}
-              <code class="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
+    <div class="space-y-8">
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="relative z-10">
+          <h1 class="text-4xl font-bold mb-2">Welcome to the Forum</h1>
+          <p class="text-blue-100 text-lg">Join the conversation and explore various topics.</p>
         </div>
-      </section>
+        <div class="absolute top-0 right-0 -tr-y-1/2 opacity-10">
+          <MessageSquare size={200} />
+        </div>
+      </div>
 
-      <section class="py-16 px-6 max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <For each={features}>
-            {(feature) => (
-              <div class="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
-                <div class="mb-4">{feature.icon}</div>
-                <h3 class="text-xl font-semibold text-white mb-3">
-                  {feature.title}
-                </h3>
-                <p class="text-gray-400 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            )}
-          </For>
-        </div>
-      </section>
+      <div class="grid gap-6">
+        <h2 class="text-2xl font-bold text-gray-800">Categories</h2>
+        <Show 
+          when={categories.data && categories.data.length > 0} 
+          fallback={
+            <div class="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+              <p class="text-gray-500">No categories found. Seed the database to get started!</p>
+              <button 
+                class="mt-4 btn btn-primary gap-2"
+                onClick={handleSeed}
+                disabled={seed.isPending}
+              >
+                <Show when={seed.isPending} fallback={<span>Seed Database</span>}>
+                  <Loader2 class="animate-spin" size={18} />
+                  <span>Seeding...</span>
+                </Show>
+              </button>
+            </div>
+          }
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <For each={categories.data}>
+              {(category) => (
+                <Link
+                  to="/category/$categoryId"
+                  params={{ categoryId: category._id }}
+                  class="group block bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all hover:border-blue-300"
+                >
+                  <div class="flex items-start justify-between">
+                    <div class="flex gap-4">
+                      <div class="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <FolderIcon size={24} />
+                      </div>
+                      <div>
+                        <h3 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {category.title}
+                        </h3>
+                        <p class="text-gray-500 mt-1">{category.description}</p>
+                      </div>
+                    </div>
+                    <ChevronRight class="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
+              )}
+            </For>
+          </div>
+        </Show>
+      </div>
     </div>
-  )
+  );
 }

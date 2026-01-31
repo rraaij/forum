@@ -1,17 +1,17 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { createQuery } from '@tanstack/solid-query'
+import { createQuery } from "@tanstack/solid-query";
+import { createFileRoute } from "@tanstack/solid-router";
 
-export const Route = createFileRoute('/demo/tanstack-query')({
+export const Route = createFileRoute("/demo/tanstack-query")({
   component: App,
-})
+});
 
 function App() {
   const peopleQuery = createQuery(() => ({
-    queryKey: ['people'],
+    queryKey: ["people"],
     queryFn: () =>
-      Promise.resolve([{ name: 'John Doe' }, { name: 'Jane Doe' }]),
+      Promise.resolve([{ name: "John Doe" }, { name: "Jane Doe" }]),
     initialData: [],
-  }))
+  }));
 
   return (
     <div class="p-4">
@@ -22,7 +22,7 @@ function App() {
         ))}
       </ul>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,48 +1,47 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { Trash2, Plus, Check, Circle } from 'lucide-solid'
+import { createFileRoute } from "@tanstack/solid-router";
+import { useMutation, useQuery } from "convex-solidjs";
+import { Check, Circle, Plus, Trash2 } from "lucide-solid";
+import { createSignal, For, Show } from "solid-js";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 
-import { api } from '../../../convex/_generated/api'
-import type { Id } from '../../../convex/_generated/dataModel'
-import { createSignal, For, Show } from 'solid-js'
-import { useMutation, useQuery } from 'convex-solidjs'
-
-export const Route = createFileRoute('/demo/convex')({
+export const Route = createFileRoute("/demo/convex")({
   ssr: false,
   component: ConvexTodos,
-})
+});
 
 function ConvexTodos() {
-  const todos = useQuery(api.todos.list, () => ({}))
-  const addTodo = useMutation(api.todos.add)
-  const toggleTodo = useMutation(api.todos.toggle)
-  const removeTodo = useMutation(api.todos.remove)
+  const todos = useQuery(api.todos.list, () => ({}));
+  const addTodo = useMutation(api.todos.add);
+  const toggleTodo = useMutation(api.todos.toggle);
+  const removeTodo = useMutation(api.todos.remove);
 
-  const [newTodo, setNewTodo] = createSignal('')
+  const [newTodo, setNewTodo] = createSignal("");
 
   const handleAddTodo = async () => {
     if (newTodo().trim()) {
-      await addTodo.mutate({ text: newTodo().trim() })
-      setNewTodo('')
+      await addTodo.mutate({ text: newTodo().trim() });
+      setNewTodo("");
     }
-  }
+  };
 
-  const handleToggleTodo = async (id: Id<'todos'>) => {
-    await toggleTodo.mutate({ id })
-  }
-  const handleRemoveTodo = async (id: Id<'todos'>) => {
-    await removeTodo.mutate({ id })
-  }
+  const handleToggleTodo = async (id: Id<"todos">) => {
+    await toggleTodo.mutate({ id });
+  };
+  const handleRemoveTodo = async (id: Id<"todos">) => {
+    await removeTodo.mutate({ id });
+  };
 
   const completedCount = () =>
-    todos?.data()?.filter((todo) => todo.completed).length || 0
-  const totalCount = () => todos?.data()?.length || 0
+    todos?.data()?.filter((todo) => todo.completed).length || 0;
+  const totalCount = () => todos?.data()?.length || 0;
 
   return (
     <div
       class="min-h-screen flex items-center justify-center p-4"
       style={{
         background:
-          'linear-gradient(135deg, #667a56 0%, #8fbc8f 25%, #90ee90 50%, #98fb98 75%, #f0fff0 100%)',
+          "linear-gradient(135deg, #667a56 0%, #8fbc8f 25%, #90ee90 50%, #98fb98 75%, #f0fff0 100%)",
       }}
     >
       <div class="w-full max-w-2xl">
@@ -72,8 +71,8 @@ function ConvexTodos() {
               value={newTodo()}
               onInput={(e) => setNewTodo(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddTodo()
+                if (e.key === "Enter") {
+                  handleAddTodo();
                 }
               }}
               placeholder="What needs to be done?"
@@ -94,7 +93,7 @@ function ConvexTodos() {
         <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-green-200/50 overflow-hidden">
           <Show when={todos.isLoading()}>
             <div class="p-8 text-center">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4"></div>
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto mb-4" />
               <p class="text-green-600">Loading todos...</p>
             </div>
           </Show>
@@ -117,18 +116,18 @@ function ConvexTodos() {
                 {(todo, index) => (
                   <div
                     class={`p-4 flex items-center gap-4 hover:bg-green-50/50 transition-colors ${
-                      todo.completed ? 'opacity-75' : ''
+                      todo.completed ? "opacity-75" : ""
                     }`}
                     style={{
-                      'animation-delay': `${index() * 50}ms`,
+                      "animation-delay": `${index() * 50}ms`,
                     }}
                   >
                     <button
                       onClick={() => handleToggleTodo(todo._id)}
                       class={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                         todo.completed
-                          ? 'bg-green-500 border-green-500 text-white'
-                          : 'border-green-300 hover:border-green-400 text-transparent hover:text-green-400'
+                          ? "bg-green-500 border-green-500 text-white"
+                          : "border-green-300 hover:border-green-400 text-transparent hover:text-green-400"
                       }`}
                     >
                       <Check size={14} />
@@ -137,8 +136,8 @@ function ConvexTodos() {
                     <span
                       class={`flex-1 text-lg transition-all duration-200 ${
                         todo.completed
-                          ? 'line-through text-gray-500'
-                          : 'text-gray-800'
+                          ? "line-through text-gray-500"
+                          : "text-gray-800"
                       }`}
                     >
                       {todo.text}
@@ -165,5 +164,5 @@ function ConvexTodos() {
         </div>
       </div>
     </div>
-  )
+  );
 }

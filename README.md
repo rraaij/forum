@@ -1,5 +1,7 @@
 Welcome to your new TanStack app! 
 
+this app will be an internet forum. It will have a main page with categories. Each category will have a page with subcategories and topics. Each subcategory can hold even more subcategories and topics. Each topic will hold the discussion between users on that topic.
+
 # Getting Started
 
 To run this application:

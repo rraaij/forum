@@ -1,22 +1,25 @@
-import { createRouter } from '@tanstack/solid-router'
+import { createRouter } from "@tanstack/solid-router";
 
-import { setupRouterSsrQueryIntegration } from '@tanstack/solid-router-ssr-query'
-import { getContext } from './integrations/tanstack-query/provider'
+import { setupRouterSsrQueryIntegration } from "@tanstack/solid-router-ssr-query";
+import { getContext } from "./integrations/tanstack-query/provider";
 
 // Import the generated route tree
-import { routeTree } from './routeTree.gen'
+import { routeTree } from "./routeTree.gen";
 
 // Create a new router instance
 export const getRouter = () => {
-  const rqContext = getContext()
+  const rqContext = getContext();
 
   const router = createRouter({
     routeTree,
     context: { ...rqContext },
-    defaultPreload: 'intent',
-  })
+    defaultPreload: "intent",
+  });
 
-  setupRouterSsrQueryIntegration({ router, queryClient: rqContext.queryClient })
+  setupRouterSsrQueryIntegration({
+    router,
+    queryClient: rqContext.queryClient,
+  });
 
-  return router
-}
+  return router;
+};

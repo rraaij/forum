@@ -1,17 +1,16 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { createForm } from '@tanstack/solid-form'
+import type { ValidationError } from "@tanstack/solid-form";
+import { createForm } from "@tanstack/solid-form";
+import { createFileRoute } from "@tanstack/solid-router";
+import type { JSX } from "solid-js/jsx-runtime";
 
-import type { JSX } from 'solid-js/jsx-runtime'
-import type { ValidationError } from '@tanstack/solid-form'
-
-export const Route = createFileRoute('/demo/form')({
+export const Route = createFileRoute("/demo/form")({
   component: FormExample,
-})
+});
 
 function FieldWrapper(props: {
-  children: JSX.Element
-  errors: Array<ValidationError>
-  label: string
+  children: JSX.Element;
+  errors: Array<ValidationError>;
+  label: string;
 }) {
   return (
     <div>
@@ -20,47 +19,47 @@ function FieldWrapper(props: {
       </label>
       {props.children}
       {props.errors.length ? (
-        <div class="text-red-500 mt-1 font-bold">{props.errors.join(', ')}</div>
+        <div class="text-red-500 mt-1 font-bold">{props.errors.join(", ")}</div>
       ) : null}
     </div>
-  )
+  );
 }
 
 function FormExample() {
   const form = createForm(() => ({
     defaultValues: {
-      fullName: '',
-      email: '',
+      fullName: "",
+      email: "",
       address: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: '',
+        street: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
       },
-      phone: '',
+      phone: "",
     },
     onSubmit: ({ value }) => {
-      console.log(value)
+      console.log(value);
       // Show success message
-      alert('Form submitted successfully!')
+      alert("Form submitted successfully!");
     },
-  }))
+  }));
 
   return (
     <div
       class="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 text-white"
       style={{
-        'background-image':
-          'radial-gradient(50% 50% at 5% 40%, #f4a460 0%, #8b4513 70%, #1a0f0a 100%)',
+        "background-image":
+          "radial-gradient(50% 50% at 5% 40%, #f4a460 0%, #8b4513 70%, #1a0f0a 100%)",
       }}
     >
       <div class="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
         <form
           onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
           }}
           class="space-y-6"
         >
@@ -71,12 +70,12 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (value.trim().length === 0) {
-                    return 'Full name is required'
+                    return "Full name is required";
                   }
                   if (value.length < 3) {
-                    return 'Name must be at least 3 characters'
+                    return "Name must be at least 3 characters";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -104,12 +103,12 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'Email is required'
+                    return "Email is required";
                   }
                   if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) {
-                    return 'Invalid email address'
+                    return "Invalid email address";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -138,9 +137,9 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'Street address is required'
+                    return "Street address is required";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -169,9 +168,9 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'City is required'
+                    return "City is required";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -194,9 +193,9 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'State is required'
+                    return "State is required";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -219,12 +218,12 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'Zip code is required'
+                    return "Zip code is required";
                   }
                   if (!/^\d{5}(-\d{4})?$/.test(value)) {
-                    return 'Invalid zip code format'
+                    return "Invalid zip code format";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -252,9 +251,9 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'Country is required'
+                    return "Country is required";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -291,16 +290,16 @@ function FormExample() {
               validators={{
                 onBlur: ({ value }) => {
                   if (!value || value.trim().length === 0) {
-                    return 'Phone number is required'
+                    return "Phone number is required";
                   }
                   if (
                     !/^(\+\d{1,3})?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/.test(
                       value,
                     )
                   ) {
-                    return 'Invalid phone number format'
+                    return "Invalid phone number format";
                   }
-                  return undefined
+                  return undefined;
                 },
               }}
               children={(field) => (
@@ -330,11 +329,11 @@ function FormExample() {
               disabled={form.state.isSubmitting}
               class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
             >
-              {form.state.isSubmitting ? 'Submitting...' : 'Submit'}
+              {form.state.isSubmitting ? "Submitting..." : "Submit"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
