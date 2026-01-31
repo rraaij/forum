@@ -4,17 +4,19 @@ this app will be an internet forum. It will have a main page with categories. Ea
 
 # TODO
 
-- [ ] Add authentication: 1 auth for all apps
+- [ ] investigate: for dev purposes, local database with Drizzle. Switch to go to Convex and back.
+- [ ] Add authentication: 1 auth for all apps, socials login (google/facebook etc)
+- [ ] have AI bots that will comment on topics
+- [ ] Add Photobook app (with AI photo generation!)
+- [ ] Add Direct Private Messaging app
+- [ ] Add blog app
 - [ ] Add user profiles
 - [ ] Add notifications
 - [ ] Add search functionality
 - [ ] Add moderation tools
 - [ ] Add admin panel
 - [ ] Add mobile app
-- [ ] Add desktop app
-- [ ] Add web app
-- [ ] Add API
-- [ ] Add database
+- [ ] deploy to Cloudflare workers
 
 # Getting Started
 
