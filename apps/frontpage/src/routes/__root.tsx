@@ -1,4 +1,4 @@
-import { AuthProvider, Header } from "@forum/ui";
+import { AuthProvider, Header, ToastProvider } from "@forum/ui";
 import {
   createRootRouteWithContext,
   HeadContent,
@@ -35,6 +35,7 @@ function RootComponent() {
             </div>
             <TanStackRouterDevtools />
           </Suspense>
+          <ToastProvider />
         </AuthProvider>
         <Scripts />
       </body>

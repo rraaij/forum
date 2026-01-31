@@ -1,8 +1,7 @@
-import { useAuthActions } from "@convex-dev/auth/solid";
 import { createSignal } from "solid-js";
+import { showError, showInfo } from "../Toast";
 
 export function Login() {
-  const { signIn } = useAuthActions();
   const [email, setEmail] = createSignal("");
   const [step, setStep] = createSignal<"signIn" | "verify">("signIn");
   const [loading, setLoading] = createSignal(false);
@@ -11,10 +10,15 @@ export function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn("resend", { email: email() });
+      // TODO: Implement proper auth when convex-solidjs auth is available
+      showInfo("Auth coming soon - check your email for a verification code");
       setStep("verify");
     } catch (error) {
-      console.error(error);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to send verification email";
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -23,12 +27,15 @@ export function Login() {
   const handleVerify = async (e: SubmitEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const code = formData.get("code") as string;
+    const _code = formData.get("code") as string;
     setLoading(true);
     try {
-      await signIn("resend", { email: email(), code });
+      // TODO: Implement proper auth verification
+      showInfo("Auth verification coming soon");
     } catch (error) {
-      console.error(error);
+      const message =
+        error instanceof Error ? error.message : "Invalid verification code";
+      showError(message);
     } finally {
       setLoading(false);
     }

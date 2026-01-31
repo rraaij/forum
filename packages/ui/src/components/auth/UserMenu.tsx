@@ -1,13 +1,16 @@
-import { useAuthActions } from "@convex-dev/auth/solid";
-import { api } from "@forum/db/convex/_generated/api";
-import { useQuery } from "convex-solidjs";
 import { LogOut, User } from "lucide-solid";
 import { createSignal } from "solid-js";
 
 export function UserMenu() {
-  const { signOut } = useAuthActions();
   const [isOpen, setIsOpen] = createSignal(false);
-  const user = useQuery(api.users.viewer);
+
+  const signOut = () => {
+    // TODO: Implement proper sign out when auth is available
+    console.log("Sign out clicked");
+  };
+
+  // TODO: Get user from auth context when available
+  const user = { email: "user@example.com", role: "user" };
 
   // If not logged in, don't show user menu (or show login button)
   // This component assumes it's used where we might be logged in.
@@ -34,10 +37,10 @@ export function UserMenu() {
           <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
             <div class="p-4 border-b border-gray-100">
               <p class="font-semibold text-gray-900 truncate">
-                {user.data()?.email || "User"}
+                {user.email || "User"}
               </p>
               <p class="text-xs text-gray-500 capitalize">
-                {user.data()?.role || "Member"}
+                {user.role || "Member"}
               </p>
             </div>
             <ul class="py-1">

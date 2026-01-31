@@ -1,6 +1,10 @@
 import { forumApi } from "@forum/api/client";
-import { createMutation, createQuery } from "@tanstack/solid-query";
+import { api } from "@forum/db/convex/_generated/api";
+import type { Id } from "@forum/db/convex/_generated/dataModel";
+import { showError, showSuccess } from "@forum/ui";
+import { createQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
+import { useMutation } from "convex-solidjs";
 import { ArrowLeft, Send, User } from "lucide-solid";
 import { createSignal, For, Show } from "solid-js";
 
@@ -21,32 +25,29 @@ function TopicPage() {
     queryFn: () => forumApi.listPosts(params().topicId),
   }));
 
-  const createPostMutation = createMutation(() => ({
-    mutationFn: (data: {
-      topicId: string;
-      content: string;
-      authorId: string;
-    }) => forumApi.createPost(data),
-    onSuccess: () => {
-      posts.refetch();
-    },
-  }));
-
+  const createPost = useMutation(api.forum.createPost);
   const [content, setContent] = createSignal("");
+  const [isSubmitting, setIsSubmitting] = createSignal(false);
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-    if (!content().trim() || createPostMutation.isPending) return;
+    if (!content().trim() || isSubmitting()) return;
 
+    setIsSubmitting(true);
     try {
-      await createPostMutation.mutateAsync({
-        topicId: params().topicId,
+      await createPost({
+        topicId: params().topicId as Id<"topics">,
         content: content(),
-        authorId: "anonymous", // For now
       });
       setContent("");
+      posts.refetch();
+      showSuccess("Reply posted successfully");
     } catch (err) {
-      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Failed to post reply";
+      showError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -122,12 +123,9 @@ function TopicPage() {
             <button
               type="submit"
               class="btn btn-primary gap-2 rounded-xl"
-              disabled={!content().trim() || createPostMutation.isPending}
+              disabled={!content().trim() || isSubmitting()}
             >
-              <Show
-                when={createPostMutation.isPending}
-                fallback={<Send size={18} />}
-              >
+              <Show when={isSubmitting()} fallback={<Send size={18} />}>
                 <span class="loading loading-spinner loading-sm" />
               </Show>
               Post Reply

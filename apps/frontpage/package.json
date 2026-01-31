@@ -12,6 +12,7 @@
     "@cloudflare/vite-plugin": "^1.22.1",
     "@convex-dev/auth": "^0.0.90",
     "@forum/api": "workspace:*",
+    "@forum/db": "workspace:*",
     "@forum/ui": "workspace:*",
     "@t3-oss/env-core": "^0.13.10",
     "@tailwindcss/vite": "^4.1.18",

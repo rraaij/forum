@@ -4,7 +4,13 @@ this app will be an internet forum. It will have a main page with categories. Ea
 
 # TODO
 
-- [ ] Add authentication: 1 auth for all apps
+- [ ] investigate: for dev purposes, local database with Drizzle. Switch to go to Convex and back.
+- [ ] Add authentication: WorkOS instead of Convex Auth, 1 auth for all apps, socials login (google/facebook etc)
+- [ ] have AI generate design using Figma MCP
+- [ ] have AI bots that will comment on topics
+- [ ] Add Photobook app (with AI photo generation!)
+- [ ] Add Direct Private Messaging app
+- [ ] Add blog app
 - [ ] Add user profiles
 - [ ] Add notifications
 - [ ] Add search functionality

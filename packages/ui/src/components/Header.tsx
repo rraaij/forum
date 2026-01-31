@@ -1,14 +1,12 @@
-import { api } from "@forum/db/convex/_generated/api";
 import { Link } from "@tanstack/solid-router";
-import { useQuery } from "convex-solidjs";
 import { Home, Layers, Menu, X } from "lucide-solid";
-import { createSignal, Show } from "solid-js";
+import { createSignal } from "solid-js";
 import { Login } from "./auth/Login";
-import { UserMenu } from "./auth/UserMenu";
 
 export default function Header() {
   const [isOpen, setIsOpen] = createSignal(false);
-  const user = useQuery(api.users.viewer);
+  // TODO: Add user query when SSR is properly configured
+  const isLoggedIn = false;
 
   return (
     <>
@@ -31,9 +29,11 @@ export default function Header() {
         </div>
 
         <div class="flex items-center gap-4">
-          <Show when={user.data()} fallback={<Login />}>
-            <UserMenu />
-          </Show>
+          {isLoggedIn ? (
+            <span class="text-sm">Logged in</span>
+          ) : (
+            <Login />
+          )}
         </div>
       </header>
 

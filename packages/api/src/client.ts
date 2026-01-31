@@ -1,6 +1,24 @@
-const BASE_URL = "http://localhost:4000";
+// Use environment variable for API URL, fallback to localhost for development
+const BASE_URL =
+  (typeof import.meta !== "undefined" &&
+    (import.meta as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL) ||
+  "http://localhost:4000";
 
-export const apiFetch = async (path: string, options?: RequestInit) => {
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public body?: unknown,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+export const apiFetch = async <T = unknown>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> => {
   const url = `${BASE_URL}${path}`;
   const response = await fetch(url, {
     ...options,
@@ -9,34 +27,64 @@ export const apiFetch = async (path: string, options?: RequestInit) => {
       ...options?.headers,
     },
   });
+
+  const body = await response.json().catch(() => null);
+
   if (!response.ok) {
-    throw new Error(`API Error: ${response.statusText}`);
+    throw new ApiError(
+      body?.error || `API Error: ${response.statusText}`,
+      response.status,
+      body,
+    );
   }
-  return response.json();
+
+  return body as T;
 };
 
-export const forumApi = {
-  listCategories: (parentId?: string) =>
-    apiFetch(`/categories${parentId ? `?parentId=${parentId}` : ""}`),
+// Types for API responses
+export interface Category {
+  _id: string;
+  _creationTime: number;
+  title: string;
+  description?: string;
+  parentId?: string;
+  order: number;
+}
 
-  getCategory: (id: string) => apiFetch(`/categories/${id}`),
+export interface Topic {
+  _id: string;
+  _creationTime: number;
+  title: string;
+  categoryId: string;
+  authorId: string;
+  createdAt: number;
+}
+
+export interface Post {
+  _id: string;
+  _creationTime: number;
+  topicId: string;
+  content: string;
+  authorId: string;
+  createdAt: number;
+}
+
+export const forumApi = {
+  // Read operations (public, via API)
+  listCategories: (parentId?: string) =>
+    apiFetch<Category[]>(
+      `/categories${parentId ? `?parentId=${parentId}` : ""}`,
+    ),
+
+  getCategory: (id: string) => apiFetch<Category>(`/categories/${id}`),
 
   listTopics: (categoryId: string) =>
-    apiFetch(`/categories/${categoryId}/topics`),
+    apiFetch<Topic[]>(`/categories/${categoryId}/topics`),
 
-  getTopic: (id: string) => apiFetch(`/topics/${id}`),
+  getTopic: (id: string) => apiFetch<Topic>(`/topics/${id}`),
 
-  createTopic: (data: {
-    title: string;
-    categoryId: string;
-    authorId: string;
-    content: string;
-  }) => apiFetch("/topics", { method: "POST", body: JSON.stringify(data) }),
+  listPosts: (topicId: string) => apiFetch<Post[]>(`/topics/${topicId}/posts`),
 
-  listPosts: (topicId: string) => apiFetch(`/topics/${topicId}/posts`),
-
-  createPost: (data: { topicId: string; content: string; authorId: string }) =>
-    apiFetch("/posts", { method: "POST", body: JSON.stringify(data) }),
-
-  seed: () => apiFetch("/seed", { method: "POST" }),
+  // System (dev only)
+  seed: () => apiFetch<{ success: boolean }>("/seed", { method: "POST" }),
 };

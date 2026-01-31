@@ -1,4 +1,5 @@
 import { forumApi } from "@forum/api/client";
+import { showError, showSuccess } from "@forum/ui";
 import { createMutation, createQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { ChevronRight, FolderIcon, Loader2, MessageSquare } from "lucide-solid";
@@ -24,8 +25,11 @@ function HomePage() {
   const handleSeed = async () => {
     try {
       await seed.mutateAsync();
+      showSuccess("Database seeded successfully");
     } catch (err) {
-      console.error(err);
+      const message =
+        err instanceof Error ? err.message : "Failed to seed database";
+      showError(message);
     }
   };
 
