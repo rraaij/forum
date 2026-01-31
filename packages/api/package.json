@@ -1,0 +1,19 @@
+{
+  "name": "@forum/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --hot index.ts"
+  },
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "convex": "^1.31.7",
+    "hono": "^4.11.7",
+    "zod": "^4.3.6"
+  }
+}
