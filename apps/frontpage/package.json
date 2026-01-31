@@ -1,9 +1,9 @@
 {
-  "name": "@forum/app",
+  "name": "@forum/frontpage",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev --port 3001",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "bun run build && wrangler deploy"

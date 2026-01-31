@@ -8,9 +8,10 @@
   ],
   "scripts": {
     "dev:forum": "bun run --cwd apps/forum dev",
+    "dev:frontpage": "bun run --cwd apps/frontpage dev",
     "dev:server": "bun run --cwd packages/api dev",
-    "dev": "bun run --parallel dev:forum dev:server",
-    "build": "bun run --cwd apps/forum build",
+    "dev": "bun run --parallel dev:forum dev:frontpage dev:server",
+    "build": "bun run --cwd apps/forum build && bun run --cwd apps/frontpage build",
     "format": "bunx biome format --write .",
     "lint": "bunx biome lint .",
     "check": "bunx biome check --fix ."

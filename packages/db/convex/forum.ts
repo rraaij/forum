@@ -22,11 +22,16 @@ export const getCategory = query({
 });
 
 export const listTopics = query({
-  args: { categoryId: v.id("categories") },
+  args: { categoryId: v.union(v.id("categories"), v.literal("all")) },
   handler: async (ctx, args) => {
+    if (args.categoryId === "all") {
+      return await ctx.db.query("topics").order("desc").take(50);
+    }
     return await ctx.db
       .query("topics")
-      .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
+      .withIndex("by_category", (q) =>
+        q.eq("categoryId", args.categoryId as any),
+      )
       .order("desc")
       .collect();
   },

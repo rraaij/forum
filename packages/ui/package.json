@@ -7,7 +7,11 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "solid-js": "^1.9.11",
-    "lucide-solid": "^0.563.0"
+    "@convex-dev/auth": "^0.0.90",
+    "@tanstack/solid-router": "^1.157.17",
+    "convex": "^1.31.7",
+    "convex-solidjs": "^0.0.3",
+    "lucide-solid": "^0.563.0",
+    "solid-js": "^1.9.11"
   }
 }
