@@ -1,8 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/solid-router";
+import { forumApi } from "@forum/api/client";
 import { createQuery } from "@tanstack/solid-query";
-import { forumApi } from "../lib/api";
+import { createFileRoute, Link } from "@tanstack/solid-router";
+import {
+  ArrowLeft,
+  ChevronRight,
+  FolderIcon,
+  MessageSquare,
+  Plus,
+} from "lucide-solid";
 import { For, Show } from "solid-js";
-import { ChevronRight, FolderIcon, MessageSquare, Plus, ArrowLeft } from "lucide-solid";
 
 export const Route = createFileRoute("/category/$categoryId")({
   component: CategoryPage,
@@ -10,7 +16,7 @@ export const Route = createFileRoute("/category/$categoryId")({
 
 function CategoryPage() {
   const params = Route.useParams();
-  
+
   const category = createQuery(() => ({
     queryKey: ["category", params().categoryId],
     queryFn: () => forumApi.getCategory(params().categoryId),
@@ -69,7 +75,10 @@ function CategoryPage() {
                       </h3>
                     </div>
                   </div>
-                  <ChevronRight size={18} class="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" />
+                  <ChevronRight
+                    size={18}
+                    class="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all"
+                  />
                 </Link>
               )}
             </For>
@@ -90,8 +99,8 @@ function CategoryPage() {
           </button>
         </div>
 
-        <Show 
-          when={topics.data && topics.data.length > 0} 
+        <Show
+          when={topics.data && topics.data.length > 0}
           fallback={
             <div class="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
               <p class="text-gray-500">No topics yet. Start the discussion!</p>
@@ -112,10 +121,17 @@ function CategoryPage() {
                         {topic.title}
                       </h3>
                       <p class="text-xs text-gray-400 mt-1">
-                        Started by <span class="text-gray-600 font-medium">{topic.authorId}</span> • {new Date(topic._creationTime).toLocaleDateString()}
+                        Started by{" "}
+                        <span class="text-gray-600 font-medium">
+                          {topic.authorId}
+                        </span>{" "}
+                        • {new Date(topic._creationTime).toLocaleDateString()}
                       </p>
                     </div>
-                    <ChevronRight size={18} class="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all" />
+                    <ChevronRight
+                      size={18}
+                      class="text-gray-300 group-hover:text-blue-600 transform group-hover:translate-x-1 transition-all"
+                    />
                   </div>
                 </Link>
               )}

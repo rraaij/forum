@@ -1,13 +1,7 @@
 import { Link } from "@tanstack/solid-router";
-import {
-  Home,
-  Layers,
-  Menu,
-  X,
-} from "lucide-solid";
+import { Home, Layers, Menu, X } from "lucide-solid";
 
 import { createSignal } from "solid-js";
-import TanStackQueryHeaderUser from "../integrations/tanstack-query/header-user.tsx";
 
 export default function Header() {
   const [isOpen, setIsOpen] = createSignal(false);
@@ -24,11 +18,9 @@ export default function Header() {
         </button>
         <h1 class="ml-4 text-xl font-semibold">
           <Link to="/">
-            <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              class="h-10"
-            />
+            <span class="text-2xl font-black [letter-spacing:-0.08em] text-white">
+              FORUM<span class="text-indigo-500">APP</span>
+            </span>
           </Link>
         </h1>
       </header>
@@ -56,7 +48,7 @@ export default function Header() {
             class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
               class:
-                "flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2",
+                "flex items-center gap-3 p-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition-colors mb-2",
             }}
           >
             <Home size={20} />
@@ -77,8 +69,8 @@ export default function Header() {
           </Link>
         </nav>
 
-        <div class="p-4 border-t border-gray-700 bg-gray-800 flex flex-col gap-2">
-          <TanStackQueryHeaderUser />
+        <div class="p-4 border-t border-gray-700 bg-gray-800 text-center text-xs text-gray-400">
+          &copy; 2026 Forum Monorepo
         </div>
       </aside>
     </>

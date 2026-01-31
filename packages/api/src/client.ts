@@ -16,27 +16,27 @@ export const apiFetch = async (path: string, options?: RequestInit) => {
 };
 
 export const forumApi = {
-  listCategories: (parentId?: string) => 
+  listCategories: (parentId?: string) =>
     apiFetch(`/categories${parentId ? `?parentId=${parentId}` : ""}`),
-  
-  getCategory: (id: string) => 
-    apiFetch(`/categories/${id}`),
-  
-  listTopics: (categoryId: string) => 
+
+  getCategory: (id: string) => apiFetch(`/categories/${id}`),
+
+  listTopics: (categoryId: string) =>
     apiFetch(`/categories/${categoryId}/topics`),
-  
-  getTopic: (id: string) => 
-    apiFetch(`/topics/${id}`),
-  
-  createTopic: (data: { title: string; categoryId: string; authorId: string; content: string }) => 
-    apiFetch("/topics", { method: "POST", body: JSON.stringify(data) }),
-  
-  listPosts: (topicId: string) => 
-    apiFetch(`/topics/${topicId}/posts`),
-  
-  createPost: (data: { topicId: string; content: string; authorId: string }) => 
+
+  getTopic: (id: string) => apiFetch(`/topics/${id}`),
+
+  createTopic: (data: {
+    title: string;
+    categoryId: string;
+    authorId: string;
+    content: string;
+  }) => apiFetch("/topics", { method: "POST", body: JSON.stringify(data) }),
+
+  listPosts: (topicId: string) => apiFetch(`/topics/${topicId}/posts`),
+
+  createPost: (data: { topicId: string; content: string; authorId: string }) =>
     apiFetch("/posts", { method: "POST", body: JSON.stringify(data) }),
-  
-  seed: () => 
-    apiFetch("/seed", { method: "POST" }),
+
+  seed: () => apiFetch("/seed", { method: "POST" }),
 };

@@ -9,7 +9,6 @@
  */
 
 import type * as forum from "../forum.js";
-import type * as todos from "../todos.js";
 
 import type {
   ApiFromModules,
@@ -19,7 +18,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   forum: typeof forum;
-  todos: typeof todos;
 }>;
 
 /**

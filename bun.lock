@@ -4,9 +4,18 @@
   "workspaces": {
     "": {
       "name": "tsforum",
+      "devDependencies": {
+        "@biomejs/biome": "2.3.13",
+        "@types/bun": "^1.3.8",
+        "typescript": "^5.9.3",
+      },
+    },
+    "apps/forum": {
+      "name": "@forum/app",
       "dependencies": {
         "@cloudflare/vite-plugin": "^1.22.1",
-        "@hono/zod-validator": "^0.7.6",
+        "@forum/api": "workspace:*",
+        "@forum/ui": "workspace:*",
         "@t3-oss/env-core": "^0.13.10",
         "@tailwindcss/vite": "^4.1.18",
         "@tanstack/router-plugin": "^1.157.17",
@@ -19,9 +28,7 @@
         "@tanstack/solid-start": "^1.157.17",
         "@tanstack/solid-store": "^0.8.0",
         "@tanstack/store": "^0.8.0",
-        "convex": "^1.31.7",
         "daisyui": "^5.5.14",
-        "hono": "^4.11.7",
         "lucide-solid": "^0.563.0",
         "solid-js": "^1.9.11",
         "tailwindcss": "^4.1.18",
@@ -30,13 +37,32 @@
         "zod": "^4.3.6",
       },
       "devDependencies": {
-        "@biomejs/biome": "2.3.13",
         "@tanstack/devtools-vite": "^0.5.0",
-        "@types/bun": "^1.3.8",
-        "typescript": "^5.9.3",
         "vite": "^7.3.1",
         "vite-plugin-solid": "^2.11.10",
         "wrangler": "^4.61.1",
+      },
+    },
+    "packages/api": {
+      "name": "@forum/api",
+      "dependencies": {
+        "@hono/zod-validator": "^0.7.6",
+        "convex": "^1.31.7",
+        "hono": "^4.11.7",
+        "zod": "^4.3.6",
+      },
+    },
+    "packages/db": {
+      "name": "@forum/db",
+      "dependencies": {
+        "convex": "^1.31.7",
+      },
+    },
+    "packages/ui": {
+      "name": "@forum/ui",
+      "dependencies": {
+        "lucide-solid": "^0.563.0",
+        "solid-js": "^1.9.11",
       },
     },
   },
@@ -168,6 +194,14 @@
     "@esbuild/win32-ia32": ["@esbuild/win32-ia32@0.27.0", "", { "os": "win32", "cpu": "ia32" }, "sha512-30z1aKL9h22kQhilnYkORFYt+3wp7yZsHWus+wSKAJR8JtdfI76LJ4SBdMsCopTR3z/ORqVu5L1vtnHZWVj4cQ=="],
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.27.0", "", { "os": "win32", "cpu": "x64" }, "sha512-aIitBcjQeyOhMTImhLZmtxfdOcuNRpwlPNmlFKPcHQYPhEssw75Cl1TSXJXpMkzaua9FUetx/4OQKq7eJul5Cg=="],
+
+    "@forum/api": ["@forum/api@workspace:packages/api"],
+
+    "@forum/app": ["@forum/app@workspace:apps/forum"],
+
+    "@forum/db": ["@forum/db@workspace:packages/db"],
+
+    "@forum/ui": ["@forum/ui@workspace:packages/ui"],
 
     "@hono/zod-validator": ["@hono/zod-validator@0.7.6", "", { "peerDependencies": { "hono": ">=3.9.0", "zod": "^3.25.0 || ^4.0.0" } }, "sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw=="],
 

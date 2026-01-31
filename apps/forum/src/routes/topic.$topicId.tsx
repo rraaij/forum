@@ -1,8 +1,8 @@
+import { forumApi } from "@forum/api/client";
+import { createMutation, createQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { createQuery, createMutation } from "@tanstack/solid-query";
-import { forumApi } from "../lib/api";
-import { For, Show, createSignal } from "solid-js";
 import { ArrowLeft, Send, User } from "lucide-solid";
+import { createSignal, For, Show } from "solid-js";
 
 export const Route = createFileRoute("/topic/$topicId")({
   component: TopicPage,
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/topic/$topicId")({
 
 function TopicPage() {
   const params = Route.useParams();
-  
+
   const topic = createQuery(() => ({
     queryKey: ["topic", params().topicId],
     queryFn: () => forumApi.getTopic(params().topicId),
@@ -22,11 +22,14 @@ function TopicPage() {
   }));
 
   const createPostMutation = createMutation(() => ({
-    mutationFn: (data: { topicId: string; content: string; authorId: string }) => 
-      forumApi.createPost(data),
+    mutationFn: (data: {
+      topicId: string;
+      content: string;
+      authorId: string;
+    }) => forumApi.createPost(data),
     onSuccess: () => {
       posts.refetch();
-    }
+    },
   }));
 
   const [content, setContent] = createSignal("");
@@ -53,7 +56,11 @@ function TopicPage() {
         {(t) => (
           <>
             <div class="flex items-center gap-4">
-              <Link to="/category/$categoryId" params={{ categoryId: t().categoryId }} class="btn btn-ghost btn-sm gap-2">
+              <Link
+                to="/category/$categoryId"
+                params={{ categoryId: t().categoryId }}
+                class="btn btn-ghost btn-sm gap-2"
+              >
                 <ArrowLeft size={16} />
                 Back to Category
               </Link>
@@ -62,7 +69,11 @@ function TopicPage() {
             <div class="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
               <h1 class="text-3xl font-bold text-gray-900">{t().title}</h1>
               <p class="text-sm text-gray-400 mt-2">
-                Started by <span class="text-indigo-600 font-semibold">{t().authorId}</span> • {new Date(t()._creationTime).toLocaleDateString()}
+                Started by{" "}
+                <span class="text-indigo-600 font-semibold">
+                  {t().authorId}
+                </span>{" "}
+                • {new Date(t()._creationTime).toLocaleDateString()}
               </p>
             </div>
           </>
@@ -78,14 +89,16 @@ function TopicPage() {
                   <User size={24} />
                 </div>
                 <div class="text-center md:mt-2">
-                  <p class="font-bold text-gray-900 text-sm truncate w-32 md:w-full">{post.authorId}</p>
-                  <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Member</p>
+                  <p class="font-bold text-gray-900 text-sm truncate w-32 md:w-full">
+                    {post.authorId}
+                  </p>
+                  <p class="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                    Member
+                  </p>
                 </div>
               </div>
               <div class="p-6 flex-1 flex flex-col justify-between">
-                <div class="prose max-w-none text-gray-700">
-                  {post.content}
-                </div>
+                <div class="prose max-w-none text-gray-700">{post.content}</div>
                 <div class="mt-4 pt-4 border-t border-gray-50 text-[10px] text-gray-400">
                   Posted on {new Date(post._creationTime).toLocaleString()}
                 </div>
@@ -106,13 +119,16 @@ function TopicPage() {
             onInput={(e) => setContent(e.currentTarget.value)}
           />
           <div class="flex justify-end">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               class="btn btn-primary gap-2 rounded-xl"
               disabled={!content().trim() || createPostMutation.isPending}
             >
-              <Show when={createPostMutation.isPending} fallback={<Send size={18} />}>
-                <span class="loading loading-spinner loading-sm"></span>
+              <Show
+                when={createPostMutation.isPending}
+                fallback={<Send size={18} />}
+              >
+                <span class="loading loading-spinner loading-sm" />
               </Show>
               Post Reply
             </button>

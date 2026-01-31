@@ -1,8 +1,8 @@
+import { forumApi } from "@forum/api/client";
+import { createMutation, createQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { createQuery, createMutation } from "@tanstack/solid-query";
-import { forumApi } from "../lib/api";
+import { ChevronRight, FolderIcon, Loader2, MessageSquare } from "lucide-solid";
 import { For, Show } from "solid-js";
-import { ChevronRight, FolderIcon, MessageSquare, Loader2 } from "lucide-solid";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -18,7 +18,7 @@ function HomePage() {
     mutationFn: () => forumApi.seed(),
     onSuccess: () => {
       categories.refetch();
-    }
+    },
   }));
 
   const handleSeed = async () => {
@@ -34,7 +34,9 @@ function HomePage() {
       <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div class="relative z-10">
           <h1 class="text-4xl font-bold mb-2">Welcome to the Forum</h1>
-          <p class="text-blue-100 text-lg">Join the conversation and explore various topics.</p>
+          <p class="text-blue-100 text-lg">
+            Join the conversation and explore various topics.
+          </p>
         </div>
         <div class="absolute top-0 right-0 -tr-y-1/2 opacity-10">
           <MessageSquare size={200} />
@@ -43,17 +45,22 @@ function HomePage() {
 
       <div class="grid gap-6">
         <h2 class="text-2xl font-bold text-gray-800">Categories</h2>
-        <Show 
-          when={categories.data && categories.data.length > 0} 
+        <Show
+          when={categories.data && categories.data.length > 0}
           fallback={
             <div class="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-              <p class="text-gray-500">No categories found. Seed the database to get started!</p>
-              <button 
+              <p class="text-gray-500">
+                No categories found. Seed the database to get started!
+              </p>
+              <button
                 class="mt-4 btn btn-primary gap-2"
                 onClick={handleSeed}
                 disabled={seed.isPending}
               >
-                <Show when={seed.isPending} fallback={<span>Seed Database</span>}>
+                <Show
+                  when={seed.isPending}
+                  fallback={<span>Seed Database</span>}
+                >
                   <Loader2 class="animate-spin" size={18} />
                   <span>Seeding...</span>
                 </Show>

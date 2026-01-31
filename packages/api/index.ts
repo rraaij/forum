@@ -1,9 +1,9 @@
+import { zValidator } from "@hono/zod-validator";
+import { ConvexClient } from "convex/browser";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { ConvexClient } from "convex/browser";
-import { api } from "../convex/_generated/api";
 import { z } from "zod";
-import { zValidator } from "@hono/zod-validator";
+import { api } from "../db/convex/_generated/api";
 
 const app = new Hono();
 
@@ -11,7 +11,9 @@ const app = new Hono();
 app.use("/*", cors());
 
 // Convex Client
-const convex = new ConvexClient(Bun.env.VITE_CONVEX_URL!);
+const convexUrl = Bun.env.VITE_CONVEX_URL;
+if (!convexUrl) throw new Error("VITE_CONVEX_URL is not defined");
+const convex = new ConvexClient(convexUrl);
 
 // --- Categories ---
 
@@ -41,16 +43,23 @@ app.get("/topics/:id", async (c) => {
   return c.json(topic);
 });
 
-app.post("/topics", zValidator("json", z.object({
-  title: z.string(),
-  categoryId: z.string(),
-  authorId: z.string(),
-  content: z.string(),
-})), async (c) => {
-  const data = c.req.valid("json");
-  const topicId = await convex.mutation(api.forum.createTopic, data as any);
-  return c.json({ topicId });
-});
+app.post(
+  "/topics",
+  zValidator(
+    "json",
+    z.object({
+      title: z.string(),
+      categoryId: z.string(),
+      authorId: z.string(),
+      content: z.string(),
+    }),
+  ),
+  async (c) => {
+    const data = c.req.valid("json");
+    const topicId = await convex.mutation(api.forum.createTopic, data as any);
+    return c.json({ topicId });
+  },
+);
 
 // --- Posts ---
 
@@ -60,15 +69,22 @@ app.get("/topics/:id/posts", async (c) => {
   return c.json(posts);
 });
 
-app.post("/posts", zValidator("json", z.object({
-  topicId: z.string(),
-  content: z.string(),
-  authorId: z.string(),
-})), async (c) => {
-  const data = c.req.valid("json");
-  const postId = await convex.mutation(api.forum.createPost, data as any);
-  return c.json({ postId });
-});
+app.post(
+  "/posts",
+  zValidator(
+    "json",
+    z.object({
+      topicId: z.string(),
+      content: z.string(),
+      authorId: z.string(),
+    }),
+  ),
+  async (c) => {
+    const data = c.req.valid("json");
+    const postId = await convex.mutation(api.forum.createPost, data as any);
+    return c.json({ postId });
+  },
+);
 
 // --- System ---
 
