@@ -1,0 +1,28 @@
+{
+  "name": "@forum/frontpage-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@tanstack/react-router": "^1.157.18",
+    "@convex-dev/auth": "^0.0.79",
+    "convex": "^1.18.0",
+    "@forum/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.7",
+    "@tanstack/router-plugin": "^1.157.18",
+    "@tanstack/router-devtools": "^1.157.18"
+  }
+}

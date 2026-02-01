@@ -11,3 +11,5 @@ dist-ssr
 .vscode/*
 .idea
  
+# TanStack Router generated files
+apps/*/app/routeTree.gen.ts

@@ -9,12 +9,16 @@
   "scripts": {
     "dev:forum": "bun run --cwd apps/forum dev",
     "dev:frontpage": "bun run --cwd apps/frontpage dev",
-    "dev:server": "bun run --cwd packages/api dev",
-    "dev": "bun run dev:forum & bun run dev:frontpage & bun run dev:server & wait",
+    "dev:backend": "bun run --cwd packages/backend dev",
+    "dev:convex": "bun run --cwd packages/convex dev",
+    "dev": "bun run dev:forum & bun run dev:frontpage & bun run dev:backend & wait",
     "build": "bun run --cwd apps/forum build && bun run --cwd apps/frontpage build",
+    "build:forum": "bun run --cwd apps/forum build",
+    "build:frontpage": "bun run --cwd apps/frontpage build",
     "format": "bunx biome format --write .",
     "lint": "bunx biome lint .",
-    "check": "bunx biome check --fix ."
+    "check": "bunx biome check --fix .",
+    "ncu-all": "bunx npm-check-updates --workspaces -u"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.13",

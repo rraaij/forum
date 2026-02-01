@@ -4,97 +4,107 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Bun-powered monorepo containing a SolidJS forum application with TanStack Start. Multiple apps share a common Hono backend and UI component library, with Convex as the database/auth backend.
+A Bun-powered monorepo containing React forum applications with Vite + TanStack Router. Multiple apps share a common Hono backend and UI component library (shadcn/ui), with Convex as the database/auth backend.
 
 ## Commands
 
 ```bash
-# Development (runs forum:3000, frontpage:3001, api:4000 in parallel)
+# Development (runs forum:3000, frontpage:3001, backend:4000 in parallel)
 bun dev
 
 # Individual apps
-bun dev:forum       # Forum app only
-bun dev:frontpage   # Frontpage app only
-bun dev:server      # Hono API server only
-
-# Convex (run in separate terminal from packages/db)
-cd packages/db && bunx convex dev
+bun dev:forum       # Forum app only (port 3000)
+bun dev:frontpage   # Frontpage app only (port 3001)
+bun dev:backend     # Hono API server only (port 4000)
+bun dev:convex      # Convex dev server (run in separate terminal)
 
 # Build
 bun build
+bun build:forum
+bun build:frontpage
 
 # Linting & Formatting (Biome)
-bun lint            # Check for issues
-bun format          # Format files
-bun check           # Check and auto-fix
+bun lint
+bun format
+bun check
 ```
 
 ## Architecture
 
 ```
 apps/
-├── forum/          # Main forum app (SolidJS + TanStack Start, port 3000)
-└── frontpage/      # News aggregator app (port 3001)
+├── forum/          # Main forum app (Vite + React + TanStack Router, port 3000)
+└── frontpage/      # News aggregator app (Vite + React, port 3001)
 
 packages/
-├── api/            # Hono REST server (port 4000)
-├── db/             # Convex schema, queries, mutations, auth
-└── ui/             # Shared SolidJS components (Header, Login, AuthProvider)
+├── backend/        # Hono REST server (port 4000)
+├── convex/         # Convex schema, queries, mutations, auth
+└── ui/             # Shared React components (shadcn/ui based)
 ```
 
 **Data Flow**:
-- Reads: Frontend → `forumApi` client → Hono server → Convex
-- Writes: Frontend → Convex directly (via `useMutation` from `convex-solidjs`)
+- Frontend apps → Convex directly via `useQuery`/`useMutation` from `convex/react`
+- Backend provides REST API that can also call Convex (for server-side operations)
 
 ## Environment Variables
 
-Required in `.env.local` (root and `packages/db/`):
+Required in `.env.local` (root, `packages/convex/`, and `packages/backend/`):
 ```bash
-CONVEX_DEPLOYMENT=dev:your-deployment
-VITE_CONVEX_URL=https://your-deployment.convex.cloud
+# Root and packages/convex
+CONVEX_DEPLOYMENT=dev:blessed-sturgeon-374
+CONVEX_URL=https://blessed-sturgeon-374.convex.cloud
+VITE_CONVEX_URL=https://blessed-sturgeon-374.convex.cloud
+CONVEX_SITE_URL=https://blessed-sturgeon-374.convex.site
 
-# For production API
-VITE_API_URL=https://your-api.example.com  # defaults to localhost:4000
-
-# Auth providers (set in Convex dashboard)
-AUTH_GITHUB_ID=...
-AUTH_GITHUB_SECRET=...
-AUTH_RESEND_KEY=...
+# packages/backend (non-VITE_ prefix)
+CONVEX_URL=https://blessed-sturgeon-374.convex.cloud
 ```
 
 ## Key Technical Details
 
 - **Package Manager**: Bun (not npm/yarn)
-- **Frontend**: SolidJS with signals (not React hooks) - use `createSignal`, `createEffect`, `createMemo`
-- **Routing**: TanStack Router with file-based routes in `src/routes/`. The `routeTree.gen.ts` is auto-generated (don't edit)
-- **State**: TanStack Query (`createQuery`) for reads, Convex `useMutation` for writes
-- **Styling**: Tailwind CSS v4 + DaisyUI components
-- **Auth**: Convex Auth with GitHub OAuth and Resend email magic links
-- **Toasts**: Use `showSuccess`, `showError`, `showInfo` from `@forum/ui` for user feedback
+- **Frontend**: React 18 with hooks - use `useState`, `useEffect`, `useMemo`
+- **Build Tool**: Vite (fast dev server, HMR)
+- **Routing**: TanStack Router with file-based routes in `src/routes/`
+- **State**: Convex `useQuery` for reads, `useMutation` for writes
+- **Styling**: Tailwind CSS v4 + shadcn/ui components
+- **Auth**: Convex Auth with Password provider
+- **Backend**: Hono server with CORS for localhost:3000, 3001
 
 ## Package Imports
 
 Use workspace aliases for cross-package imports:
-- `@forum/ui` - Shared components
-- `@forum/api` - API client and types
-- `@forum/db` - Convex client (typically through api package)
+- `@forum/ui` - Shared shadcn/ui components
+- `@forum/backend` - Backend (not typically imported)
+- `@forum/convex` - Convex package (not typically imported)
 
 ## Database (Convex)
 
-Schema in `packages/db/convex/schema.ts`:
+Schema in `packages/convex/convex/schema.ts`:
 - `users` - User accounts with roles ("user" | "admin")
 - `categories` - Hierarchical categories (parentId for nesting)
 - `topics` - Discussion threads in categories
 - `posts` - Comments within topics
 
-Queries/mutations in `packages/db/convex/forum.ts` and `users.ts`.
+Queries/mutations split into:
+- `categories.ts` - list, get, create
+- `topics.ts` - listByCategory, get, create
+- `posts.ts` - listByTopic, create
+- `users.ts` - currentUser
+
+## Auth Implementation
+
+Using `@convex-dev/auth` with Password provider:
+- Sign up/Sign in: Use `useAuthActions()` hook
+- Current user: Use `useConvexAuth()` for auth state
+- Protected mutations: Use `getAuthUserId(ctx)` in Convex functions
 
 ## Adding Features
 
 - **New route**: Add `.tsx` file in `apps/{app}/src/routes/`
 - **Shared component**: Add to `packages/ui/src/components/`, export from `packages/ui/src/index.ts`
-- **API endpoint**: Add to `packages/api/index.ts`
-- **DB operation**: Add to `packages/db/convex/forum.ts` or create new file
+- **API endpoint**: Add to `packages/backend/src/routes/`
+- **DB operation**: Add to appropriate file in `packages/convex/convex/`
 
 ## Code Style
 

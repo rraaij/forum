@@ -1,200 +1,386 @@
-# Forum Monorepo - Development Plan
+# Forum Monorepo Rebuild - React + TanStack Start + Hono
 
-This document outlines the technical assessment, improvement roadmap, and feature plan for the forum monorepo.
+## Overview
+Complete rebuild of the forum monorepo using modern React stack with proper separation of concerns. Backend connects to Convex, frontend apps use TanStack Start Server Functions to call backend endpoints.
 
----
+## Tech Stack
+- **Frontend Apps**: TanStack Start + React + TypeScript
+- **UI Library**: shadcn/ui components
+- **Backend**: Hono + TypeScript
+- **Database**: Convex (existing deployment: blessed-sturgeon-374)
+- **Auth**: Convex Auth with Password provider (following stuff-to-watch pattern)
+- **Package Manager**: Bun
+- **Monorepo**: Bun workspaces
 
-## Current State Assessment
-
-### What's Working
-- Monorepo structure with Bun workspaces
-- Basic CRUD for categories, topics, posts via Hono API
-- SolidJS + TanStack Start frontend apps
-- Convex database with schema defined
-- Shared UI package with Header, Login components
-- Biome linting/formatting configured
-
-### Critical Issues (Status Updated)
-
-| Issue                              | Severity | Status                               |
-| ---------------------------------- | -------- | ------------------------------------ |
-| Auth providers not configured      | Critical | Fixed - GitHub + Resend configured   |
-| No authorization on mutations      | Critical | Fixed - Mutations require auth       |
-| CORS allows all origins            | High     | Fixed - Restricted to allowed origins |
-| `/seed` endpoint publicly exposed  | High     | Fixed - Dev-only                     |
-| Hardcoded `localhost:4000` API URL | High     | Fixed - Uses VITE_API_URL            |
-| `as any` casts throughout API      | Medium   | Fixed - Proper types                 |
-| No error feedback to users         | Medium   | Fixed - Toast notifications          |
-| 100% duplicate code between apps   | High     | In Progress                          |
-| No tests                           | Medium   | Pending                              |
-| No pagination                      | Medium   | Pending                              |
-
-This document outlines the strategy for refactoring the current forum application into a Bun-powered monorepo. This will allow for multiple applications to share the same Hono backend and a common library of UI components.
-
-## Target Structure
-
-We will adopt a standard monorepo layout using **Bun Workspaces**:
-
-```text
-/
+## Project Structure
+```
+forum-monorepo/
 ├── apps/
-│   ├── forum/              # Internet Forum application
-│   └── frontpage/          # [NEW] News aggregation app
+│   ├── forum/              # Main forum app (port 3000)
+│   │   ├── app/
+│   │   │   ├── routes/
+│   │   │   │   ├── __root.tsx
+│   │   │   │   ├── index.tsx
+│   │   │   │   ├── category.$id.tsx
+│   │   │   │   └── topic.$id.tsx
+│   │   │   ├── components/
+│   │   │   ├── lib/
+│   │   │   └── server/
+│   │   │       └── functions.ts    # Server Functions
+│   │   ├── app.config.ts
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   │
+│   └── frontpage/          # News aggregator (port 3001)
+│       ├── app/
+│       │   ├── routes/
+│       │   │   ├── __root.tsx
+│       │   │   └── index.tsx
+│       │   ├── components/
+│       │   ├── lib/
+│       │   └── server/
+│       │       └── functions.ts
+│       ├── app.config.ts
+│       ├── package.json
+│       └── vite.config.ts
+│
 ├── packages/
-│   ├── api/                # Hono Backend (shared by all apps)
-│   ├── ui/                 # Shared SolidJS components and design system
-│   ├── db/                 # Convex schema, generated client code, and Auth
-│   └── config/             # Shared configurations (Vite, Biome, TypeScript)
-├── package.json            # Workspace definitions
-└── bun.lock
+│   ├── backend/            # Hono API server
+│   │   ├── src/
+│   │   │   ├── index.ts    # Main Hono app
+│   │   │   ├── routes/
+│   │   │   │   ├── categories.ts
+│   │   │   │   ├── topics.ts
+│   │   │   │   └── posts.ts
+│   │   │   ├── middleware/
+│   │   │   │   └── auth.ts
+│   │   │   └── lib/
+│   │   │       └── convex.ts    # Convex client
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── ui/                 # Shared shadcn/ui components
+│   │   ├── src/
+│   │   │   ├── components/
+│   │   │   │   ├── ui/     # shadcn components
+│   │   │   │   ├── header.tsx
+│   │   │   │   └── auth/
+│   │   │   ├── lib/
+│   │   │   │   └── utils.ts
+│   │   │   └── index.ts
+│   │   ├── package.json
+│   │   ├── tailwind.config.ts
+│   │   └── tsconfig.json
+│   │
+│   └── convex/             # Convex schema & functions
+│       ├── schema.ts       # Keep existing schema
+│       ├── auth.config.ts
+│       ├── auth.ts
+│       ├── http.ts
+│       ├── users.ts
+│       ├── categories.ts
+│       ├── topics.ts
+│       ├── posts.ts
+│       └── _generated/     # Auto-generated
+│
+├── .env.local              # Shared env vars
+├── package.json            # Root workspace config
+├── bun.lockb
+└── tsconfig.json           # Base TypeScript config
 ```
 
-## Feature Roadmap
+## Implementation Steps
 
-### 1. Authentication & Authorization (Convex Auth)
-*   **Single Sign-On (SSO)**: Implement a login flow that works across `forum` and `frontpage`.
-*   **Role-Based Access Control (RBAC)**:
-    *   `user`: Standard access (post, reply, react).
-    *   `admin`: Moderation capabilities (delete posts/comments).
-*   **Implementation**: Use `@convex-dev/auth` for handling sessions and identity.
+### Phase 1: Project Setup & Cleanup
+1. **Backup existing `.env.local`** - Contains Convex deployment credentials
+2. **Delete current apps/** and **packages/api**, **packages/ui** directories
+3. **Keep packages/db/** - Rename to `packages/convex/`
+4. **Create new directory structure** as shown above
+5. **Initialize root package.json** with Bun workspaces
 
-### 2. "Frontpage" App
-*   A Hacker News / Reddit style news aggregator.
-*   **Core Features**:
-    *   Submit news links.
-    *   Upvote/Downvote logic.
-    *   Shared comments (potentially reusing forum components).
+### Phase 2: Backend Package Setup
+1. **Create packages/backend/** with Hono server
+2. **Install dependencies**:
+   ```bash
+   bun add hono @hono/node-server
+   bun add convex @convex-dev/auth
+   bun add -D @types/node typescript
+   ```
+3. **Create Convex client** (`src/lib/convex.ts`):
+   - Initialize ConvexClient with CONVEX_URL from env
+   - Export authenticated client instance
+4. **Create auth middleware** (`src/middleware/auth.ts`):
+   - Verify JWT tokens from frontend
+   - Attach userId to context
+5. **Implement API routes**:
+   - `GET /categories` - List all categories
+   - `GET /categories/:id` - Get category details
+   - `GET /categories/:id/topics` - List topics in category
+   - `GET /topics/:id` - Get topic with posts
+   - `POST /topics` - Create topic (authenticated)
+   - `POST /posts` - Create post (authenticated)
+6. **Main Hono app** (`src/index.ts`):
+   - Setup CORS for localhost:3000, 3001
+   - Register routes
+   - Export for `bun run` on port 4000
 
-## Execution History
+### Phase 3: Convex Package Setup
+1. **Keep existing schema.ts** - Already using authTables pattern
+2. **Create auth.config.ts** (following stuff-to-watch):
+   ```typescript
+   export default {
+     providers: [{
+       domain: process.env.CONVEX_SITE_URL,
+       applicationID: "convex"
+     }]
+   };
+   ```
+3. **Create auth.ts**:
+   ```typescript
+   import { Password } from "@convex-dev/auth/providers/Password";
+   import { convexAuth } from "@convex-dev/auth/server";
+   export const { auth, signIn, signOut, store } = convexAuth({
+     providers: [Password],
+   });
+   ```
+4. **Update http.ts** to register auth routes:
+   ```typescript
+   import { auth } from "./auth";
+   export default auth.addHttpRoutes(httpRouter());
+   ```
+5. **Create Convex functions**:
+   - `users.ts` - currentUser query (from stuff-to-watch pattern)
+   - `categories.ts` - listCategories, getCategory
+   - `topics.ts` - listTopics, getTopic, createTopic
+   - `posts.ts` - listPosts, createPost
+6. **Add auth guards** to all mutations using `getAuthUserId(ctx)`
 
-### Phase 1: Workspace Initialization (Done)
-*   Configured `package.json` workspaces.
-*   Moved global tooling to root.
+### Phase 4: UI Package Setup
+1. **Initialize shadcn/ui**:
+   ```bash
+   cd packages/ui
+   bun add react react-dom
+   bun add -D @types/react @types/react-dom
+   bun add tailwindcss postcss autoprefixer
+   bun add class-variance-authority clsx tailwind-merge
+   ```
+2. **Setup shadcn CLI** and install base components:
+   - Button, Card, Input, Form, Label
+   - Dialog, DropdownMenu, Sheet (for mobile nav)
+   - Toast/Sonner for notifications
+3. **Create shared components**:
+   - `Header.tsx` - Navigation with auth state
+   - `auth/SignIn.tsx` - Email/password form
+   - `auth/SignUp.tsx` - Registration form
+   - `auth/UserMenu.tsx` - Dropdown with logout
+4. **Export all components** from `src/index.ts`
+5. **Configure Tailwind** with design tokens
 
-### Phase 2: Backend Extraction (Done)
-*   Moved `server/` to `packages/api`.
-*   Created `packages/api/package.json`.
+### Phase 5: Forum App Setup
+1. **Install TanStack Start**:
+   ```bash
+   cd apps/forum
+   bun create @tanstack/start
+   ```
+2. **Install dependencies**:
+   ```bash
+   bun add @convex-dev/auth @convex-dev/react
+   bun add @tanstack/react-router
+   bun add convex @forum/ui
+   ```
+3. **Configure app.config.ts**:
+   ```typescript
+   import { defineConfig } from "@tanstack/start/config";
+   export default defineConfig({
+     server: { preset: "node-server", port: 3000 }
+   });
+   ```
+4. **Setup ConvexAuthProvider** in `__root.tsx`:
+   ```tsx
+   import { ConvexAuthProvider } from "@convex-dev/auth/react";
+   import { ConvexReactClient } from "convex/react";
 
-### Phase 3: Database & Schema (Done)
-*   Moved `convex/` to `packages/db`.
+   const convexClient = new ConvexReactClient(
+     import.meta.env.VITE_CONVEX_URL
+   );
 
-### Phase 4: Shared UI Library (Done)
-*   Initialized `packages/ui`.
-*   Migrated `Header` component.
-*   Added `Header` to `apps/forum`.
+   export const Route = createRootRoute({
+     component: () => (
+       <ConvexAuthProvider client={convexClient}>
+         <Outlet />
+       </ConvexAuthProvider>
+     )
+   });
+   ```
+5. **Create Server Functions** (`app/server/functions.ts`):
+   ```typescript
+   import { createServerFn } from "@tanstack/start";
 
-### Phase 5: App Refactoring (Done)
-*   Moved `src/` to `apps/forum`.
-*   App runs successfully with Hono backend.
+   export const getCategories = createServerFn()
+     .handler(async () => {
+       const res = await fetch("http://localhost:4000/categories");
+       return res.json();
+     });
 
-### Phase 6: Frontpage & Auth (Current)
-1.  **Convex Auth Setup**: Install `@convex-dev/auth`, update schema for users/sessions.
-2.  **Scaffold Frontpage**: Create `apps/frontpage` from `apps/forum` template.
-3.  **Implement Auth UI**: Create shared `Login` and `UserMenu` components in `packages/ui`.
-4.  **Role Logic**: Update `packages/api` to check for roles in moderation endpoints.
+   export const getTopic = createServerFn()
+     .validator((id: string) => id)
+     .handler(async ({ data: id }) => {
+       const res = await fetch(`http://localhost:4000/topics/${id}`);
+       return res.json();
+     });
+   ```
+6. **Implement routes**:
+   - `index.tsx` - Category list with auth check
+   - `category.$id.tsx` - Topics in category
+   - `topic.$id.tsx` - Topic with posts + reply form
+7. **Add auth hooks** from `@convex-dev/auth/react`:
+   ```tsx
+   import { useConvexAuth } from "@convex-dev/auth/react";
+   const { isAuthenticated, isLoading } = useConvexAuth();
+   ```
 
-### Phase 4: Shared UI Library ✓
-- Initialized `packages/ui`
-- Migrated `Header` component
-- Added `Header` to `apps/forum`
+### Phase 6: Frontpage App Setup
+1. **Mirror forum app structure** but simpler
+2. **Same TanStack Start + Convex Auth setup**
+3. **Routes**:
+   - `index.tsx` - News feed (list of topics from all categories)
+   - Link to topic detail (reuse topic.$id from forum)
+4. **Server Functions** for fetching news feed
+5. **Port 3001** configuration
 
-### Phase 5: App Refactoring ✓
-- Moved `src/` to `apps/forum`
-- App runs successfully with Hono backend
+### Phase 7: Auth Implementation
+1. **Sign Up flow** (following stuff-to-watch):
+   ```tsx
+   import { useAuthActions } from "@convex-dev/auth/react";
 
-### Phase 6: Frontpage & Auth (Partial)
-- ✓ Scaffolded Frontpage app
-- ✓ Created Login and UserMenu components
-- ✗ Auth providers not configured
-- ✗ Role-based access not implemented
+   function SignUp() {
+     const { signIn } = useAuthActions();
+     const handleSubmit = async (e) => {
+       e.preventDefault();
+       const formData = new FormData(e.target);
+       await signIn("password", formData);
+     };
+   }
+   ```
+2. **Sign In flow** - Same pattern
+3. **Sign Out** - `signOut()` from useAuthActions
+4. **Protected routes** - Check `isAuthenticated` in Server Functions
+5. **Backend auth middleware** - Verify Convex session tokens
 
-### Phase 7: Security Foundation ✓
-- ✓ Configured GitHub OAuth and Resend email providers
-- ✓ Added HTTP routes for auth (`packages/db/convex/http.ts`)
-- ✓ Authorization checks in Convex mutations (require login)
-- ✓ Restricted CORS to allowed origins only
-- ✓ Protected `/seed` endpoint (dev-only)
-- ✓ Made API URL configurable via `VITE_API_URL`
+### Phase 8: Environment & Scripts
+1. **Root .env.local** (copy from existing):
+   ```bash
+   CONVEX_DEPLOYMENT=dev:blessed-sturgeon-374
+   CONVEX_URL=https://blessed-sturgeon-374.convex.cloud
+   VITE_CONVEX_URL=https://blessed-sturgeon-374.convex.cloud
+   CONVEX_SITE_URL=https://blessed-sturgeon-374.convex.site
+   ```
+2. **Backend .env** needs CONVEX_URL (not VITE_ prefixed)
+3. **Root package.json scripts**:
+   ```json
+   {
+     "scripts": {
+       "dev:forum": "cd apps/forum && bun dev",
+       "dev:frontpage": "cd apps/frontpage && bun dev",
+       "dev:backend": "cd packages/backend && bun dev",
+       "dev:convex": "cd packages/convex && bunx convex dev",
+       "dev": "bun run dev:forum & bun run dev:frontpage & bun run dev:backend",
+       "build": "bun run build:forum && bun run build:frontpage",
+       "build:forum": "cd apps/forum && bun run build",
+       "build:frontpage": "cd apps/frontpage && bun run build"
+     }
+   }
+   ```
 
-### Phase 8: Type Safety & Error Handling ✓
-- ✓ Eliminated `as any` casts with proper Convex ID types
-- ✓ Added toast notification system (`solid-toast`)
-- ✓ User-visible error messages on all mutations
-- ✓ Success feedback on post creation
-- ✓ Typed API client with proper response types
-- ✓ Frontend mutations now use Convex directly (bypassing Hono for writes)
+## Key Architectural Decisions
 
-```                                                                                                                                                                                                                                
-⏺ The page is loading now. I can see the HTML with the header "FORUMAPP", the Categories section, and the "Seed Database" button. There's an API error because the API server isn't running.                                      
-                                                                                                                                                                                                                                  
-⏺ Stop Task(b66bbfa)                                                                                                                                                                                                              
-  ⎿  Task stopped                                                                                                                                                                                                                 
-                                                                                                                                                                                                                                  
-⏺ The app is now working. Here's what was fixed and what you need to do:                                                                                                                                                          
-                                                                                                                                                                                                                                  
-  What Was Fixed                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                  
-  1. React/SolidJS auth conflict - The @convex-dev/auth package only supports React, not SolidJS. I temporarily disabled the auth hooks to get the app running. The auth UI components (Login form) are in place but not          
-  functional yet.                                                                                                                                                                                                                 
-  2. SSR environment issues - Fixed the VITE_CONVEX_URL environment variable handling for SSR.                                                                                                                                    
-  3. Removed problematic imports - Removed @convex-dev/auth/solid imports (doesn't exist) and the React auth hooks.                                                                                                               
-                                                                                                                                                                                                                                  
-  To Run the App                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                  
-  You need to run three things:                                                                                                                                                                                                   
-                                                                                                                                                                                                                                  
-  # Terminal 1: Convex dev server                                                                                                                                                                                                 
-  cd packages/db && bunx convex dev                                                                                                                                                                                               
-                                                                                                                                                                                                                                  
-  # Terminal 2: Hono API server                                                                                                                                                                                                   
-  bun dev:server                                                                                                                                                                                                                  
-                                                                                                                                                                                                                                  
-  # Terminal 3: Frontend app                                                                                                                                                                                                      
-  bun dev:forum                                                                                                                                                                                                                   
-                                                                                                                                                                                                                                  
-  Or run everything together with:                                                                                                                                                                                                
-  bun dev                                                                                                                                                                                                                         
-                                                                                                                                                                                                                                  
-  But you'll also need Convex running in a separate terminal.                                                                                                                                                                     
-                                                                                                                                                                                                                                  
-  Auth Status                                                                                                                                                                                                                     
-                                                                                                                                                                                                                                  
-  The auth system needs to be reimplemented for SolidJS. Options:                                                                                                                                                                 
-  1. Wait for @convex-dev/auth to add SolidJS support                                                                                                                                                                             
-  2. Implement custom auth using Convex mutations directly                                                                                                                                                                        
-  3. Use a different auth provider (like Lucia or custom JWT)                                                                                                                                                                     
-                                                                                                                                                                                                                                  
-  For now, the app works without auth - users can read categories, topics, and posts. The write operations will fail until auth is implemented (mutations require login).                                                         
-                                                                                                                                                                                                                                  
-✻ Crunched for 11m 5s                                                                                                                                                                                                             
-                                                                                                                                                                                                                                  
-⏺ Background command "Run dev server briefly to see output" completed (exit code 0)                                                                                                                                               
-                                                                                                                                                                                                                                  
-⏺ Read 1 file (ctrl+o to expand)                                                                                                                                                                                                  
-                                                                                                                                                                                                                                  
-⏺ That's old output from before the fixes. The app should work now.                                                                                                                                                               
-                                                                                                                                                                                                                                  
-  Would you like me to help you run the app? You'll need:                                                                                                                                                                         
-                                                                                                                                                                                                                                  
-  # Terminal 1: Start Convex                                                                                                                                                                                                      
-  cd packages/db && bunx convex dev                                                                                                                                                                                               
-                                                                                                                                                                                                                                  
-  # Terminal 2: Start all apps                                                                                                                                                                                                    
-  bun dev                                                                                                                                                                                                                         
-                                                                                                                                                                                                                                  
-  Or is there something specific you'd like to work on next from the plan?                                                                                                                                                        
-                                                                                                                                                                                                                                  
-⏺ Background command "Start forum dev server in background" completed (exit code 0)                                                                                                                                               
-                                                                                                                                                                                                                                  
-⏺ That's also old output. The fixes have been applied.                                                                                                                                                                            
-                                                                                                                                                                                                                                  
-  To run the app now:                                                                                                                                                                                                             
-                                                                                                                                                                                                                                  
-  bun dev                                                                                                                                                                                                                         
-                                                                                                                                                                                                                                  
-  This will start the forum (port 3000), frontpage (port 3001), and API server (port 4000) in parallel.                                                                                                                           
-                                                                                                                                                                                                                                  
-  You'll also need Convex running in a separate terminal:                                                                                                                                                                         
-  cd packages/db && bunx convex dev                                                                                                                                                                                               
-                                                                                                                                                                                                                                  
-  Let me know if you run into any issues or what you'd like to work on next.        ```
+### 1. TanStack Start Server Functions vs Direct Convex
+**Decision**: Use Server Functions to call Hono backend
+**Rationale**:
+- Backend becomes single source of truth for Convex connections
+- Easier to add caching, rate limiting, logging at backend layer
+- Server Functions provide type-safe RPC with minimal boilerplate
+- Follows user's requested architecture
+
+### 2. shadcn/ui vs Custom Components
+**Decision**: Use shadcn/ui
+**Rationale**:
+- Copy-paste components = full control
+- Built on Radix UI = accessible
+- Tailwind-based = consistent styling
+- Easy to customize/theme
+
+### 3. Convex Auth Pattern (stuff-to-watch approach)
+**Decision**: Use `@convex-dev/auth` with Password provider
+**Rationale**:
+- Simpler than manual JWT management
+- Auto-handles session management
+- Follows proven pattern from stuff-to-watch
+- Easy to add OAuth later if needed
+
+### 4. Monorepo Structure
+**Decision**: Bun workspaces with separate apps/packages
+**Rationale**:
+- Clean separation of concerns
+- Shared UI components via `@forum/ui`
+- Type-safe imports via workspace protocol
+- Each app can deploy independently
+
+## Migration of Existing Data
+- Convex schema stays the same (already uses authTables)
+- Existing deployment (blessed-sturgeon-374) continues working
+- No data migration needed
+- Auth tables will be created on first auth setup
+
+## Testing Strategy
+1. **Manual testing**:
+   - `bun dev` starts all servers
+   - Forum app loads at localhost:3000
+   - Frontpage loads at localhost:3001
+   - Backend responds at localhost:4000
+2. **Auth flow**:
+   - Sign up new user
+   - Sign in existing user
+   - Create topic (authenticated)
+   - Create post (authenticated)
+3. **Data flow**:
+   - Categories list loads
+   - Topics in category display
+   - Posts in topic show
+4. **Cross-app navigation**:
+   - Link from frontpage to forum topic works
+
+## Critical Files to Create/Modify
+
+### New Files (Complete Rebuild)
+- Root: `package.json`, `tsconfig.json`, `.env.local` (keep existing)
+- Backend: `packages/backend/src/index.ts`, `src/routes/*.ts`, `src/lib/convex.ts`
+- Convex: `packages/convex/auth.config.ts`, `auth.ts`, `http.ts`, `*.ts` functions
+- UI: `packages/ui/src/components/**/*.tsx`, `tailwind.config.ts`
+- Forum: `apps/forum/app/routes/*.tsx`, `app/server/functions.ts`, `app.config.ts`
+- Frontpage: `apps/frontpage/app/routes/*.tsx`, `app/server/functions.ts`
+
+### Files to Keep
+- `packages/convex/schema.ts` (current schema is good)
+- `.env.local` (Convex deployment credentials)
+
+## Verification Checklist
+- [ ] `bun dev` starts forum, frontpage, and backend without errors
+- [ ] Visit http://localhost:3000 shows forum app (not error page)
+- [ ] Visit http://localhost:3001 shows frontpage app
+- [ ] Backend responds: `curl http://localhost:4000/categories`
+- [ ] Sign up creates user in Convex
+- [ ] Sign in works and shows user menu
+- [ ] Creating topic requires authentication
+- [ ] Posts display correctly in topics
+- [ ] Navigation between apps works
+- [ ] No SSR errors in console
+- [ ] All TypeScript compiles without errors
+
+## Success Criteria
+✅ All three servers run without errors
+✅ No SSR/client-side API conflicts
+✅ Auth works end-to-end (signup, signin, signout)
+✅ Forum CRUD operations functional
+✅ Type-safe across entire monorepo
+✅ Clean, maintainable architecture following modern patterns

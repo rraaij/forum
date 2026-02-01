@@ -1,44 +1,5 @@
-import { AuthProvider, Header, ToastProvider } from "@forum/ui";
-import {
-  createRootRouteWithContext,
-  HeadContent,
-  Outlet,
-  Scripts,
-} from "@tanstack/solid-router";
-import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
-import { Suspense } from "solid-js";
-import { HydrationScript } from "solid-js/web";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 
-import styleCss from "../styles.css?url";
-
-export const Route = createRootRouteWithContext()({
-  head: () => ({
-    links: [{ rel: "stylesheet", href: styleCss }],
-  }),
-  shellComponent: RootComponent,
+export const Route = createRootRoute({
+  component: () => <Outlet />,
 });
-
-function RootComponent() {
-  return (
-    <html lang="en">
-      <head>
-        <HydrationScript />
-      </head>
-      <body>
-        <HeadContent />
-        <AuthProvider>
-          <Suspense>
-            <Header />
-
-            <div class="max-w-6xl mx-auto p-4">
-              <Outlet />
-            </div>
-            <TanStackRouterDevtools />
-          </Suspense>
-          <ToastProvider />
-        </AuthProvider>
-        <Scripts />
-      </body>
-    </html>
-  );
-}
