@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.2/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -10,19 +10,16 @@
     "includes": [
       "**/*",
       "**/src/**/*",
-      "**/convex/**/*",
       "**/vite.config.ts",
-      "!**/src/routeTree.gen.ts",
-      "!**/convex/_generated/**/*",
       "!**/.output/**/*",
-      "!**/.tanstack/**/*",
       "!**/node_modules/**/*",
       "!**/dist/**/*",
       "!**/dev-dist/**/*",
       "!**/src/styles.css",
       "!**/worker-configuration.d.ts",
       "!**/.vite/**/*",
-      "!**/src-tauri/**/*"
+      "!**/src-tauri/**/*",
+      "!**/.turbo/**/*"
     ]
   },
   "formatter": {

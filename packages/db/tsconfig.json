@@ -1,0 +1,4 @@
+{
+  "extends": "@forum/config/tsconfig/node",
+  "include": ["src/**/*.ts", "drizzle.config.ts"]
+}

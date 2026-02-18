@@ -1,0 +1,10 @@
+{
+  "extends": "@forum/config/tsconfig/solidjs",
+  "compilerOptions": {
+    "types": ["vite/client"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "app.config.ts"]
+}

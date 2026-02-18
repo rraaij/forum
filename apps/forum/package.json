@@ -1,0 +1,28 @@
+{
+  "name": "@forum/forum-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev --port 3001",
+    "build": "vinxi build",
+    "start": "vinxi start"
+  },
+  "dependencies": {
+    "@forum/api": "workspace:*",
+    "@forum/db": "workspace:*",
+    "@forum/ui": "workspace:*",
+    "@solidjs/router": "^0.15.0",
+    "@solidjs/start": "^1.1.0",
+    "better-auth": "^1.2.0",
+    "solid-js": "^1.9.0",
+    "vinxi": "^0.5.0"
+  },
+  "devDependencies": {
+    "@forum/config": "workspace:*",
+    "@tailwindcss/vite": "^4.1.0",
+    "tailwindcss": "^4.1.0",
+    "daisyui": "^5.0.0",
+    "vite": "^6.0.0"
+  }
+}

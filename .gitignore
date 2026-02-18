@@ -4,10 +4,15 @@ dist
 dist-ssr
 *.local
 .env
+.env.api
+.env.forum
 .nitro
 .tanstack
 .wrangler
 .vite
 .vscode/*
 .idea
- 
+.turbo
+**/.output/
+**/.vinxi/
+**/routeTree.gen.ts
