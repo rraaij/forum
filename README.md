@@ -5,6 +5,10 @@ this app will be an internet forum. It will have a main page with categories. Ea
 # TODO
 
 - [ ] Add authentication: 1 auth for all apps
+- [ ] moderator modus: able to pin and lock topics, able to delete posts, able to 'punish' users (temporary ban, delete all posts, etc.)
+- [ ] admin modus: evrything moderator has, plus: able to create categories and subcategories, able to pin and lock topics, able to delete posts
+- [ ] user modus: able to create topics, able to create posts, able to react to posts with emojis, able to upvote and downvote posts
+- [ ] Move functionality to create categories and subcategories from Dialog to Admin page, also add User Management to that Admin page
 - [ ] Add user profiles
 - [ ] Add notifications
 - [ ] Add search functionality
