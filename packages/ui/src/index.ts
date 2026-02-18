@@ -1,4 +1,4 @@
-export * from "./components/auth/AuthProvider";
-export * from "./components/auth/Login";
-export * from "./components/auth/UserMenu";
-export { default as Header } from "./components/Header";
+export { Avatar } from "./components/Avatar";
+export { Badge } from "./components/Badge";
+export { Button } from "./components/Button";
+export { Modal } from "./components/Modal";

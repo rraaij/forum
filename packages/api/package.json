@@ -1,19 +1,25 @@
 {
   "name": "@forum/api",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "bun run --hot index.ts"
-  },
-  "main": "./index.ts",
   "exports": {
-    ".": "./index.ts",
-    "./client": "./src/client.ts"
+    ".": "./src/index.ts",
+    "./app": "./src/app.ts"
+  },
+  "scripts": {
+    "dev": "bun --bun --hot --env-file ../../.env src/index.ts",
+    "build": "echo 'api: no build step (runs with bun)'"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.7.6",
-    "convex": "^1.31.7",
-    "hono": "^4.11.7",
-    "zod": "^4.3.6"
+    "@forum/db": "workspace:*",
+    "better-auth": "^1.4.18",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.11.10",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "@forum/config": "workspace:*",
+    "@types/bun": "^1.3.9"
   }
 }

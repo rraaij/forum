@@ -1,0 +1,29 @@
+import { accounts, sessions, users } from "@forum/db/schema";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { getDb } from "./db";
+
+export const auth = betterAuth({
+  database: drizzleAdapter(getDb(), {
+    provider: "pg",
+    schema: {
+      user: users,
+      session: sessions,
+      account: accounts,
+    },
+  }),
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: false,
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // refresh every 24 hours
+  },
+  secret:
+    process.env.AUTH_SECRET || "development-secret-min-32-characters-long",
+  baseURL: process.env.API_URL || "http://localhost:4000",
+  trustedOrigins: [process.env.APP_URL || "http://localhost:3001"],
+});
+
+export type Session = typeof auth.$Infer.Session;

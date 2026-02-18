@@ -1,0 +1,10 @@
+{
+  "name": "@forum/config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./tsconfig/base": "./tsconfig.base.json",
+    "./tsconfig/solidjs": "./tsconfig.solidjs.json",
+    "./tsconfig/node": "./tsconfig.node.json"
+  }
+}

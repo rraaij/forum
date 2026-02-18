@@ -1,10 +1,13 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": ["src/**/*"],
+  "extends": "@forum/config/tsconfig/solidjs",
   "compilerOptions": {
-    "baseUrl": ".",
+    "composite": true,
+    "noEmit": false,
+    "outDir": ".tsc-out",
+    "types": ["vite/client"],
     "paths": {
-      "~/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "app.config.ts"]
 }

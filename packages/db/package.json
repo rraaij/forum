@@ -1,12 +1,26 @@
 {
   "name": "@forum/db",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
   "scripts": {
-    "dev": "convex dev"
+    "db:generate": "set -a && . ../../.env && set +a && drizzle-kit generate",
+    "db:migrate": "set -a && . ../../.env && set +a && drizzle-kit migrate",
+    "db:push": "set -a && . ../../.env && set +a && drizzle-kit push",
+    "db:studio": "set -a && . ../../.env && set +a && drizzle-kit studio",
+    "db:seed": "bun --bun --env-file ../../.env run scripts/seed.ts"
   },
   "dependencies": {
-    "@convex-dev/auth": "^0.0.90",
-    "convex": "^1.31.7"
+    "drizzle-orm": "^0.45.1",
+    "postgres": "^3.4.8"
+  },
+  "devDependencies": {
+    "@forum/config": "workspace:*",
+    "drizzle-kit": "^0.31.9",
+    "@types/bun": "^1.3.9"
   }
 }
