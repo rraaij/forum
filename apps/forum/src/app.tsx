@@ -1,15 +1,19 @@
 import { A, Router } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { Show, Suspense } from "solid-js";
+import { createSignal, Show, Suspense } from "solid-js";
 import "./styles.css";
+import { CategoryManagerDialog } from "@/components/CategoryManagerDialog";
+import type { SessionUser } from "@/lib/auth-client";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export default function App() {
+  const [adminOpen, setAdminOpen] = createSignal(false);
+
   return (
     <Router
       root={(props) => {
         const session = useSession();
-        const user = () => session().data?.user;
+        const user = () => session().data?.user as SessionUser | undefined;
 
         return (
           <div class="min-h-screen bg-base-200">
@@ -20,6 +24,15 @@ export default function App() {
                 </A>
               </div>
               <div class="flex-none gap-2">
+                <Show when={user()?.role === "admin"}>
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    onClick={() => setAdminOpen(true)}
+                    title="Manage categories"
+                  >
+                    ⚙️ Manage
+                  </button>
+                </Show>
                 <Show
                   when={user()}
                   fallback={
@@ -62,6 +75,10 @@ export default function App() {
             <main class="container mx-auto px-4 py-6">
               <Suspense>{props.children}</Suspense>
             </main>
+            <CategoryManagerDialog
+              open={adminOpen()}
+              onClose={() => setAdminOpen(false)}
+            />
           </div>
         );
       }}

@@ -1,5 +1,4 @@
-import type { ParentProps } from "solid-js";
-import { Show } from "solid-js";
+import { createEffect, type ParentProps, Show } from "solid-js";
 
 interface ModalProps {
   open: boolean;
@@ -9,8 +8,18 @@ interface ModalProps {
 }
 
 export function Modal(props: ParentProps<ModalProps>) {
+  let dialogRef!: HTMLDialogElement;
+
+  createEffect(() => {
+    if (props.open) {
+      dialogRef.showModal();
+    } else {
+      dialogRef.close();
+    }
+  });
+
   return (
-    <dialog class={`modal ${props.open ? "modal-open" : ""}`}>
+    <dialog ref={dialogRef} class="modal">
       <div class={`modal-box ${props.class ?? ""}`}>
         <Show when={props.title}>
           <h3 class="font-bold text-lg">{props.title}</h3>

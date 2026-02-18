@@ -18,7 +18,9 @@
       "!**/dist/**/*",
       "!**/dev-dist/**/*",
       "!**/src/styles.css",
-      "!**/worker-configuration.d.ts"
+      "!**/worker-configuration.d.ts",
+      "!apps/forum/.vinxi",
+      "!apps/forum/.tsc-out"
     ]
   },
   "formatter": {

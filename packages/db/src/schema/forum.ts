@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   index,
   integer,
@@ -27,6 +28,10 @@ export const subcategories = pgTable(
     categoryId: uuid("category_id")
       .notNull()
       .references(() => categories.id, { onDelete: "cascade" }),
+    parentSubcategoryId: uuid("parent_subcategory_id").references(
+      (): AnyPgColumn => subcategories.id,
+      { onDelete: "cascade" },
+    ),
     name: text("name").notNull(),
     slug: text("slug").notNull(),
     description: text("description"),
@@ -45,9 +50,12 @@ export const topics = pgTable(
   "topics",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    subcategoryId: uuid("subcategory_id")
-      .notNull()
-      .references(() => subcategories.id, { onDelete: "cascade" }),
+    categoryId: uuid("category_id").references(() => categories.id, {
+      onDelete: "cascade",
+    }),
+    subcategoryId: uuid("subcategory_id").references(() => subcategories.id, {
+      onDelete: "cascade",
+    }),
     authorId: text("author_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -62,6 +70,7 @@ export const topics = pgTable(
   },
   (table) => [
     index("topics_subcategory_idx").on(table.subcategoryId),
+    index("topics_category_idx").on(table.categoryId),
     index("topics_author_idx").on(table.authorId),
   ],
 );
