@@ -1,6 +1,9 @@
 {
   "extends": "@forum/config/tsconfig/solidjs",
   "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "outDir": ".tsc-out",
     "types": ["vite/client"],
     "paths": {
       "@/*": ["./src/*"]

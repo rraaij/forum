@@ -9,17 +9,16 @@
     "ignoreUnknown": false,
     "includes": [
       "**/*",
-      "**/src/**/*",
+      "**/apps/**/*",
+      "**/packages/**/*",
       "**/vite.config.ts",
       "!**/.output/**/*",
+      "!**/apps/forum/node_modules/**/*",
       "!**/node_modules/**/*",
       "!**/dist/**/*",
       "!**/dev-dist/**/*",
       "!**/src/styles.css",
-      "!**/worker-configuration.d.ts",
-      "!**/.vite/**/*",
-      "!**/src-tauri/**/*",
-      "!**/.turbo/**/*"
+      "!**/worker-configuration.d.ts"
     ]
   },
   "formatter": {

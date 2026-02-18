@@ -1,4 +1,9 @@
 {
-  "extends": "./packages/config/tsconfig.base.json",
-  "include": []
+  "files": [],
+  "references": [
+    { "path": "./packages/db" },
+    { "path": "./packages/api" },
+    { "path": "./packages/ui" },
+    { "path": "./apps/forum" }
+  ]
 }

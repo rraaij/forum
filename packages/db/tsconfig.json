@@ -1,4 +1,9 @@
 {
   "extends": "@forum/config/tsconfig/node",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "outDir": "dist"
+  },
   "include": ["src/**/*.ts", "drizzle.config.ts"]
 }

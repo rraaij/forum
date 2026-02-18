@@ -12,17 +12,17 @@
     "@forum/api": "workspace:*",
     "@forum/db": "workspace:*",
     "@forum/ui": "workspace:*",
-    "@solidjs/router": "^0.15.0",
-    "@solidjs/start": "^1.1.0",
-    "better-auth": "^1.2.0",
-    "solid-js": "^1.9.0",
-    "vinxi": "^0.5.0"
+    "@solidjs/router": "^0.15.4",
+    "@solidjs/start": "^1.2.1",
+    "better-auth": "^1.4.18",
+    "solid-js": "^1.9.11",
+    "vinxi": "^0.5.11"
   },
   "devDependencies": {
     "@forum/config": "workspace:*",
-    "@tailwindcss/vite": "^4.1.0",
-    "tailwindcss": "^4.1.0",
-    "daisyui": "^5.0.0",
-    "vite": "^6.0.0"
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18",
+    "daisyui": "^5.5.18",
+    "vite": "^7.3.1"
   }
 }
