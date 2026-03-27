@@ -103,7 +103,7 @@ Database schema:
 - Vite proxy `/api/*` → port 4000
 - **Lurking mode:** GET routes public, POST/PUT/DELETE require auth
 
-**Gate:** Forum renders at `:3001`, Vite proxy works, auth flow complete.
+**Gate:** Forum renders at `:3000`, Vite proxy works, auth flow complete.
 
 ---
 

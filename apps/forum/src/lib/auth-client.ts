@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/solid";
 
 const authClient = createAuthClient({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000",
 });
 
 export type SessionUser = (typeof authClient.$Infer.Session)["user"] & {

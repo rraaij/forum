@@ -21,13 +21,9 @@ type ThemeName = "light" | "dark";
 // These top-level sections mirror the vintage forum style from the reference image.
 const TOP_SECTIONS = [
   "frontpage",
-  "sport",
-  "games",
-  "film & tv",
   "weblog",
   "forum",
   "fotoboek",
-  "chat",
   "zoeken",
   "dm",
 ];

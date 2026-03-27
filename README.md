@@ -355,7 +355,7 @@ apps/forum/
 
 Lurking mode: All GET routes are public (no auth check). POST/PUT/DELETE routes return 401 if no session. UI hides write actions for unauthenticated users but shows all content.
 
-Verify Phase 3: bun --bun run dev from root starts both API (4000) and forum (3001). Forum renders categories page. Auth flow works end-to-end.
+Verify Phase 3: bun --bun run dev from root starts both API (4000) and forum (3000). Forum renders categories page. Auth flow works end-to-end.
 
  ---
 Phase 4 — Database Migration + Seed
@@ -385,7 +385,7 @@ Dockerfile (multi-stage, adapted from stuff-to-watch)
 
 Stage 1 (deps):  oven/bun:1-alpine + pnpm install --frozen-lockfile
 Stage 2 (build): Copy deps + source, pnpm --filter @forum/forum-app build
-Stage 3 (runtime): oven/bun:1-alpine, copy .output only, EXPOSE 3001
+Stage 3 (runtime): oven/bun:1-alpine, copy .output only, EXPOSE 3000
 
 Reference Dockerfile: /Users/ramonvanraaij/Developer/_github.com/stuff-to-watch/Dockerfile
 
@@ -403,7 +403,7 @@ DB migrations in production
 
 Run from dev machine before deploying: POSTGRES_HOST=192.168.0.178 ... bun --bun run db:migrate
 
-Verify: docker build -t forum . succeeds. Container serves forum at :3001 with working API.
+Verify: docker build -t forum . succeeds. Container serves forum at :3000 with working API.
 
  ---
 Verification Summary
@@ -415,7 +415,7 @@ Verification Summary
 ├───────┼─────────────────────────────────────────────────────────────────┤
 │ 2     │ tsc -b passes, Hono starts, Better Auth sign-in returns session │
 ├───────┼─────────────────────────────────────────────────────────────────┤
-│ 3     │ Forum renders at :3001, Vite proxy works, auth flow complete    │
+│ 3     │ Forum renders at :3000, Vite proxy works, auth flow complete    │
 ├───────┼─────────────────────────────────────────────────────────────────┤
 │ 4     │ All tables in Postgres, seed data visible in Drizzle Studio     │
 ├───────┼─────────────────────────────────────────────────────────────────┤

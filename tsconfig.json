@@ -3,7 +3,6 @@
   "references": [
     { "path": "./packages/db" },
     { "path": "./packages/api" },
-    { "path": "./packages/ui" },
-    { "path": "./apps/forum" }
+    { "path": "./packages/ui" }
   ]
 }

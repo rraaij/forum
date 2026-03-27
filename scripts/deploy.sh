@@ -92,7 +92,7 @@ else
     $DOCKER run -d \
       --name $FORUM_CONTAINER \
       --restart unless-stopped \
-      -p 3001:3001 \
+      -p 3000:3000 \
       --env-file ~/.env.forum-app \
       $FORUM_IMAGE
     rm /tmp/$FORUM_IMAGE.tar.gz
@@ -101,5 +101,5 @@ else
 DEPLOY
 
   rm /tmp/"$FORUM_IMAGE".tar.gz
-  echo "Forum v$FORUM_VERSION deployed at http://$NAS_HOST:3001"
+  echo "Forum v$FORUM_VERSION deployed at http://$NAS_HOST:3000"
 fi

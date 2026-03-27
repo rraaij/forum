@@ -31,5 +31,5 @@ FROM oven/bun:1-alpine AS runtime
 WORKDIR /app
 COPY --from=build /app/apps/forum/.output ./.output
 ENV NODE_ENV=production
-EXPOSE 3001
+EXPOSE 3000
 CMD ["bun", "--bun", ".output/server/index.mjs"]

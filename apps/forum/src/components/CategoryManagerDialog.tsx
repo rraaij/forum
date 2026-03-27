@@ -312,7 +312,7 @@ export const CategoryManagerDialog: Component<{
       title="Manage Categories"
       class="max-w-2xl w-full"
     >
-      <div class="mt-4 space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+      <div class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
         <Show when={mutationError()}>
           <div class="alert alert-error text-sm py-2 mb-2">
             <span>{mutationError()}</span>
@@ -544,9 +544,16 @@ export const CategoryManagerDialog: Component<{
               onCancel={() => setAddMode(null)}
             />
           </Show>
+        </Show>
+      </div>
 
+      <div class="flex items-center justify-end mt-4 pt-4 border-t border-base-200">
+        {/*<button class="btn btn-sm btn-ghost" onClick={props.onClose}>*/}
+        {/*  Close*/}
+        {/*</button>*/}
+        <Show when={!data.loading}>
           <button
-            class="btn btn-sm btn-outline w-full mt-2"
+            class="btn btn-sm btn-outline"
             onClick={() => startAdd({ type: "category" })}
           >
             + Add Category
