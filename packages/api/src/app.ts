@@ -12,7 +12,7 @@ export function createApp() {
   app.use(
     "*",
     cors({
-      origin: process.env.APP_URL || "http://localhost:3000",
+      origin: process.env.APP_URL || "http://localhost:3001",
       credentials: true,
     }),
   );

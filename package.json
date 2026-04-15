@@ -15,8 +15,8 @@
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.9",
-    "turbo": "^2.8.20",
+    "@biomejs/biome": "^2.4.12",
+    "turbo": "^2.9.6",
     "typescript": "^6.0.2"
   },
   "workspaces": [

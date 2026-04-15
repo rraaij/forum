@@ -17,7 +17,7 @@ The forum project is built as a Turborepo monorepo. PostgreSQL + Drizzle ORM rep
 
 ```text
 apps/
-  forum/       # Internet forum (SolidJS/SolidStart) — Categories > Subcategories > Topics > Posts
+  forum/       # Internet forum (SolidJS/TanStack Start) — Categories > Subcategories > Topics > Posts
   frontpage/   # News aggregator with comments/votes (SolidJS/SolidStart), GNews.io API
   profile/     # User profiles and settings (SolidJS)
   dm/          # Real-time direct messaging via WebSockets (SolidJS)
@@ -30,7 +30,7 @@ packages/
 
 ## Stack
 
-- **Frontend**: SolidJS, TanStack Router/Start, TypeScript, TailwindCSS, DaisyUI
+- **Frontend**: SolidJS, TanStack Start, TypeScript, TailwindCSS, DaisyUI
 - **Backend**: Bun, Hono (shared across apps in `packages/api`)
 - **Database/Auth**: PostgreSQL, Drizzle ORM, Better Auth (SSO across all apps)
 - **Monorepo**: Turborepo, pnpm workspaces
@@ -94,9 +94,9 @@ Database schema:
 
 ---
 
-## Phase 3 — Forum App (SolidStart)
+## Phase 3 — Forum App (TanStack Start)
 
-- SolidStart + TanStack Router with file-based routing
+- TanStack Start with file-based routing
 - TailwindCSS + DaisyUI theming
 - Better Auth SolidJS client (useSession, signIn, signOut)
 - Routes: home (categories), auth (sign-in/sign-up), `[category]/[sub]/[topic]`

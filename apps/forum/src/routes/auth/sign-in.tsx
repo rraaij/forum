@@ -1,6 +1,10 @@
-import { A, useNavigate } from "@solidjs/router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { signIn } from "@/lib/auth-client";
+
+export const Route = createFileRoute("/auth/sign-in")({
+  component: SignIn,
+});
 
 export default function SignIn() {
   const navigate = useNavigate();
@@ -17,7 +21,7 @@ export default function SignIn() {
     await signIn.email(
       { email: email(), password: password() },
       {
-        onSuccess: () => navigate("/"),
+        onSuccess: () => navigate({ to: "/" }),
         onError: (ctx) => {
           setError(ctx.error.message || "Sign in failed");
         },
@@ -70,9 +74,9 @@ export default function SignIn() {
           </form>
           <p class="text-center mt-4 text-sm">
             Don't have an account?{" "}
-            <A href="/auth/sign-up" class="link link-primary">
+            <Link to="/auth/sign-up" class="link link-primary">
               Sign Up
-            </A>
+            </Link>
           </p>
         </div>
       </div>

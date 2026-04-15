@@ -1,6 +1,10 @@
-import { A, useNavigate } from "@solidjs/router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { signUp } from "@/lib/auth-client";
+
+export const Route = createFileRoute("/auth/sign-up")({
+  component: SignUp,
+});
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -83,9 +87,9 @@ export default function SignUp() {
           </form>
           <p class="text-center mt-4 text-sm">
             Already have an account?{" "}
-            <A href="/auth/sign-in" class="link link-primary">
+            <Link to="/auth/sign-in" class="link link-primary">
               Sign In
-            </A>
+            </Link>
           </p>
         </div>
       </div>

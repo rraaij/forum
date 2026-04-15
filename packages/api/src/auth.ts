@@ -33,7 +33,7 @@ export const auth = betterAuth({
   secret:
     process.env.AUTH_SECRET || "development-secret-min-32-characters-long",
   baseURL: process.env.API_URL || "http://localhost:4000",
-  trustedOrigins: [process.env.APP_URL || "http://localhost:3000"],
+  trustedOrigins: [process.env.APP_URL || "http://localhost:3001"],
 });
 
 export type Session = typeof auth.$Infer.Session;
