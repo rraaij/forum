@@ -1,4 +1,10 @@
-import { posts, subcategories, topics, users } from "@forum/db/schema";
+import {
+  categories,
+  posts,
+  subcategories,
+  topics,
+  users,
+} from "@forum/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { getDb } from "../db";
@@ -6,13 +12,21 @@ import type { AppEnv } from "../types";
 
 const topicsRoutes = new Hono<AppEnv>();
 
-// GET /api/topics?subcategoryId=... — list topics in subcategory
+// GET /api/topics?subcategoryId=... or ?categoryId=... — list topics
 topicsRoutes.get("/", async (c) => {
   const db = getDb();
   const subcategoryId = c.req.query("subcategoryId");
+  const categoryId = c.req.query("categoryId");
 
-  if (!subcategoryId) {
-    return c.json({ error: "subcategoryId is required" }, 400);
+  if (!subcategoryId && !categoryId) {
+    return c.json({ error: "subcategoryId or categoryId is required" }, 400);
+  }
+
+  if (subcategoryId && categoryId) {
+    return c.json(
+      { error: "Provide subcategoryId or categoryId, not both" },
+      400,
+    );
   }
 
   const result = await db
@@ -31,7 +45,12 @@ topicsRoutes.get("/", async (c) => {
     })
     .from(topics)
     .leftJoin(users, eq(topics.authorId, users.id))
-    .where(eq(topics.subcategoryId, subcategoryId))
+    .where(
+      subcategoryId
+        ? eq(topics.subcategoryId, subcategoryId)
+        : // biome-ignore lint/style/noNonNullAssertion: guarded by preceding !subcategoryId && !categoryId check
+          eq(topics.categoryId, categoryId!),
+    )
     .orderBy(desc(topics.isPinned), desc(topics.lastPostAt));
 
   return c.json(result);
@@ -86,20 +105,38 @@ topicsRoutes.post("/", async (c) => {
 
   const db = getDb();
   const body = await c.req.json<{
-    subcategoryId: string;
+    categoryId?: string;
+    subcategoryId?: string;
     title: string;
     content: string;
   }>();
 
-  // Verify subcategory exists
-  const [sub] = await db
-    .select()
-    .from(subcategories)
-    .where(eq(subcategories.id, body.subcategoryId))
-    .limit(1);
+  if (!body.categoryId && !body.subcategoryId) {
+    return c.json({ error: "categoryId or subcategoryId is required" }, 400);
+  }
+  if (body.categoryId && body.subcategoryId) {
+    return c.json(
+      { error: "Provide categoryId or subcategoryId, not both" },
+      400,
+    );
+  }
 
-  if (!sub) {
-    return c.json({ error: "Subcategory not found" }, 404);
+  // Verify parent exists
+  if (body.subcategoryId) {
+    const [sub] = await db
+      .select()
+      .from(subcategories)
+      .where(eq(subcategories.id, body.subcategoryId))
+      .limit(1);
+    if (!sub) return c.json({ error: "Subcategory not found" }, 404);
+  } else {
+    const [cat] = await db
+      .select()
+      .from(categories)
+      // biome-ignore lint/style/noNonNullAssertion: guarded by preceding !body.subcategoryId check
+      .where(eq(categories.id, body.categoryId!))
+      .limit(1);
+    if (!cat) return c.json({ error: "Category not found" }, 404);
   }
 
   const slug = body.title
@@ -107,11 +144,11 @@ topicsRoutes.post("/", async (c) => {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-  // Create topic + first post in sequence
   const [topic] = await db
     .insert(topics)
     .values({
-      subcategoryId: body.subcategoryId,
+      categoryId: body.categoryId ?? null,
+      subcategoryId: body.subcategoryId ?? null,
       authorId: user.id,
       title: body.title,
       slug,

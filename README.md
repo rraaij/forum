@@ -1,10 +1,14 @@
-Welcome to your new TanStack app! 
+# Forum
 
 this app will be an internet forum. It will have a main page with categories. Each category will have a page with subcategories and topics. Each subcategory can hold even more subcategories and topics. Each topic will hold the discussion between users on that topic.
 
-# TODO
+## TODO
 
 - [ ] Add authentication: 1 auth for all apps
+- [ ] moderator modus: able to pin and lock topics, able to delete posts, able to 'punish' users (temporary ban, delete all posts, etc.)
+- [ ] admin modus: evrything moderator has, plus: able to create categories and subcategories, able to pin and lock topics, able to delete posts
+- [ ] user modus: able to create topics, able to create posts, able to react to posts with emojis, able to upvote and downvote posts
+- [ ] Move functionality to create categories and subcategories from Dialog to Admin page, also add User Management to that Admin page
 - [ ] Add user profiles
 - [ ] Add notifications
 - [ ] Add search functionality
@@ -16,7 +20,7 @@ this app will be an internet forum. It will have a main page with categories. Ea
 - [ ] Add API
 - [ ] Add database
 
-# Postgres SB on QNAP DOcker:
+## Postgres SB on QNAP DOcker:
 ```aiignore
 docker run -d \
 --name forum-db \
@@ -28,7 +32,7 @@ docker run -d \
 postgres:18.1-bookworm
 ```
 
-# Getting Started
+## Getting Started
 
 To run this application:
 
@@ -37,7 +41,7 @@ bun install
 bun --bun run dev
 ```
 
-# Building For Production
+## Building For Production
 
 To build this application for production:
 
@@ -45,18 +49,12 @@ To build this application for production:
 bun --bun run build
 ```
 
-## Styling
+### Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
 
-## Setting up Convex
-
-- Set the `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT` environment variables in your `.env.local`. (Or run `npx convex init` to set them automatically.)
-- Run `npx convex dev` to start the Convex server.
-
-
-## T3Env
+### T3Env
 
 - You can use T3Env to add type safety to your environment variables.
 - Add Environment variables to the `src/env.mjs` file.
@@ -70,129 +68,6 @@ import { env } from "@/env";
 console.log(env.VITE_APP_TITLE);
 ```
 
-
-
-
-
-
-## Routing
-This project uses [TanStack Router](https://tanstack.com/router). The initial setup is a file based router. Which means that the routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add another a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/solid-router`.
-
-```tsx
-import { Link } from "@tanstack/solid-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/solid/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you use the `<Outlet />` component.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { Outlet, createRootRoute } from '@tanstack/solid-router'
-import { TanStackRouterDevtools } from '@tanstack/solid-router-devtools'
-
-import { Link } from "@tanstack/solid-router";
-
-export const Route = createRootRoute({
-  component: () => (
-    <>
-      <header>
-        <nav>
-          <Link to="/">Home</Link>
-          <Link to="/about">About</Link>
-        </nav>
-      </header>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
-})
-```
-
-The `<TanStackRouterDevtools />` component is not required so you can remove it if you don't want it in your layout.
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/solid/guide/routing-concepts#layouts).
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-const peopleRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/people",
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json() as Promise<{
-      results: {
-        name: string;
-      }[];
-    }>;
-  },
-  component: () => {
-    const data = peopleRoute.useLoaderData();
-    return (
-      <ul>
-        {data.results.map((person) => (
-          <li key={person.name}>{person.name}</li>
-        ))}
-      </ul>
-    );
-  },
-});
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/solid/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
-```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
-```
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-
-
-Ready to code?
 
 Here is Claude's plan:
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
@@ -351,7 +226,7 @@ apps/forum/
 
 Lurking mode: All GET routes are public (no auth check). POST/PUT/DELETE routes return 401 if no session. UI hides write actions for unauthenticated users but shows all content.
 
-Verify Phase 3: bun --bun run dev from root starts both API (4000) and forum (3001). Forum renders categories page. Auth flow works end-to-end.
+Verify Phase 3: bun --bun run dev from root starts both API (4000) and forum (3000). Forum renders categories page. Auth flow works end-to-end.
 
  ---
 Phase 4 — Database Migration + Seed
@@ -381,7 +256,7 @@ Dockerfile (multi-stage, adapted from stuff-to-watch)
 
 Stage 1 (deps):  oven/bun:1-alpine + pnpm install --frozen-lockfile
 Stage 2 (build): Copy deps + source, pnpm --filter @forum/forum-app build
-Stage 3 (runtime): oven/bun:1-alpine, copy .output only, EXPOSE 3001
+Stage 3 (runtime): oven/bun:1-alpine, copy .output only, EXPOSE 3000
 
 Reference Dockerfile: /Users/ramonvanraaij/Developer/_github.com/stuff-to-watch/Dockerfile
 
@@ -399,7 +274,7 @@ DB migrations in production
 
 Run from dev machine before deploying: POSTGRES_HOST=192.168.0.178 ... bun --bun run db:migrate
 
-Verify: docker build -t forum . succeeds. Container serves forum at :3001 with working API.
+Verify: docker build -t forum . succeeds. Container serves forum at :3000 with working API.
 
  ---
 Verification Summary
@@ -411,7 +286,7 @@ Verification Summary
 ├───────┼─────────────────────────────────────────────────────────────────┤
 │ 2     │ tsc -b passes, Hono starts, Better Auth sign-in returns session │
 ├───────┼─────────────────────────────────────────────────────────────────┤
-│ 3     │ Forum renders at :3001, Vite proxy works, auth flow complete    │
+│ 3     │ Forum renders at :3000, Vite proxy works, auth flow complete    │
 ├───────┼─────────────────────────────────────────────────────────────────┤
 │ 4     │ All tables in Postgres, seed data visible in Drizzle Studio     │
 ├───────┼─────────────────────────────────────────────────────────────────┤
