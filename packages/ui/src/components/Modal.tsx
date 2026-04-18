@@ -10,6 +10,27 @@ interface ModalProps {
 export function Modal(props: ParentProps<ModalProps>) {
   let dialogRef!: HTMLDialogElement;
 
+  const handleClose = () => {
+    props.onClose();
+  };
+
+  const handleBackdropClick = (event: MouseEvent) => {
+    if (event.target === dialogRef) {
+      handleClose();
+    }
+  };
+
+  const handleBackdropKeyDown = (event: KeyboardEvent) => {
+    if (event.target !== dialogRef) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleClose();
+    }
+  };
+
   createEffect(() => {
     if (props.open) {
       dialogRef?.showModal();
@@ -22,11 +43,9 @@ export function Modal(props: ParentProps<ModalProps>) {
     <dialog
       ref={dialogRef}
       class="modal"
-      onClose={props.onClose}
-      onClick={(e) => {
-        // Close when clicking the backdrop (outside modal-box)
-        if (e.target === dialogRef) props.onClose();
-      }}
+      onClose={handleClose}
+      onClick={handleBackdropClick}
+      onKeyDown={handleBackdropKeyDown}
     >
       <div class={`modal-box ${props.class ?? ""}`}>
         {props.title && (
@@ -34,7 +53,7 @@ export function Modal(props: ParentProps<ModalProps>) {
             <h3 class="text-lg font-bold">{props.title}</h3>
             <button
               class="btn btn-circle btn-ghost btn-sm"
-              onClick={props.onClose}
+              onClick={handleClose}
             >
               ✕
             </button>
