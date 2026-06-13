@@ -220,7 +220,27 @@ export const CategoryManagerDialog: Component<{
   // Mutation error state
   const [mutationError, setMutationError] = createSignal<string | null>(null);
 
+  // Record only successful server mutations. Editing form fields or canceling
+  // an action should not cause an unnecessary page reload when the dialog
+  // closes.
+  const [hasChanges, setHasChanges] = createSignal(false);
+
   // ── Handlers ─────────────────────────────────────────────
+
+  const closeDialog = () => {
+    const shouldReload = hasChanges();
+
+    // Reset before notifying the parent because closing the native dialog can
+    // emit another close event. This prevents scheduling duplicate reloads.
+    setHasChanges(false);
+    props.onClose();
+
+    // A full reload refreshes every route loader and shared navigation element,
+    // so renamed, added, or removed categories are immediately visible.
+    if (shouldReload) {
+      window.location.reload();
+    }
+  };
 
   const startEdit = (item: { id: string; name: string; slug: string }) => {
     setEditingId(item.id);
@@ -239,6 +259,7 @@ export const CategoryManagerDialog: Component<{
       });
       setEditingId(null);
       setMutationError(null);
+      setHasChanges(true);
       refetch();
     } catch (err) {
       setMutationError(err instanceof Error ? err.message : "Failed to save");
@@ -270,6 +291,7 @@ export const CategoryManagerDialog: Component<{
       setAddMode(null);
       setAddForm({ name: "", slug: "" });
       setMutationError(null);
+      setHasChanges(true);
       refetch();
     } catch (err) {
       setMutationError(err instanceof Error ? err.message : "Failed to add");
@@ -284,6 +306,7 @@ export const CategoryManagerDialog: Component<{
       await apiFetch(`/admin/${endpoint}/${id}`, { method: "DELETE" });
       setDeletingId(null);
       setMutationError(null);
+      setHasChanges(true);
       refetch();
     } catch (err) {
       setMutationError(err instanceof Error ? err.message : "Failed to delete");
@@ -308,7 +331,7 @@ export const CategoryManagerDialog: Component<{
   return (
     <Modal
       open={props.open}
-      onClose={props.onClose}
+      onClose={closeDialog}
       title="Manage Categories"
       class="max-w-2xl w-full"
     >
@@ -547,18 +570,20 @@ export const CategoryManagerDialog: Component<{
         </Show>
       </div>
 
-      <div class="flex items-center justify-end mt-4 pt-4 border-t border-base-200">
-        {/*<button class="btn btn-sm btn-ghost" onClick={props.onClose}>*/}
-        {/*  Close*/}
-        {/*</button>*/}
+      {/* Keep creation as the leading action and dismissal in the conventional
+          trailing position so the two controls are easy to distinguish. */}
+      <div class="mt-4 flex items-center justify-between border-t border-base-200 pt-4">
         <Show when={!data.loading}>
           <button
-            class="btn btn-sm btn-outline"
+            class="btn btn-info btn-sm"
             onClick={() => startAdd({ type: "category" })}
           >
             + Add Category
           </button>
         </Show>
+        <button class="btn btn-ghost btn-sm" onClick={closeDialog}>
+          Close
+        </button>
       </div>
     </Modal>
   );

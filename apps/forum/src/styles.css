@@ -1,12 +1,61 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/*
+ * Tailwind scans the application automatically, but shared workspace packages
+ * live outside the app directory. Include the UI package so classes used by
+ * components such as Modal generate their centering, backdrop, and padding
+ * styles in the forum stylesheet.
+ */
+@source "../../../packages/ui/src";
+
 /* Keep the document background subtle so forum cards remain the main focus. */
 body {
   min-height: 100vh;
   background-image:
     radial-gradient(circle at 12% 8%, color-mix(in oklab, var(--color-primary) 10%, transparent), transparent 30%),
     radial-gradient(circle at 88% 4%, color-mix(in oklab, var(--color-info) 10%, transparent), transparent 26%);
+}
+
+/*
+ * Animate category contents without measuring their height in JavaScript. The
+ * delayed visibility change lets the closing motion finish before the hidden
+ * panel is removed from rendering and pointer interaction.
+ */
+.category-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease-out,
+    visibility 0s linear 300ms;
+}
+
+.category-collapse[data-expanded="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.category-collapse-content {
+  min-height: 0;
+  overflow: hidden;
+  transform: translateY(-0.35rem);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.category-collapse[data-expanded="true"] .category-collapse-content {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-collapse,
+  .category-collapse-content {
+    transition: none;
+  }
 }
 
 /* Shared hero background used by category/subcategory/topic headers. */

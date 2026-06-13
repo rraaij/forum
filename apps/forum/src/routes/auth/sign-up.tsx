@@ -22,7 +22,7 @@ function SignUp() {
     await signUp.email(
       { name: name(), email: email(), password: password() },
       {
-        onSuccess: () => navigate("/"),
+        onSuccess: () => navigate({ to: "/" }),
         onError: (ctx) => {
           setError(ctx.error.message || "Sign up failed");
         },

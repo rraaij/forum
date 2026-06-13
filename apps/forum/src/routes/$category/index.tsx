@@ -3,10 +3,12 @@ import {
   Link,
   notFound,
   useParams,
+  useRouter,
 } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
 import { For, Show } from "solid-js";
-import ForumPageHeader from "@/components/forum-page-header";
+import { CreateTopicPanel } from "@/components/CreateTopicPanel";
+import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
 
 interface Subcategory {
@@ -49,7 +51,7 @@ const GRID_BADGE_STYLES = [
 ];
 
 const fetchCategory = createServerFn({ method: "GET" })
-  .inputValidator((slug: string) => slug)
+  .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
     const category = await apiFetch<Category>(`/categories/${slug}`);
 
@@ -90,7 +92,29 @@ export const Route = createFileRoute("/$category/")({
   },
   loader: ({ params }) => fetchCategory({ data: params.category }),
   component: CategoryPage,
+  // This route deliberately throws notFound() for invalid category-like paths,
+  // so provide a route-local fallback instead of TanStack's generic default.
+  notFoundComponent: CategoryNotFound,
 });
+
+function CategoryNotFound() {
+  return (
+    <section class="mx-auto max-w-2xl rounded-box border border-base-content/10 bg-base-100 p-6 text-center shadow-md">
+      <p class="text-sm font-bold uppercase tracking-wide text-info">
+        404 - Category not found
+      </p>
+      <h1 class="mt-2 text-2xl font-black">
+        This forum category does not exist.
+      </h1>
+      <p class="mt-3 text-base-content/65">
+        It may have been renamed or removed, or the address may be incorrect.
+      </p>
+      <Link to="/" class="btn btn-info btn-sm mt-6">
+        Back to the forum
+      </Link>
+    </section>
+  );
+}
 
 const formatTimestamp = (value: string | null | undefined) =>
   value
@@ -104,31 +128,17 @@ const formatTimestamp = (value: string | null | undefined) =>
     : "No activity yet";
 
 function CategoryPage() {
-  const { category: slug } = useParams({ from: "/$category/" });
+  // Keep the slug reactive because Solid Router returns route params through
+  // an accessor inside route components.
+  const params = useParams({ from: "/$category/" });
+  const router = useRouter();
+  const slug = () => params().category;
   const loaderData = Route.useLoaderData();
   const category = () => loaderData().category;
   const meta = () => loaderData().meta;
 
   return (
-    <div class="space-y-6">
-      <ForumPageHeader
-        forumCode={category().slug.toUpperCase()}
-        title={category().name}
-        description={
-          category().description ??
-          "Browse subforums, discover active discussions, and jump straight into trending topics."
-        }
-        stats={[
-          {
-            label: "subforums",
-            value: String(category().subcategories.length),
-          },
-        ]}
-        tags={category()
-          .subcategories.slice(0, 10)
-          .map((sub) => sub.slug.toUpperCase())}
-      />
-
+    <div class="space-y-2">
       <div class="breadcrumbs text-sm">
         <ul>
           <li>
@@ -151,7 +161,7 @@ function CategoryPage() {
               {(sub, index) => (
                 <Link
                   to="/$category/$sub"
-                  params={{ category: slug, sub: sub.slug }}
+                  params={{ category: slug(), sub: sub.slug }}
                   class={`badge h-8 min-w-12 border-none text-[11px] font-black tracking-wide text-white ${
                     GRID_BADGE_STYLES[index() % GRID_BADGE_STYLES.length]
                   }`}
@@ -162,6 +172,43 @@ function CategoryPage() {
               )}
             </For>
           </div>
+        </div>
+      </section>
+
+      <PageHeader
+        forumCode={category().slug.toUpperCase()}
+        title={category().name}
+        description={
+          category().description ??
+          "Browse subforums, discover active discussions, and jump straight into trending topics."
+        }
+        stats={[
+          {
+            label: "subforums",
+            value: String(category().subcategories.length),
+          },
+        ]}
+        tags={category()
+          .subcategories.slice(0, 10)
+          .map((sub) => sub.slug.toUpperCase())}
+      />
+
+      <section class="card border border-base-content/10 bg-base-100 shadow-md">
+        <div class="card-body gap-3">
+          <div>
+            <h2 class="text-lg font-bold">Start a category topic</h2>
+            <p class="text-sm text-base-content/60">
+              Create a discussion directly in {category().name}.
+            </p>
+          </div>
+          <CreateTopicPanel
+            parent={{ categoryId: category().id }}
+            onCreated={async () => {
+              // Refresh category data immediately after a direct topic is
+              // created. The shared panel provides the success confirmation.
+              await router.invalidate();
+            }}
+          />
         </div>
       </section>
 
@@ -185,7 +232,7 @@ function CategoryPage() {
                       <td>
                         <Link
                           to="/$category/$sub"
-                          params={{ category: slug, sub: sub.slug }}
+                          params={{ category: slug(), sub: sub.slug }}
                           class="text-base font-semibold text-info hover:underline"
                         >
                           <Show when={category().icon}>
@@ -220,7 +267,7 @@ function CategoryPage() {
           {(sub) => (
             <Link
               to="/$category/$sub"
-              params={{ category: slug, sub: sub.slug }}
+              params={{ category: slug(), sub: sub.slug }}
               class="card border border-base-content/10 bg-base-100 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-lg"
             >
               <div class="card-body p-4">

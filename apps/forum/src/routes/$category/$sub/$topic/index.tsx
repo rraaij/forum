@@ -7,7 +7,7 @@ import {
 } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
 import { createMemo, createSignal, For, Show } from "solid-js";
-import ForumPageHeader from "@/components/forum-page-header";
+import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
 
@@ -36,7 +36,7 @@ interface Topic {
 
 // Resolves the topic ID from slugs, then fetches full topic data.
 const fetchTopic = createServerFn({ method: "GET" })
-  .inputValidator(
+  .validator(
     (params: { categorySlug: string; subSlug: string; topicSlug: string }) =>
       params,
   )
@@ -57,7 +57,7 @@ const fetchTopic = createServerFn({ method: "GET" })
   });
 
 const postReply = createServerFn({ method: "POST" })
-  .inputValidator((data: { topicId: string; content: string }) => data)
+  .validator((data: { topicId: string; content: string }) => data)
   .handler(async ({ data }) => {
     return await apiFetch("/posts", {
       method: "POST",
@@ -78,6 +78,8 @@ export const Route = createFileRoute("/$category/$sub/$topic/")({
 });
 
 function TopicPage() {
+  // Route params are reactive in Solid components, so read them by invoking
+  // the accessor instead of treating the accessor itself as the params object.
   const params = useParams({ from: "/$category/$sub/$topic/" });
   const router = useRouter();
   const session = useSession();
@@ -117,9 +119,9 @@ function TopicPage() {
   };
 
   return (
-    <div class="space-y-6">
-      <ForumPageHeader
-        forumCode={params.sub?.toUpperCase() ?? ""}
+    <div class="space-y-2">
+      <PageHeader
+        forumCode={params().sub?.toUpperCase() ?? ""}
         title={topic().title}
         description="Read every response in this topic, react to key posts, and add your own contribution below."
         stats={[
@@ -128,8 +130,8 @@ function TopicPage() {
           { label: "replies", value: String(replyCount()) },
         ]}
         tags={[
-          params.category?.toUpperCase() ?? "",
-          params.sub?.toUpperCase() ?? "",
+          params().category?.toUpperCase() ?? "",
+          params().sub?.toUpperCase() ?? "",
           topic().isPinned ? "PINNED" : "DISCUSSION",
           topic().isLocked ? "LOCKED" : "OPEN",
         ]}
@@ -141,16 +143,16 @@ function TopicPage() {
             <Link to="/">Forum</Link>
           </li>
           <li>
-            <Link to="/$category" params={{ category: params.category }}>
-              {params.category}
+            <Link to="/$category" params={{ category: params().category }}>
+              {params().category}
             </Link>
           </li>
           <li>
             <Link
               to="/$category/$sub"
-              params={{ category: params.category, sub: params.sub }}
+              params={{ category: params().category, sub: params().sub }}
             >
-              {params.sub}
+              {params().sub}
             </Link>
           </li>
           <li>{topic().title}</li>

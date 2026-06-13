@@ -13,14 +13,14 @@ interface ForumPageHeaderProps {
   tags?: string[];
 }
 
-export default function ForumPageHeader(props: ForumPageHeaderProps) {
+export default function PageHeader(props: ForumPageHeaderProps) {
   return (
     // This hero is intentionally "forum-old-school": heavy overlay, condensed meta row, and section chips.
     <section class="forum-page-header card overflow-hidden border border-base-content/10 bg-base-100 shadow-xl">
       {/* Layered background gives a similar mood to the supplied page-header reference. */}
       <div class="forum-page-header-bg relative p-6 sm:p-8">
         {/* Darkening overlay keeps text readable in both light and dark themes. */}
-        <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/25" />
+        <div class="absolute inset-0 bg-linear-to-r from-black/75 via-black/55 to-black/25" />
 
         {/* This content layer stays above the background and overlay. */}
         <div class="relative z-10 flex flex-col gap-4 text-slate-100">

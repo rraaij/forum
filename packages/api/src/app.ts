@@ -1,7 +1,7 @@
+import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { sql } from "drizzle-orm";
 import { getDb, getDbTarget, getDbUnavailableMessage } from "./db";
 import { sessionMiddleware } from "./middleware/session";
 import { mountRoutes } from "./routes";
