@@ -1,7 +1,7 @@
 {
   "name": "forum",
   "private": true,
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -15,8 +15,8 @@
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.12",
-    "turbo": "^2.9.6",
+    "@biomejs/biome": "^2.5.0",
+    "turbo": "^2.9.18",
     "typescript": "^6.0.3"
   },
   "workspaces": [

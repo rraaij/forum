@@ -6,7 +6,7 @@ export const Route = createFileRoute("/auth/sign-up")({
   component: SignUp,
 });
 
-export default function SignUp() {
+function SignUp() {
   const navigate = useNavigate();
   const [name, setName] = createSignal("");
   const [email, setEmail] = createSignal("");

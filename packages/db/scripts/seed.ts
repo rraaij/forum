@@ -2,6 +2,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { categories, subcategories } from "../src";
 
+// Reuse the same POSTGRES_* variables as the API so seed data goes into the
+// configured database, whether that is the NAS server or a local override.
 const connectionString = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT || 5432}/${process.env.POSTGRES_DB}`;
 
 const client = postgres(connectionString, { max: 1 });
@@ -10,7 +12,8 @@ const db = drizzle(client);
 async function seed() {
   console.log("Seeding database...");
 
-  // Insert categories
+  // Insert the top-level forum sections first because subcategories reference
+  // these IDs through their category_id foreign key.
   const [general, tech, meta] = await db
     .insert(categories)
     .values([
@@ -38,7 +41,9 @@ async function seed() {
     ])
     .returning();
 
-  // Insert subcategories
+  // Insert the initial subforums. These rows are intentionally simple seed data
+  // that make the home page useful during development without requiring admin
+  // setup through the UI.
   await db.insert(subcategories).values([
     // General Discussion
     {

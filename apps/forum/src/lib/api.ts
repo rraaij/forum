@@ -20,8 +20,13 @@ export async function apiFetch<T>(
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error(error.error || res.statusText);
+    const payload = await res.json().catch(() => ({ error: res.statusText }));
+    const message =
+      typeof payload.error === "string" ? payload.error : res.statusText;
+
+    // Include the HTTP status because SSR route errors otherwise flatten API
+    // failures into a vague "Internal Server Error" page.
+    throw new Error(`${res.status} ${res.statusText}: ${message}`);
   }
 
   return res.json();

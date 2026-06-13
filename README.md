@@ -41,6 +41,18 @@ bun install
 bun --bun run dev
 ```
 
+Before starting the app, make sure the PostgreSQL server configured in `.env`
+is running and reachable. The default example points to the QNAP/NAS database at
+`192.168.0.178:5433`.
+
+If the forum cannot reach PostgreSQL, the API returns `503` with
+`code: "DATABASE_UNAVAILABLE"` and the configured database target. You can check
+the database connection directly with:
+
+```bash
+curl http://localhost:4000/health/db
+```
+
 ## Building For Production
 
 To build this application for production:

@@ -38,8 +38,41 @@ const TOP_SECTIONS = [
 
 export const Route = createRootRoute({
   component: RootComponent,
+  errorComponent: RootErrorComponent,
   shellComponent: RootDocument,
 });
+
+function getErrorMessage(error: unknown) {
+  // Route loaders can throw Error objects or arbitrary values depending on
+  // where the failure came from. Normalize that here so infrastructure issues,
+  // especially database connectivity, are visible on the page immediately.
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return typeof error === "string" ? error : "Unexpected application error";
+}
+
+function RootErrorComponent({ error }: { error: unknown }) {
+  return (
+    <div class="min-h-screen bg-base-300/30 px-4 py-10">
+      <div class="mx-auto max-w-3xl rounded-box border border-error/30 bg-base-100 p-6 shadow">
+        <p class="mb-2 text-sm font-semibold uppercase tracking-wide text-error">
+          Application error
+        </p>
+        <h1 class="mb-4 text-2xl font-bold">The forum could not load.</h1>
+        <p class="whitespace-pre-wrap text-base-content/80">
+          {getErrorMessage(error)}
+        </p>
+        <p class="mt-4 text-sm text-base-content/60">
+          If this mentions <code>DATABASE_UNAVAILABLE</code> or a database
+          target, check that the PostgreSQL server from <code>.env</code> is
+          running and reachable.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function RootDocument({ children }: { children: JSX.Element }) {
   return (

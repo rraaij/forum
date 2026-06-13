@@ -12,17 +12,17 @@
     "@forum/api": "workspace:*",
     "@forum/db": "workspace:*",
     "@forum/ui": "workspace:*",
-    "@tanstack/solid-router": "^1.168.20",
-    "@tanstack/solid-start": "^1.167.37",
-    "better-auth": "^1.6.5",
-    "solid-js": "^1.9.12"
+    "@tanstack/solid-router": "^1.170.15",
+    "@tanstack/solid-start": "^1.168.25",
+    "better-auth": "^1.6.18",
+    "solid-js": "^1.9.13"
   },
   "devDependencies": {
     "@forum/config": "workspace:*",
-    "@tailwindcss/vite": "^4.2.2",
-    "daisyui": "^5.5.19",
-    "tailwindcss": "^4.2.2",
-    "vite": "^8.0.8",
+    "@tailwindcss/vite": "^4.3.1",
+    "daisyui": "^5.5.23",
+    "tailwindcss": "^4.3.1",
+    "vite": "^8.0.16",
     "vite-plugin-solid": "^2.11.12"
   }
 }
