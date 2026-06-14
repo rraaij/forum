@@ -56,19 +56,6 @@ export default function PageHeader(props: ForumPageHeaderProps) {
             </p>
           </div>
 
-          {/* Tag row works as a visual echo of the colorful forum-grid from the inspiration. */}
-          <Show when={props.tags?.length}>
-            <div class="flex flex-wrap gap-2 pt-1">
-              <For each={props.tags}>
-                {(tag) => (
-                  <span class="badge badge-outline border-slate-200/40 bg-black/25 px-3 py-3 text-[11px] font-bold tracking-wide text-slate-50">
-                    {tag}
-                  </span>
-                )}
-              </For>
-            </div>
-          </Show>
-
           <Show when={props.createTopic}>
             {(createTopic) => (
               // The creation action sits at the bottom of the board header so

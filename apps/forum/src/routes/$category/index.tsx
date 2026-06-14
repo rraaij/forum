@@ -9,8 +9,8 @@ import {
 import { createServerFn } from "@tanstack/solid-start";
 import { For, Show } from "solid-js";
 import ForumGrid from "@/components/ForumGrid";
-import OpenTopics from "@/components/OpenTopics";
 import PageHeader from "@/components/PageHeader.tsx";
+import TopicsList from "@/components/TopicsList.tsx";
 import { apiFetch } from "@/lib/api";
 import type { Category, SubcategoryMeta, TopicSummary } from "@/types/forum";
 
@@ -153,9 +153,6 @@ function CategoryPage() {
             ),
           },
         ]}
-        tags={category()
-          .subcategories.slice(0, 10)
-          .map((sub) => sub.slug.toUpperCase())}
         createTopic={{
           parent: { categoryId: category().id },
           onCreated: async (topic) => {
@@ -223,7 +220,7 @@ function CategoryPage() {
         </div>
       </section>
 
-      <OpenTopics topics={topics()} categorySlug={slug()} />
+      <TopicsList topics={topics()} categorySlug={slug()} />
     </div>
   );
 }

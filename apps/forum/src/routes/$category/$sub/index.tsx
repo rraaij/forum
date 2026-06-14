@@ -6,10 +6,9 @@ import {
   useRouter,
 } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
-import { createMemo, For, Show } from "solid-js";
 import ForumGrid from "@/components/ForumGrid.tsx";
-import OpenTopics from "@/components/OpenTopics";
 import PageHeader from "@/components/PageHeader.tsx";
+import TopicsList from "@/components/TopicsList.tsx";
 import { apiFetch } from "@/lib/api";
 import type { Category, SubcategoryMeta, TopicSummary } from "@/types/forum";
 
@@ -81,17 +80,6 @@ export const Route = createFileRoute("/$category/$sub/")({
   component: SubcategoryPage,
 });
 
-const formatDateTime = (value: string | null | undefined) =>
-  value
-    ? new Date(value).toLocaleString(undefined, {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "No activity yet";
-
 function SubcategoryPage() {
   // Solid Router exposes component params as a reactive accessor. Calling it
   // keeps every link synchronized if this component is reused for new params.
@@ -103,9 +91,6 @@ function SubcategoryPage() {
   const subcategory = () => loaderData().subcategory;
   const topics = () => loaderData().topics;
 
-  const pinnedTopics = createMemo(() =>
-    topics().filter((topic) => topic.isPinned),
-  );
   const handleTopicCreated = async (topic: { slug: string }) => {
     // Refresh the route data before navigating so returning to this board shows
     // the new topic without requiring a manual reload.
@@ -157,85 +142,13 @@ function SubcategoryPage() {
             ),
           },
         ]}
-        tags={category()
-          .subcategories.slice(0, 12)
-          .map((item) => item.slug.toUpperCase())}
         createTopic={{
           parent: { subcategoryId: subcategory().id },
           onCreated: handleTopicCreated,
         }}
       />
 
-      <section class="card border border-base-content/10 bg-base-100 shadow-md">
-        <div class="card-body gap-4">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-2">
-              <button class="btn btn-sm btn-neutral">custom menu</button>
-              <button class="btn btn-sm btn-ghost">abonnement</button>
-              <button class="btn btn-sm btn-ghost">actieve topics</button>
-              <button class="btn btn-sm btn-ghost">nieuwe topics</button>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <select class="select select-sm w-44">
-                <option>Meer / minder topics</option>
-                <option>Nieuwste eerst</option>
-                <option>Meeste reacties</option>
-                <option>Meeste views</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <Show when={pinnedTopics().length > 0}>
-        <section class="card overflow-hidden border border-base-content/10 bg-base-100 shadow-md">
-          <div class="overflow-x-auto">
-            <table class="table table-zebra">
-              <thead class="bg-base-200/70 text-[11px] uppercase tracking-wide">
-                <tr>
-                  <th>Sticky topics</th>
-                  <th>topicstarter</th>
-                  <th class="text-right">reacties</th>
-                  <th class="text-right">views</th>
-                  <th>laatste reactie</th>
-                </tr>
-              </thead>
-              <tbody>
-                <For each={pinnedTopics()}>
-                  {(topic) => (
-                    <tr>
-                      <td>
-                        <Link
-                          to="/$category/$sub/$topic"
-                          params={{
-                            category: params().category,
-                            sub: params().sub,
-                            topic: topic.slug,
-                          }}
-                          class="font-bold text-info hover:underline"
-                        >
-                          <span class="badge badge-secondary mr-2">Pinned</span>
-                          {topic.title}
-                        </Link>
-                      </td>
-                      <td>{topic.authorName ?? "Unknown"}</td>
-                      <td class="text-right">
-                        {Math.max(0, topic.postCount - 1)}
-                      </td>
-                      <td class="text-right">{topic.viewCount}</td>
-                      <td class="text-sm text-base-content/70">
-                        {formatDateTime(topic.lastPostAt ?? topic.createdAt)}
-                      </td>
-                    </tr>
-                  )}
-                </For>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </Show>
-
-      <OpenTopics
+      <TopicsList
         topics={topics()}
         categorySlug={params().category}
         subcategorySlug={params().sub}

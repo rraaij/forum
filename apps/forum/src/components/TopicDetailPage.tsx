@@ -132,14 +132,6 @@ export default function TopicDetailPage(props: TopicDetailPageProps) {
             { label: "views", value: String(props.topic.viewCount) },
             { label: "replies", value: String(replyCount()) },
           ]}
-          tags={[
-            props.categorySlug.toUpperCase(),
-            ...(props.subcategorySlug
-              ? [props.subcategorySlug.toUpperCase()]
-              : []),
-            props.topic.isPinned ? "PINNED" : "DISCUSSION",
-            props.topic.isLocked ? "LOCKED" : "OPEN",
-          ]}
         />
       </div>
 
