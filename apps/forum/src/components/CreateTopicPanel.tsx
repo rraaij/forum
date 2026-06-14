@@ -1,26 +1,12 @@
 import { createSignal, Show } from "solid-js";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
+import type { CreatedTopic, TopicParent } from "@/types/forum";
 
-interface CreatedTopic {
-  id: string;
-  slug: string;
-}
-
-type TopicParent =
-  | {
-      categoryId: string;
-      subcategoryId?: never;
-    }
-  | {
-      categoryId?: never;
-      subcategoryId: string;
-    };
-
-interface CreateTopicPanelProps {
+type CreateTopicPanelProps = {
   parent: TopicParent;
   onCreated: (topic: CreatedTopic) => void | Promise<void>;
-}
+};
 
 export function CreateTopicPanel(props: CreateTopicPanelProps) {
   const session = useSession();

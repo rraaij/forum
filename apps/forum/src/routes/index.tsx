@@ -2,25 +2,7 @@ import { createFileRoute, Link } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
 import { createSignal, For, Show } from "solid-js";
 import { apiFetch } from "@/lib/api";
-
-interface Subcategory {
-  id: string;
-  parentSubcategoryId: string | null;
-  name: string;
-  slug: string;
-  description: string | null;
-  topicCount: number;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  topicCount: number;
-  subcategories: Subcategory[];
-}
+import type { Category } from "@/types/forum";
 
 const fetchCategories = createServerFn({ method: "GET" }).handler(async () => {
   return await apiFetch<Category[]>("/categories");

@@ -2,31 +2,12 @@ import { Modal } from "@forum/ui";
 import type { Component } from "solid-js";
 import { createResource, createSignal, For, Show } from "solid-js";
 import { apiFetch } from "@/lib/api";
+import type { Category } from "@/types/forum";
 
-interface Subcategory {
-  id: string;
-  categoryId: string;
-  parentSubcategoryId: string | null;
+type InlineForm = {
   name: string;
   slug: string;
-  description: string | null;
-  sortOrder: number;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  sortOrder: number;
-  subcategories: Subcategory[];
-}
-
-interface InlineForm {
-  name: string;
-  slug: string;
-}
+};
 
 function toSlug(name: string): string {
   return name

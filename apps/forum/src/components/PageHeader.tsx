@@ -1,17 +1,17 @@
 import { For, Show } from "solid-js";
 
-interface HeaderStat {
+type HeaderStat = {
   label: string;
   value: string;
-}
+};
 
-interface ForumPageHeaderProps {
+type ForumPageHeaderProps = {
   forumCode: string;
   title: string;
   description: string;
   stats?: HeaderStat[];
   tags?: string[];
-}
+};
 
 export default function PageHeader(props: ForumPageHeaderProps) {
   return (

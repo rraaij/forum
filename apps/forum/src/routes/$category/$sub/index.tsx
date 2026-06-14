@@ -8,52 +8,10 @@ import {
 import { createServerFn } from "@tanstack/solid-start";
 import { createMemo, For, Show } from "solid-js";
 import { CreateTopicPanel } from "@/components/CreateTopicPanel";
+import ForumGrid from "@/components/ForumGrid.tsx";
 import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
-
-interface Topic {
-  id: string;
-  title: string;
-  slug: string;
-  isPinned: boolean;
-  isLocked: boolean;
-  viewCount: number;
-  postCount: number;
-  lastPostAt: string | null;
-  createdAt: string;
-  authorId: string;
-  authorName: string | null;
-}
-
-interface Subcategory {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  subcategories: Subcategory[];
-}
-
-interface SubcategoryMeta {
-  topicCount: number;
-  replyCount: number;
-  lastActivityAt: string | null;
-}
-
-const GRID_BADGE_STYLES = [
-  "badge-error",
-  "badge-warning",
-  "badge-success",
-  "badge-info",
-  "badge-primary",
-  "badge-secondary",
-  "badge-accent",
-];
+import type { Category, SubcategoryMeta, TopicSummary } from "@/types/forum";
 
 // Fetch all data needed for the subcategory page in a single server call.
 const fetchSubcategoryPage = createServerFn({ method: "GET" })
@@ -70,7 +28,7 @@ const fetchSubcategoryPage = createServerFn({ method: "GET" })
     // Fetch all sibling topics in parallel (includes current sub).
     const allTopicsResults = await Promise.all(
       category.subcategories.map(async (sub) => {
-        const subTopics = await apiFetch<Topic[]>(
+        const subTopics = await apiFetch<TopicSummary[]>(
           `/topics?subcategoryId=${sub.id}`,
         );
         const replyCount = subTopics.reduce(
@@ -183,27 +141,7 @@ function SubcategoryPage() {
         </ul>
       </div>
 
-      <section class="card border border-base-content/10 bg-base-100 shadow-md">
-        <div class="card-body gap-4">
-          <h2 class="text-lg font-bold uppercase tracking-wide">Forumgrid</h2>
-          <div class="flex flex-wrap gap-2">
-            <For each={category().subcategories}>
-              {(item, index) => (
-                <Link
-                  to="/$category/$sub"
-                  params={{ category: params().category, sub: item.slug }}
-                  class={`badge h-8 min-w-12 border-none text-[11px] font-black tracking-wide text-white ${
-                    GRID_BADGE_STYLES[index() % GRID_BADGE_STYLES.length]
-                  }`}
-                  title={item.name}
-                >
-                  {item.slug.slice(0, 4).toUpperCase()}
-                </Link>
-              )}
-            </For>
-          </div>
-        </div>
-      </section>
+      <ForumGrid category={category()} />
 
       <PageHeader
         forumCode={subcategory().slug.toUpperCase()}

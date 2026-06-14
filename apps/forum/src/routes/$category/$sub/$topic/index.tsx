@@ -10,29 +10,7 @@ import { createMemo, createSignal, For, Show } from "solid-js";
 import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
-
-interface Post {
-  id: string;
-  content: string;
-  isDeleted: boolean;
-  editedAt: string | null;
-  createdAt: string;
-  authorId: string;
-  authorName: string | null;
-  authorImage: string | null;
-}
-
-interface Topic {
-  id: string;
-  title: string;
-  slug: string;
-  isPinned: boolean;
-  isLocked: boolean;
-  viewCount: number;
-  postCount: number;
-  createdAt: string;
-  posts: Post[];
-}
+import type { Category, TopicDetail, TopicSummary } from "@/types/forum";
 
 // Resolves the topic ID from slugs, then fetches full topic data.
 const fetchTopic = createServerFn({ method: "GET" })
@@ -41,19 +19,19 @@ const fetchTopic = createServerFn({ method: "GET" })
       params,
   )
   .handler(async ({ data }) => {
-    const category = await apiFetch<{
-      subcategories: { id: string; slug: string }[];
-    }>(`/categories/${data.categorySlug}`);
+    const category = await apiFetch<Category>(
+      `/categories/${data.categorySlug}`,
+    );
     const sub = category.subcategories.find((s) => s.slug === data.subSlug);
     if (!sub) throw new Error("Subcategory not found");
 
-    const topics = await apiFetch<{ id: string; slug: string }[]>(
+    const topics = await apiFetch<TopicSummary[]>(
       `/topics?subcategoryId=${sub.id}`,
     );
     const t = topics.find((topicItem) => topicItem.slug === data.topicSlug);
     if (!t) throw new Error("Topic not found");
 
-    return apiFetch<Topic>(`/topics/${t.id}`);
+    return apiFetch<TopicDetail>(`/topics/${t.id}`);
   });
 
 const postReply = createServerFn({ method: "POST" })
