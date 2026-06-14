@@ -6,6 +6,7 @@ import type { CreatedTopic, TopicParent } from "@/types/forum";
 type CreateTopicPanelProps = {
   parent: TopicParent;
   onCreated: (topic: CreatedTopic) => void | Promise<void>;
+  class?: string;
 };
 
 export function CreateTopicPanel(props: CreateTopicPanelProps) {
@@ -75,7 +76,9 @@ export function CreateTopicPanel(props: CreateTopicPanelProps) {
 
   return (
     <Show when={user()}>
-      <div class="space-y-3">
+      {/* Consumers can add container styling, such as PageHeader's divider,
+          without rendering an empty shell when no user is signed in. */}
+      <div class={`space-y-3 ${props.class ?? ""}`}>
         <div class="flex justify-end">
           <button
             type="button"

@@ -2,13 +2,14 @@ import {
   createFileRoute,
   Link,
   notFound,
+  useNavigate,
   useParams,
   useRouter,
 } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
 import { For, Show } from "solid-js";
-import { CreateTopicPanel } from "@/components/CreateTopicPanel";
 import ForumGrid from "@/components/ForumGrid";
+import OpenTopics from "@/components/OpenTopics";
 import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
 import type { Category, SubcategoryMeta, TopicSummary } from "@/types/forum";
@@ -18,33 +19,47 @@ const fetchCategory = createServerFn({ method: "GET" })
   .handler(async ({ data: slug }) => {
     const category = await apiFetch<Category>(`/categories/${slug}`);
 
-    const metaEntries = await Promise.all(
-      category.subcategories.map(async (sub) => {
-        const topics = await apiFetch<TopicSummary[]>(
-          `/topics?subcategoryId=${sub.id}`,
-        );
-        const replyCount = topics.reduce(
-          (sum, topic) => sum + Math.max(0, topic.postCount - 1),
-          0,
-        );
-        const lastActivityAt = topics.reduce<string | null>((latest, topic) => {
-          const candidate = topic.lastPostAt ?? topic.createdAt;
-          if (!latest) return candidate;
-          return new Date(candidate) > new Date(latest) ? candidate : latest;
-        }, null);
-        return [
-          sub.id,
-          {
-            topicCount: topics.length,
-            replyCount,
-            lastActivityAt,
-          } satisfies SubcategoryMeta,
-        ] as const;
-      }),
-    );
+    /*
+     * Direct category topics and subcategory metadata are independent reads.
+     * Fetch them together so adding the new topic table does not introduce a
+     * second sequential wait to the category page loader.
+     */
+    const [topics, metaEntries] = await Promise.all([
+      apiFetch<TopicSummary[]>(`/topics?categoryId=${category.id}`),
+      Promise.all(
+        category.subcategories.map(async (sub) => {
+          const subTopics = await apiFetch<TopicSummary[]>(
+            `/topics?subcategoryId=${sub.id}`,
+          );
+          const replyCount = subTopics.reduce(
+            (sum, topic) => sum + Math.max(0, topic.postCount - 1),
+            0,
+          );
+          const lastActivityAt = subTopics.reduce<string | null>(
+            (latest, topic) => {
+              const candidate = topic.lastPostAt ?? topic.createdAt;
+              if (!latest) return candidate;
+              return new Date(candidate) > new Date(latest)
+                ? candidate
+                : latest;
+            },
+            null,
+          );
+          return [
+            sub.id,
+            {
+              topicCount: subTopics.length,
+              replyCount,
+              lastActivityAt,
+            } satisfies SubcategoryMeta,
+          ] as const;
+        }),
+      ),
+    ]);
 
     return {
       category,
+      topics,
       meta: Object.fromEntries(metaEntries) as Record<string, SubcategoryMeta>,
     };
   });
@@ -95,9 +110,11 @@ function CategoryPage() {
   // an accessor inside route components.
   const params = useParams({ from: "/$category/" });
   const router = useRouter();
+  const navigate = useNavigate();
   const slug = () => params().category;
   const loaderData = Route.useLoaderData();
   const category = () => loaderData().category;
+  const topics = () => loaderData().topics;
   const meta = () => loaderData().meta;
 
   return (
@@ -125,30 +142,36 @@ function CategoryPage() {
             label: "subforums",
             value: String(category().subcategories.length),
           },
+          { label: "topics", value: String(topics().length) },
+          {
+            label: "replies",
+            value: String(
+              topics().reduce(
+                (sum, topic) => sum + Math.max(0, topic.postCount - 1),
+                0,
+              ),
+            ),
+          },
         ]}
         tags={category()
           .subcategories.slice(0, 10)
           .map((sub) => sub.slug.toUpperCase())}
+        createTopic={{
+          parent: { categoryId: category().id },
+          onCreated: async (topic) => {
+            // Refresh the table first, then open the newly-created direct
+            // category topic using its dedicated detail route.
+            await router.invalidate();
+            await navigate({
+              to: "/$category/topics/$topic",
+              params: {
+                category: slug(),
+                topic: topic.slug,
+              },
+            });
+          },
+        }}
       />
-
-      <section class="card border border-base-content/10 bg-base-100 shadow-md">
-        <div class="card-body gap-3">
-          <div>
-            <h2 class="text-lg font-bold">Start a category topic</h2>
-            <p class="text-sm text-base-content/60">
-              Create a discussion directly in {category().name}.
-            </p>
-          </div>
-          <CreateTopicPanel
-            parent={{ categoryId: category().id }}
-            onCreated={async () => {
-              // Refresh category data immediately after a direct topic is
-              // created. The shared panel provides the success confirmation.
-              await router.invalidate();
-            }}
-          />
-        </div>
-      </section>
 
       <section class="card overflow-hidden border border-base-content/10 bg-base-100 shadow-md">
         <div class="overflow-x-auto">
@@ -200,28 +223,7 @@ function CategoryPage() {
         </div>
       </section>
 
-      <section class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <For each={category().subcategories.slice(0, 6)}>
-          {(sub) => (
-            <Link
-              to="/$category/$sub"
-              params={{ category: slug(), sub: sub.slug }}
-              class="card border border-base-content/10 bg-base-100 shadow-sm transition-transform hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <div class="card-body p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wide text-base-content/60">
-                  {sub.slug.toUpperCase()}
-                </p>
-                <h3 class="text-base font-bold">{sub.name}</h3>
-                <p class="text-sm text-base-content/60">
-                  {sub.description ??
-                    "Open this board to read and join active discussions."}
-                </p>
-              </div>
-            </Link>
-          )}
-        </For>
-      </section>
+      <OpenTopics topics={topics()} categorySlug={slug()} />
     </div>
   );
 }

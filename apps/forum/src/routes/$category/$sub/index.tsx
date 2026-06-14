@@ -7,8 +7,8 @@ import {
 } from "@tanstack/solid-router";
 import { createServerFn } from "@tanstack/solid-start";
 import { createMemo, For, Show } from "solid-js";
-import { CreateTopicPanel } from "@/components/CreateTopicPanel";
 import ForumGrid from "@/components/ForumGrid.tsx";
+import OpenTopics from "@/components/OpenTopics";
 import PageHeader from "@/components/PageHeader.tsx";
 import { apiFetch } from "@/lib/api";
 import type { Category, SubcategoryMeta, TopicSummary } from "@/types/forum";
@@ -102,15 +102,10 @@ function SubcategoryPage() {
   const category = () => loaderData().category;
   const subcategory = () => loaderData().subcategory;
   const topics = () => loaderData().topics;
-  const subcategoryMeta = () => loaderData().subcategoryMeta;
 
   const pinnedTopics = createMemo(() =>
     topics().filter((topic) => topic.isPinned),
   );
-  const openTopics = createMemo(() =>
-    topics().filter((topic) => !topic.isPinned),
-  );
-
   const handleTopicCreated = async (topic: { slug: string }) => {
     // Refresh the route data before navigating so returning to this board shows
     // the new topic without requiring a manual reload.
@@ -165,6 +160,10 @@ function SubcategoryPage() {
         tags={category()
           .subcategories.slice(0, 12)
           .map((item) => item.slug.toUpperCase())}
+        createTopic={{
+          parent: { subcategoryId: subcategory().id },
+          onCreated: handleTopicCreated,
+        }}
       />
 
       <section class="card border border-base-content/10 bg-base-100 shadow-md">
@@ -185,63 +184,6 @@ function SubcategoryPage() {
               </select>
             </div>
           </div>
-
-          {/* Keep the editor outside the compact toolbar groups so its title
-              and post fields can use the full width of the card. */}
-          <CreateTopicPanel
-            parent={{ subcategoryId: subcategory().id }}
-            onCreated={handleTopicCreated}
-          />
-        </div>
-      </section>
-
-      <section class="card overflow-hidden border border-base-content/10 bg-base-100 shadow-md">
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead class="bg-base-200/70 text-[11px] uppercase tracking-wide">
-              <tr>
-                <th>Subforums binnen {category().name}</th>
-                <th class="text-right">Topics</th>
-                <th class="text-right">Reacties</th>
-                <th>Laatste reactie</th>
-              </tr>
-            </thead>
-            <tbody>
-              <For each={category().subcategories}>
-                {(item) => {
-                  const meta = () => subcategoryMeta()[item.id];
-                  return (
-                    <tr class="align-top">
-                      <td>
-                        <Link
-                          to="/$category/$sub"
-                          params={{
-                            category: params().category,
-                            sub: item.slug,
-                          }}
-                          class="text-base font-semibold text-info hover:underline"
-                        >
-                          {item.name}
-                        </Link>
-                        <Show when={item.description}>
-                          <p class="mt-1 text-sm text-base-content/60">
-                            {item.description}
-                          </p>
-                        </Show>
-                      </td>
-                      <td class="text-right font-semibold">
-                        {meta()?.topicCount ?? "…"}
-                      </td>
-                      <td class="text-right">{meta()?.replyCount ?? "…"}</td>
-                      <td class="text-sm text-base-content/70">
-                        {formatDateTime(meta()?.lastActivityAt)}
-                      </td>
-                    </tr>
-                  );
-                }}
-              </For>
-            </tbody>
-          </table>
         </div>
       </section>
 
@@ -293,65 +235,11 @@ function SubcategoryPage() {
         </section>
       </Show>
 
-      <section class="card overflow-hidden border border-base-content/10 bg-base-100 shadow-md">
-        <div class="overflow-x-auto">
-          <table class="table table-zebra">
-            <thead class="bg-base-200/70 text-[11px] uppercase tracking-wide">
-              <tr>
-                <th>Open topics</th>
-                <th>topicstarter</th>
-                <th class="text-right">reacties</th>
-                <th class="text-right">views</th>
-                <th>laatste reactie</th>
-              </tr>
-            </thead>
-            <tbody>
-              <For
-                each={openTopics()}
-                fallback={
-                  <tr>
-                    <td
-                      colspan="5"
-                      class="py-8 text-center text-base-content/60"
-                    >
-                      No topics yet. Start the first discussion in this board.
-                    </td>
-                  </tr>
-                }
-              >
-                {(topic) => (
-                  <tr>
-                    <td>
-                      <Link
-                        to="/$category/$sub/$topic"
-                        params={{
-                          category: params().category,
-                          sub: params().sub,
-                          topic: topic.slug,
-                        }}
-                        class="font-semibold text-info hover:underline"
-                      >
-                        <Show when={topic.isLocked}>
-                          <span class="badge badge-warning mr-2">Locked</span>
-                        </Show>
-                        {topic.title}
-                      </Link>
-                    </td>
-                    <td>{topic.authorName ?? "Unknown"}</td>
-                    <td class="text-right">
-                      {Math.max(0, topic.postCount - 1)}
-                    </td>
-                    <td class="text-right">{topic.viewCount}</td>
-                    <td class="text-sm text-base-content/70">
-                      {formatDateTime(topic.lastPostAt ?? topic.createdAt)}
-                    </td>
-                  </tr>
-                )}
-              </For>
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <OpenTopics
+        topics={topics()}
+        categorySlug={params().category}
+        subcategorySlug={params().sub}
+      />
     </div>
   );
 }

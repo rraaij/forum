@@ -1,4 +1,6 @@
 import { For, Show } from "solid-js";
+import { CreateTopicPanel } from "@/components/CreateTopicPanel";
+import type { CreatedTopic, TopicParent } from "@/types/forum";
 
 type HeaderStat = {
   label: string;
@@ -11,6 +13,10 @@ type ForumPageHeaderProps = {
   description: string;
   stats?: HeaderStat[];
   tags?: string[];
+  createTopic?: {
+    parent: TopicParent;
+    onCreated: (topic: CreatedTopic) => void | Promise<void>;
+  };
 };
 
 export default function PageHeader(props: ForumPageHeaderProps) {
@@ -61,6 +67,18 @@ export default function PageHeader(props: ForumPageHeaderProps) {
                 )}
               </For>
             </div>
+          </Show>
+
+          <Show when={props.createTopic}>
+            {(createTopic) => (
+              // The creation action sits at the bottom of the board header so
+              // its destination remains visually tied to the current board.
+              <CreateTopicPanel
+                parent={createTopic().parent}
+                onCreated={createTopic().onCreated}
+                class="border-t border-white/20 pt-4 text-base-content"
+              />
+            )}
           </Show>
         </div>
       </div>
