@@ -38,7 +38,7 @@ export default function ForumGrid(props: ForumGridProps) {
                 }`}
                 title={sub.name}
               >
-                {sub.slug.slice(0, 4).toUpperCase()}
+                {sub.abbreviation}
               </Link>
             )}
           </For>

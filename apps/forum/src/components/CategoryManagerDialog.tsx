@@ -1,12 +1,14 @@
 import { Modal } from "@forum/ui";
 import type { Component } from "solid-js";
-import { createResource, createSignal, For, Show } from "solid-js";
+import { createMemo, createResource, createSignal, For, Show } from "solid-js";
 import { apiFetch } from "@/lib/api";
 import type { Category } from "@/types/forum";
 
 type InlineForm = {
   name: string;
   slug: string;
+  abbreviation: string;
+  description: string;
 };
 
 function toSlug(name: string): string {
@@ -16,35 +18,88 @@ function toSlug(name: string): string {
     .replace(/^-|-$/g, "");
 }
 
+function toAbbreviation(name: string): string {
+  /*
+   * Category codes are displayed in compact header areas, so normalize the
+   * generated default to uppercase and enforce the database's five-character
+   * limit before the value ever reaches the API.
+   */
+  return name.trimStart().slice(0, 5).toUpperCase();
+}
+
 // ── Inline edit form ──────────────────────────────────────
 
 function EditForm(props: {
   form: InlineForm;
   onNameInput: (v: string) => void;
   onSlugInput: (v: string) => void;
+  onAbbreviationInput: (v: string) => void;
+  onDescriptionInput: (v: string) => void;
   onSave: () => void;
   onCancel: () => void;
 }) {
   return (
-    <div class="flex gap-2 items-center flex-1">
-      <input
-        class="input input-sm input-bordered flex-1"
-        value={props.form.name}
-        onInput={(e) => props.onNameInput(e.currentTarget.value)}
-        placeholder="Name"
-      />
-      <input
-        class="input input-sm input-bordered w-32"
-        value={props.form.slug}
-        onInput={(e) => props.onSlugInput(e.currentTarget.value)}
-        placeholder="slug"
-      />
-      <button class="btn btn-sm btn-primary" onClick={props.onSave}>
-        Save
-      </button>
-      <button class="btn btn-sm btn-ghost" onClick={props.onCancel}>
-        Cancel
-      </button>
+    <div class="min-w-0 flex-1 space-y-3 rounded-lg border border-base-300 bg-base-200/35 p-3">
+      {/*
+       * Name receives the flexible column, while slug and abbreviation stay
+       * compact. At small widths the grid wraps naturally for usability.
+       */}
+      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_7rem]">
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Name</span>
+          <input
+            class="input input-sm input-bordered w-full"
+            value={props.form.name}
+            onInput={(event) => props.onNameInput(event.currentTarget.value)}
+            placeholder="Name"
+          />
+        </label>
+
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Slug</span>
+          <input
+            class="input input-sm input-bordered w-full"
+            value={props.form.slug}
+            onInput={(event) => props.onSlugInput(event.currentTarget.value)}
+            placeholder="slug"
+          />
+        </label>
+
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Abbreviation</span>
+          <input
+            class="input input-sm input-bordered w-full uppercase"
+            value={props.form.abbreviation}
+            onInput={(event) =>
+              props.onAbbreviationInput(event.currentTarget.value)
+            }
+            placeholder="ABCDE"
+            maxlength={5}
+            required
+          />
+        </label>
+      </div>
+
+      <label class="form-control gap-1">
+        <span class="label-text text-xs font-semibold">Description</span>
+        <textarea
+          class="textarea textarea-bordered min-h-20 w-full"
+          value={props.form.description}
+          onInput={(event) =>
+            props.onDescriptionInput(event.currentTarget.value)
+          }
+          placeholder="Describe what belongs in this forum section"
+        />
+      </label>
+
+      <div class="flex justify-end gap-2">
+        <button class="btn btn-sm btn-primary" onClick={props.onSave}>
+          Save
+        </button>
+        <button class="btn btn-sm btn-ghost" onClick={props.onCancel}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -56,30 +111,74 @@ function AddForm(props: {
   label: string;
   onNameInput: (v: string) => void;
   onSlugInput: (v: string) => void;
+  onAbbreviationInput: (v: string) => void;
+  onDescriptionInput: (v: string) => void;
   onSave: () => void;
   onCancel: () => void;
 }) {
   return (
-    <div class="flex gap-2 items-center mt-1">
-      <input
-        class="input input-sm input-bordered flex-1"
-        value={props.form.name}
-        onInput={(e) => props.onNameInput(e.currentTarget.value)}
-        placeholder={props.label}
-        autofocus
-      />
-      <input
-        class="input input-sm input-bordered w-32"
-        value={props.form.slug}
-        onInput={(e) => props.onSlugInput(e.currentTarget.value)}
-        placeholder="slug"
-      />
-      <button class="btn btn-sm btn-primary" onClick={props.onSave}>
-        Add
-      </button>
-      <button class="btn btn-sm btn-ghost" onClick={props.onCancel}>
-        Cancel
-      </button>
+    <div class="mt-2 space-y-3 rounded-lg border border-info/30 bg-info/5 p-3">
+      {/* New categories and subcategories share the same persisted metadata. */}
+      <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_7rem]">
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Name</span>
+          <input
+            class="input input-sm input-bordered w-full"
+            value={props.form.name}
+            onInput={(event) => props.onNameInput(event.currentTarget.value)}
+            placeholder={props.label}
+            autofocus
+          />
+        </label>
+
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Slug</span>
+          <input
+            class="input input-sm input-bordered w-full"
+            value={props.form.slug}
+            onInput={(event) => props.onSlugInput(event.currentTarget.value)}
+            placeholder="slug"
+          />
+        </label>
+
+        <label class="form-control gap-1">
+          <span class="label-text text-xs font-semibold">Abbreviation</span>
+          <input
+            class="input input-sm input-bordered w-full uppercase"
+            value={props.form.abbreviation}
+            onInput={(event) =>
+              props.onAbbreviationInput(event.currentTarget.value)
+            }
+            placeholder="ABCDE"
+            maxlength={5}
+            required
+          />
+        </label>
+      </div>
+
+      <label class="form-control gap-1">
+        <span class="label-text text-xs font-semibold">Description</span>
+        <textarea
+          class="textarea textarea-bordered min-h-20 w-full"
+          value={props.form.description}
+          onInput={(event) =>
+            props.onDescriptionInput(event.currentTarget.value)
+          }
+          placeholder="Describe what belongs in this forum section"
+        />
+        <span class="text-[11px] text-base-content/55">
+          The abbreviation defaults to the first 5 name characters.
+        </span>
+      </label>
+
+      <div class="flex justify-end gap-2">
+        <button class="btn btn-sm btn-primary" onClick={props.onSave}>
+          Add
+        </button>
+        <button class="btn btn-sm btn-ghost" onClick={props.onCancel}>
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
@@ -166,6 +265,19 @@ export const CategoryManagerDialog: Component<{
 
   const refetch = () => setFetchKey((k) => k + 1);
 
+  /*
+   * Management order is intentionally independent from public sortOrder.
+   * Copying before sort keeps resource data immutable and guarantees the
+   * dialog always presents a predictable alphabetical category list.
+   */
+  const sortedCategories = createMemo(() =>
+    [...(data() ?? [])].sort((left, right) =>
+      left.name.localeCompare(right.name, undefined, {
+        sensitivity: "base",
+      }),
+    ),
+  );
+
   // Accordion expand state
   const [expanded, setExpanded] = createSignal(new Set<string>());
   const toggle = (id: string) =>
@@ -180,6 +292,8 @@ export const CategoryManagerDialog: Component<{
   const [editForm, setEditForm] = createSignal<InlineForm>({
     name: "",
     slug: "",
+    abbreviation: "",
+    description: "",
   });
 
   type AddMode =
@@ -193,7 +307,10 @@ export const CategoryManagerDialog: Component<{
   const [addForm, setAddForm] = createSignal<InlineForm>({
     name: "",
     slug: "",
+    abbreviation: "",
+    description: "",
   });
+  const [addAbbreviationEdited, setAddAbbreviationEdited] = createSignal(false);
 
   // Delete confirm state
   const [deletingId, setDeletingId] = createSignal<string | null>(null);
@@ -223,9 +340,20 @@ export const CategoryManagerDialog: Component<{
     }
   };
 
-  const startEdit = (item: { id: string; name: string; slug: string }) => {
+  const startEdit = (item: {
+    id: string;
+    name: string;
+    slug: string;
+    abbreviation?: string;
+    description?: string | null;
+  }) => {
     setEditingId(item.id);
-    setEditForm({ name: item.name, slug: item.slug });
+    setEditForm({
+      name: item.name,
+      slug: item.slug,
+      abbreviation: item.abbreviation ?? "",
+      description: item.description ?? "",
+    });
   };
 
   const saveEdit = async (
@@ -236,7 +364,13 @@ export const CategoryManagerDialog: Component<{
     try {
       await apiFetch(`/admin/${endpoint}/${id}`, {
         method: "PUT",
-        body: JSON.stringify({ name: f.name, slug: f.slug }),
+        // Every forum level now owns the same editable metadata fields.
+        body: JSON.stringify({
+          name: f.name,
+          slug: f.slug,
+          abbreviation: f.abbreviation,
+          description: f.description,
+        }),
       });
       setEditingId(null);
       setMutationError(null);
@@ -256,7 +390,12 @@ export const CategoryManagerDialog: Component<{
       if (mode.type === "category") {
         await apiFetch("/admin/categories", {
           method: "POST",
-          body: JSON.stringify({ name: f.name, slug: f.slug }),
+          body: JSON.stringify({
+            name: f.name,
+            slug: f.slug,
+            abbreviation: f.abbreviation,
+            description: f.description,
+          }),
         });
       } else {
         await apiFetch("/admin/subcategories", {
@@ -266,11 +405,19 @@ export const CategoryManagerDialog: Component<{
             parentSubcategoryId: mode.parentSubcategoryId ?? null,
             name: f.name,
             slug: f.slug,
+            abbreviation: f.abbreviation,
+            description: f.description,
           }),
         });
       }
       setAddMode(null);
-      setAddForm({ name: "", slug: "" });
+      setAddForm({
+        name: "",
+        slug: "",
+        abbreviation: "",
+        description: "",
+      });
+      setAddAbbreviationEdited(false);
       setMutationError(null);
       setHasChanges(true);
       refetch();
@@ -297,24 +444,55 @@ export const CategoryManagerDialog: Component<{
 
   const startAdd = (mode: AddMode, expandId?: string) => {
     setAddMode(mode);
-    setAddForm({ name: "", slug: "" });
+    setAddForm({
+      name: "",
+      slug: "",
+      abbreviation: "",
+      description: "",
+    });
+    setAddAbbreviationEdited(false);
     if (expandId) {
       setExpanded((prev) => new Set([...prev, expandId]));
     }
   };
 
-  const updateAddName = (v: string) => setAddForm({ name: v, slug: toSlug(v) });
+  const updateAddName = (v: string) =>
+    setAddForm((form) => ({
+      ...form,
+      name: v,
+      slug: toSlug(v),
+      // Continue deriving the default until the user intentionally changes it.
+      abbreviation: addAbbreviationEdited()
+        ? form.abbreviation
+        : toAbbreviation(v),
+    }));
   const updateAddSlug = (v: string) => setAddForm((f) => ({ ...f, slug: v }));
+  const updateAddAbbreviation = (v: string) => {
+    setAddAbbreviationEdited(true);
+    setAddForm((form) => ({
+      ...form,
+      abbreviation: v.toUpperCase().slice(0, 5),
+    }));
+  };
+  const updateAddDescription = (v: string) =>
+    setAddForm((form) => ({ ...form, description: v }));
   const updateEditName = (v: string) =>
-    setEditForm({ name: v, slug: toSlug(v) });
+    setEditForm((form) => ({ ...form, name: v, slug: toSlug(v) }));
   const updateEditSlug = (v: string) => setEditForm((f) => ({ ...f, slug: v }));
+  const updateEditAbbreviation = (v: string) =>
+    setEditForm((form) => ({
+      ...form,
+      abbreviation: v.toUpperCase().slice(0, 5),
+    }));
+  const updateEditDescription = (v: string) =>
+    setEditForm((form) => ({ ...form, description: v }));
 
   return (
     <Modal
       open={props.open}
       onClose={closeDialog}
       title="Manage Categories"
-      class="max-w-2xl w-full"
+      class="max-w-3xl w-full"
     >
       <div class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
         <Show when={mutationError()}>
@@ -331,7 +509,7 @@ export const CategoryManagerDialog: Component<{
           }
         >
           <For
-            each={data()}
+            each={sortedCategories()}
             fallback={
               <p class="text-base-content/60 text-sm">No categories yet.</p>
             }
@@ -354,6 +532,11 @@ export const CategoryManagerDialog: Component<{
                           <span class="mr-1">{cat.icon}</span>
                         </Show>
                         {cat.name}
+                        {/* Show the saved code beside the category so admins
+                            can verify it without opening the edit form. */}
+                        <span class="badge badge-ghost badge-sm ml-2 font-mono">
+                          {cat.abbreviation}
+                        </span>
                       </span>
                     }
                   >
@@ -361,6 +544,8 @@ export const CategoryManagerDialog: Component<{
                       form={editForm()}
                       onNameInput={updateEditName}
                       onSlugInput={updateEditSlug}
+                      onAbbreviationInput={updateEditAbbreviation}
+                      onDescriptionInput={updateEditDescription}
                       onSave={() => saveEdit("categories", cat.id)}
                       onCancel={() => setEditingId(null)}
                     />
@@ -404,13 +589,20 @@ export const CategoryManagerDialog: Component<{
                             <Show
                               when={editingId() === sub.id}
                               fallback={
-                                <span class="flex-1 text-sm">{sub.name}</span>
+                                <span class="flex-1 text-sm">
+                                  {sub.name}
+                                  <span class="badge badge-ghost badge-xs ml-2 font-mono">
+                                    {sub.abbreviation}
+                                  </span>
+                                </span>
                               }
                             >
                               <EditForm
                                 form={editForm()}
                                 onNameInput={updateEditName}
                                 onSlugInput={updateEditSlug}
+                                onAbbreviationInput={updateEditAbbreviation}
+                                onDescriptionInput={updateEditDescription}
                                 onSave={() => saveEdit("subcategories", sub.id)}
                                 onCancel={() => setEditingId(null)}
                               />
@@ -455,6 +647,9 @@ export const CategoryManagerDialog: Component<{
                                       fallback={
                                         <span class="flex-1 text-sm">
                                           {subsub.name}
+                                          <span class="badge badge-ghost badge-xs ml-2 font-mono">
+                                            {subsub.abbreviation}
+                                          </span>
                                         </span>
                                       }
                                     >
@@ -462,6 +657,12 @@ export const CategoryManagerDialog: Component<{
                                         form={editForm()}
                                         onNameInput={updateEditName}
                                         onSlugInput={updateEditSlug}
+                                        onAbbreviationInput={
+                                          updateEditAbbreviation
+                                        }
+                                        onDescriptionInput={
+                                          updateEditDescription
+                                        }
                                         onSave={() =>
                                           saveEdit("subcategories", subsub.id)
                                         }
@@ -502,6 +703,8 @@ export const CategoryManagerDialog: Component<{
                                   label="Sub-subcategory name"
                                   onNameInput={updateAddName}
                                   onSlugInput={updateAddSlug}
+                                  onAbbreviationInput={updateAddAbbreviation}
+                                  onDescriptionInput={updateAddDescription}
                                   onSave={saveAdd}
                                   onCancel={() => setAddMode(null)}
                                 />
@@ -527,6 +730,8 @@ export const CategoryManagerDialog: Component<{
                         label="Subcategory name"
                         onNameInput={updateAddName}
                         onSlugInput={updateAddSlug}
+                        onAbbreviationInput={updateAddAbbreviation}
+                        onDescriptionInput={updateAddDescription}
                         onSave={saveAdd}
                         onCancel={() => setAddMode(null)}
                       />
@@ -544,6 +749,8 @@ export const CategoryManagerDialog: Component<{
               label="Category name"
               onNameInput={updateAddName}
               onSlugInput={updateAddSlug}
+              onAbbreviationInput={updateAddAbbreviation}
+              onDescriptionInput={updateAddDescription}
               onSave={saveAdd}
               onCancel={() => setAddMode(null)}
             />

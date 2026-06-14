@@ -12,6 +12,7 @@ export type Subcategory = {
   parentSubcategoryId: string | null;
   name: string;
   slug: string;
+  abbreviation: string;
   description: string | null;
   sortOrder: number;
   createdAt: string;
@@ -22,6 +23,7 @@ export type Category = {
   id: string;
   name: string;
   slug: string;
+  abbreviation: string;
   description: string | null;
   icon: string | null;
   sortOrder: number;

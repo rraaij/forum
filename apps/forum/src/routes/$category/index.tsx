@@ -131,7 +131,7 @@ function CategoryPage() {
       <ForumGrid category={category()} />
 
       <PageHeader
-        forumCode={category().slug.toUpperCase()}
+        forumCode={category().abbreviation}
         title={category().name}
         description={
           category().description ??
