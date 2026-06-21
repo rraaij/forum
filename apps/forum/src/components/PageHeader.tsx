@@ -1,3 +1,4 @@
+import { Avatar } from "@forum/ui";
 import { For, Show } from "solid-js";
 import { CreateTopicPanel } from "@/components/CreateTopicPanel";
 import type { CreatedTopic, TopicParent } from "@/types/forum";
@@ -11,6 +12,11 @@ type ForumPageHeaderProps = {
   forumCode: string;
   title: string;
   description: string;
+  author?: {
+    name: string | null;
+    image: string | null;
+    createdAt: string;
+  };
   stats?: HeaderStat[];
   tags?: string[];
   createTopic?: {
@@ -48,10 +54,35 @@ export default function PageHeader(props: ForumPageHeaderProps) {
 
           {/* Main title and summary are the key orientation points for the visitor. */}
           <div class="space-y-2">
+            <Show when={props.author}>
+              {(author) => (
+                /*
+                 * Topic pages can identify their creator without requiring a
+                 * separate header component. Board pages simply omit this
+                 * optional block and retain their existing compact layout.
+                 */
+                <div class="flex items-center gap-2 pt-1 text-sm text-slate-100/90">
+                  <Avatar
+                    src={author().image}
+                    name={author().name}
+                    size="sm"
+                    class="rounded-full ring-1 ring-white/60 ring-offset-1 ring-offset-black/20"
+                  />
+                  <span>
+                    <strong class="font-semibold text-white">
+                      {author().name ?? "-- Anonymous --"}
+                    </strong>
+                    <span class="ml-2 text-slate-200/75">
+                      {author().createdAt}
+                    </span>
+                  </span>
+                </div>
+              )}
+            </Show>
             <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">
               {props.title}
             </h1>
-            <p class="max-w-4xl text-sm leading-relaxed text-slate-100/85 sm:text-base">
+            <p class="max-w-4xl whitespace-pre-wrap text-sm leading-relaxed text-slate-100/85 sm:text-base">
               {props.description}
             </p>
           </div>

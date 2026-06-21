@@ -4,7 +4,13 @@ import TopicDetailPage from "@/components/TopicDetailPage";
 import { apiFetch } from "@/lib/api";
 import type { Category, TopicDetail, TopicSummary } from "@/types/forum";
 
-// Resolves the topic ID from slugs, then fetches full topic data.
+/*
+ * `topics` is the URL segment used for topics that belong directly to a
+ * category. Every other value identifies a real subforum. Treating both cases
+ * here keeps one topic route while preserving all existing public URLs.
+ */
+const DIRECT_CATEGORY_SEGMENT = "topics";
+
 const fetchTopic = createServerFn({ method: "GET" })
   .validator(
     (params: { categorySlug: string; subSlug: string; topicSlug: string }) =>
@@ -14,16 +20,36 @@ const fetchTopic = createServerFn({ method: "GET" })
     const category = await apiFetch<Category>(
       `/categories/${data.categorySlug}`,
     );
-    const sub = category.subcategories.find((s) => s.slug === data.subSlug);
-    if (!sub) throw new Error("Subcategory not found");
+
+    /*
+     * Resolve the requested parent before loading its topic list. This keeps
+     * subforum URLs unambiguous even if two boards happen to use the same topic
+     * slug, while the reserved `topics` segment covers direct category topics.
+     */
+    const subcategory =
+      data.subSlug === DIRECT_CATEGORY_SEGMENT
+        ? undefined
+        : category.subcategories.find((item) => item.slug === data.subSlug);
+
+    if (data.subSlug !== DIRECT_CATEGORY_SEGMENT && !subcategory) {
+      throw new Error("Subcategory not found");
+    }
 
     const topics = await apiFetch<TopicSummary[]>(
-      `/topics?subcategoryId=${sub.id}`,
+      subcategory
+        ? `/topics?subcategoryId=${subcategory.id}`
+        : `/topics?categoryId=${category.id}`,
     );
-    const t = topics.find((topicItem) => topicItem.slug === data.topicSlug);
-    if (!t) throw new Error("Topic not found");
+    const topic = topics.find((item) => item.slug === data.topicSlug);
 
-    return apiFetch<TopicDetail>(`/topics/${t.id}`);
+    if (!topic) throw new Error("Topic not found");
+
+    return {
+      topic: await apiFetch<TopicDetail>(`/topics/${topic.id}`),
+      // The detail component uses this optional value to include a subforum
+      // breadcrumb only for topics that actually live inside a subforum.
+      subcategorySlug: subcategory?.slug,
+    };
   });
 
 export const Route = createFileRoute("/$category/$sub/$topic/")({
@@ -39,16 +65,15 @@ export const Route = createFileRoute("/$category/$sub/$topic/")({
 });
 
 function TopicPage() {
+  // Params remain reactive when navigating between topics without remounting.
   const params = useParams({ from: "/$category/$sub/$topic/" });
-  const topic = Route.useLoaderData();
+  const loaderData = Route.useLoaderData();
 
   return (
-    // Keep route-specific data resolution here while the complete topic UI is
-    // shared with direct category topics.
     <TopicDetailPage
-      topic={topic()}
+      topic={loaderData().topic}
       categorySlug={params().category}
-      subcategorySlug={params().sub}
+      subcategorySlug={loaderData().subcategorySlug}
     />
   );
 }

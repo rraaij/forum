@@ -12,9 +12,9 @@
     "@forum/api": "workspace:*",
     "@forum/db": "workspace:*",
     "@forum/ui": "workspace:*",
-    "@tanstack/solid-router": "^1.170.15",
-    "@tanstack/solid-start": "^1.168.25",
-    "better-auth": "^1.6.18",
+    "@tanstack/solid-router": "^1.170.16",
+    "@tanstack/solid-start": "^1.168.26",
+    "better-auth": "^1.6.20",
     "solid-js": "^1.9.13"
   },
   "devDependencies": {

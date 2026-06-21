@@ -137,7 +137,7 @@ function Home() {
                                   );
 
                                 return (
-                                  <div class="rounded-lg border border-base-300 bg-base-100">
+                                  <div class="rounded-sm border border-base-300 bg-base-100">
                                     <Link
                                       to="/$category/$sub"
                                       params={{

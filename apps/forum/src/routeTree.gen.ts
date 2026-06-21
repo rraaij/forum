@@ -14,7 +14,6 @@ import { Route as CategoryIndexRouteImport } from './routes/$category/index'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as CategorySubIndexRouteImport } from './routes/$category/$sub/index'
-import { Route as CategoryTopicsTopicIndexRouteImport } from './routes/$category/topics/$topic/index'
 import { Route as CategorySubTopicIndexRouteImport } from './routes/$category/$sub/$topic/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -42,12 +41,6 @@ const CategorySubIndexRoute = CategorySubIndexRouteImport.update({
   path: '/$category/$sub/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoryTopicsTopicIndexRoute =
-  CategoryTopicsTopicIndexRouteImport.update({
-    id: '/$category/topics/$topic/',
-    path: '/$category/topics/$topic/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const CategorySubTopicIndexRoute = CategorySubTopicIndexRouteImport.update({
   id: '/$category/$sub/$topic/',
   path: '/$category/$sub/$topic/',
@@ -61,7 +54,6 @@ export interface FileRoutesByFullPath {
   '/$category/': typeof CategoryIndexRoute
   '/$category/$sub/': typeof CategorySubIndexRoute
   '/$category/$sub/$topic/': typeof CategorySubTopicIndexRoute
-  '/$category/topics/$topic/': typeof CategoryTopicsTopicIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,7 +62,6 @@ export interface FileRoutesByTo {
   '/$category': typeof CategoryIndexRoute
   '/$category/$sub': typeof CategorySubIndexRoute
   '/$category/$sub/$topic': typeof CategorySubTopicIndexRoute
-  '/$category/topics/$topic': typeof CategoryTopicsTopicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,7 +71,6 @@ export interface FileRoutesById {
   '/$category/': typeof CategoryIndexRoute
   '/$category/$sub/': typeof CategorySubIndexRoute
   '/$category/$sub/$topic/': typeof CategorySubTopicIndexRoute
-  '/$category/topics/$topic/': typeof CategoryTopicsTopicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,7 +81,6 @@ export interface FileRouteTypes {
     | '/$category/'
     | '/$category/$sub/'
     | '/$category/$sub/$topic/'
-    | '/$category/topics/$topic/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,7 +89,6 @@ export interface FileRouteTypes {
     | '/$category'
     | '/$category/$sub'
     | '/$category/$sub/$topic'
-    | '/$category/topics/$topic'
   id:
     | '__root__'
     | '/'
@@ -109,7 +97,6 @@ export interface FileRouteTypes {
     | '/$category/'
     | '/$category/$sub/'
     | '/$category/$sub/$topic/'
-    | '/$category/topics/$topic/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,7 +106,6 @@ export interface RootRouteChildren {
   CategoryIndexRoute: typeof CategoryIndexRoute
   CategorySubIndexRoute: typeof CategorySubIndexRoute
   CategorySubTopicIndexRoute: typeof CategorySubTopicIndexRoute
-  CategoryTopicsTopicIndexRoute: typeof CategoryTopicsTopicIndexRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -159,13 +145,6 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof CategorySubIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$category/topics/$topic/': {
-      id: '/$category/topics/$topic/'
-      path: '/$category/topics/$topic'
-      fullPath: '/$category/topics/$topic/'
-      preLoaderRoute: typeof CategoryTopicsTopicIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/$category/$sub/$topic/': {
       id: '/$category/$sub/$topic/'
       path: '/$category/$sub/$topic'
@@ -183,7 +162,6 @@ const rootRouteChildren: RootRouteChildren = {
   CategoryIndexRoute: CategoryIndexRoute,
   CategorySubIndexRoute: CategorySubIndexRoute,
   CategorySubTopicIndexRoute: CategorySubTopicIndexRoute,
-  CategoryTopicsTopicIndexRoute: CategoryTopicsTopicIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

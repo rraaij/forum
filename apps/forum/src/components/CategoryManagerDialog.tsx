@@ -39,7 +39,7 @@ function EditForm(props: {
   onCancel: () => void;
 }) {
   return (
-    <div class="min-w-0 flex-1 space-y-3 rounded-lg border border-base-300 bg-base-200/35 p-3">
+    <div class="min-w-0 flex-1 space-y-3 rounded-sm border border-base-300 bg-base-200/35 p-3">
       {/*
        * Name receives the flexible column, while slug and abbreviation stay
        * compact. At small widths the grid wraps naturally for usability.
@@ -117,7 +117,7 @@ function AddForm(props: {
   onCancel: () => void;
 }) {
   return (
-    <div class="mt-2 space-y-3 rounded-lg border border-info/30 bg-info/5 p-3">
+    <div class="mt-2 space-y-3 rounded-sm border border-info/30 bg-info/5 p-3">
       {/* New categories and subcategories share the same persisted metadata. */}
       <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_7rem]">
         <label class="form-control gap-1">
@@ -515,7 +515,7 @@ export const CategoryManagerDialog: Component<{
             }
           >
             {(cat) => (
-              <div class="border border-base-300 rounded-lg overflow-hidden">
+              <div class="border border-base-300 rounded-sm overflow-hidden">
                 {/* Category row */}
                 <div class="flex items-center gap-2 px-3 py-2 bg-base-100">
                   <button

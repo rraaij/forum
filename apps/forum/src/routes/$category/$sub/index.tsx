@@ -96,6 +96,7 @@ function SubcategoryPage() {
     // the new topic without requiring a manual reload.
     await router.invalidate();
     await navigate({
+      // The dynamic topic route handles both direct and subforum topics.
       to: "/$category/$sub/$topic",
       params: {
         category: params().category,

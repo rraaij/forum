@@ -68,58 +68,30 @@ export default function TopicsList(props: OpenTopicsProps) {
 
   const topicLink = (topic: TopicSummary, pinned = false) => (
     /*
-     * Direct category topics have a dedicated static `/topics/` path.
-     * Subcategory topics retain their existing three-parameter route.
+     * The single dynamic topic route accepts either a real subforum slug or
+     * the reserved `topics` segment for topics directly under a category.
      */
-    <Show
-      when={props.subcategorySlug}
-      fallback={
-        <Link
-          to="/$category/topics/$topic"
-          params={{
-            category: props.categorySlug,
-            topic: topic.slug,
-          }}
-          class={
-            pinned
-              ? "font-bold text-info hover:underline"
-              : "font-semibold text-info hover:underline"
-          }
-        >
-          <Show when={pinned}>
-            <span class="badge badge-secondary mr-2">Pinned</span>
-          </Show>
-          <Show when={topic.isLocked}>
-            <span class="badge badge-warning mr-2">Locked</span>
-          </Show>
-          {topic.title}
-        </Link>
+    <Link
+      to="/$category/$sub/$topic"
+      params={{
+        category: props.categorySlug,
+        sub: props.subcategorySlug ?? "topics",
+        topic: topic.slug,
+      }}
+      class={
+        pinned
+          ? "font-bold text-info hover:underline"
+          : "font-semibold text-info hover:underline"
       }
     >
-      {(subcategorySlug) => (
-        <Link
-          to="/$category/$sub/$topic"
-          params={{
-            category: props.categorySlug,
-            sub: subcategorySlug(),
-            topic: topic.slug,
-          }}
-          class={
-            pinned
-              ? "font-bold text-info hover:underline"
-              : "font-semibold text-info hover:underline"
-          }
-        >
-          <Show when={pinned}>
-            <span class="badge badge-secondary mr-2">Pinned</span>
-          </Show>
-          <Show when={topic.isLocked}>
-            <span class="badge badge-warning mr-2">Locked</span>
-          </Show>
-          {topic.title}
-        </Link>
-      )}
-    </Show>
+      <Show when={pinned}>
+        <span class="badge badge-secondary mr-2">Pinned</span>
+      </Show>
+      <Show when={topic.isLocked}>
+        <span class="badge badge-warning mr-2">Locked</span>
+      </Show>
+      {topic.title}
+    </Link>
   );
 
   const topicRow = (topic: TopicSummary, pinned = false) => (

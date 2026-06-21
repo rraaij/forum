@@ -1,5 +1,17 @@
 # Forum Monorepo — Implementation Plan
 
+## TODO LIST
+
+- [ ] Full Admin page
+  - [ ] Admin-only features (e.g., user management, category moderation (instead of the 'Manage' dialog))
+  - [ ] Topic moderation (e.g., delete posts, warn users, lock/unlock)
+  - [ ] topic lock/unlock (prevent new posts)
+- [ ] Profile page
+  - [ ] User settings (avatar, email, password)
+- [ ] Topics
+  - [ ] emoticons/emoji picker for posts (steal from Fok.nl or Tweakers.net)
+  - [ ] sticky topics (pinned topics at the top of the list)
+
 ## Context
 
 The forum project is built as a Turborepo monorepo. PostgreSQL + Drizzle ORM replaces Convex DB, deployed to QNAP NAS (same pattern as `stuff-to-watch`).

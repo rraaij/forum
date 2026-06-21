@@ -157,12 +157,15 @@ function CategoryPage() {
           parent: { categoryId: category().id },
           onCreated: async (topic) => {
             // Refresh the table first, then open the newly-created direct
-            // category topic using its dedicated detail route.
+            // category topic through the shared dynamic topic route.
             await router.invalidate();
             await navigate({
-              to: "/$category/topics/$topic",
+              // `topics` is the reserved parent segment for direct category
+              // topics in the single dynamic topic route.
+              to: "/$category/$sub/$topic",
               params: {
                 category: slug(),
+                sub: "topics",
                 topic: topic.slug,
               },
             });
