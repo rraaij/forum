@@ -1,3 +1,4 @@
+import { Avatar } from "@forum/ui";
 import { Link } from "@tanstack/solid-router";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import type { TopicSummary } from "@/types/forum";
@@ -97,7 +98,17 @@ export default function TopicsList(props: OpenTopicsProps) {
   const topicRow = (topic: TopicSummary, pinned = false) => (
     <tr>
       <td>{topicLink(topic, pinned)}</td>
-      <td>{topic.authorName ?? "Unknown"}</td>
+      <td>
+        <div class="flex items-center gap-2">
+          <Avatar
+            src={topic.authorImage}
+            name={topic.authorName}
+            size="xs"
+            class="shrink-0 rounded-full ring-1 ring-base-content/10"
+          />
+          <span>{topic.authorName ?? "Unknown"}</span>
+        </div>
+      </td>
       <td class="text-right">{Math.max(0, topic.postCount - 1)}</td>
       <td class="text-right">{topic.viewCount}</td>
       <td class="text-sm text-base-content/70">

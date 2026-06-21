@@ -48,6 +48,7 @@ export type TopicSummary = {
   createdAt: string;
   authorId: string;
   authorName: string | null;
+  authorImage: string | null;
 };
 
 export type ForumPost = {
@@ -102,4 +103,34 @@ export type SubcategoryMeta = {
   topicCount: number;
   replyCount: number;
   lastActivityAt: string | null;
+};
+
+/*
+ * The profile API intentionally calls Better Auth's immutable name a username.
+ * All remaining fields are user-editable presentation data.
+ */
+export type UserProfile = {
+  username: string;
+  email: string;
+  displayName: string | null;
+  dateOfBirth: string | null;
+  profileText: string | null;
+  image: string | null;
+  location: string | null;
+  website: string | null;
+  photoUrls: string[];
+};
+
+export type UserPostActivity = {
+  postId: string;
+  postContent: string;
+  postCreatedAt: string;
+  postDeleted: boolean;
+  topicId: string;
+  topicTitle: string;
+  topicSlug: string;
+  topicCreatedAt: string;
+  categorySlug: string | null;
+  subcategorySlug: string | null;
+  isTopicStart: boolean;
 };

@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { Avatar } from "@forum/ui";
 import {
   createRootRoute,
   HeadContent,
@@ -24,6 +25,7 @@ import "../styles.css";
 import { CategoryManagerDialog } from "@/components/CategoryManagerDialog";
 import type { SessionUser } from "@/lib/auth-client";
 import { signOut, useSession } from "@/lib/auth-client";
+import { profileAvatarPreview } from "@/lib/profile-avatar";
 
 type ThemeName = "light" | "dark";
 
@@ -232,17 +234,25 @@ function RootComponent() {
                       tabindex="0"
                       class="btn btn-ghost btn-circle avatar placeholder"
                     >
-                      <div class="bg-neutral-content/20 text-neutral-content w-8 rounded-full">
-                        <span class="text-xs">
-                          {u().name?.charAt(0).toUpperCase() ?? "?"}
-                        </span>
-                      </div>
+                      <Avatar
+                        src={
+                          profileAvatarPreview() === undefined
+                            ? u().image
+                            : profileAvatarPreview()
+                        }
+                        name={u().name}
+                        size="sm"
+                        class="rounded-full ring-1 ring-neutral-content/30"
+                      />
                     </button>
                     <ul
                       tabindex="0"
                       class="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 text-base-content shadow"
                     >
                       <li class="menu-title">{u().name}</li>
+                      <li>
+                        <Link to="/profile">Profile settings</Link>
+                      </li>
                       <li>
                         <button onClick={() => signOut()}>Sign Out</button>
                       </li>

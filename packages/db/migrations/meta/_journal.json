@@ -36,6 +36,13 @@
       "when": 1781445042998,
       "tag": "0004_serialize_cross_table_identifier_checks",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1782051066859,
+      "tag": "0005_modern_kid_colt",
+      "breakpoints": true
     }
   ]
 }

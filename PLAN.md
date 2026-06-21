@@ -2,6 +2,7 @@
 
 ## TODO LIST
 
+- [ ] AI users who log in, create topics, and post replies (for testing)
 - [ ] Full Admin page
   - [ ] Admin-only features (e.g., user management, category moderation (instead of the 'Manage' dialog))
   - [ ] Topic moderation (e.g., delete posts, warn users, lock/unlock)
