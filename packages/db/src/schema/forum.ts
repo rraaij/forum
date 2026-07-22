@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   boolean,
@@ -8,18 +9,32 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { users } from "./auth";
 
-export const categories = pgTable("categories", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  description: text("description"),
-  icon: text("icon"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const categories = pgTable(
+  "categories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    // Five characters are enough for the compact forum code shown in headers.
+    abbreviation: varchar("abbreviation", { length: 5 }).notNull(),
+    description: text("description"),
+    icon: text("icon"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    // Expression indexes enforce uniqueness regardless of letter casing.
+    uniqueIndex("categories_name_unique_idx").on(sql`lower(${table.name})`),
+    uniqueIndex("categories_slug_unique_idx").on(sql`lower(${table.slug})`),
+    uniqueIndex("categories_abbreviation_unique_idx").on(
+      sql`lower(${table.abbreviation})`,
+    ),
+  ],
+);
 
 export const subcategories = pgTable(
   "subcategories",
@@ -34,14 +49,17 @@ export const subcategories = pgTable(
     ),
     name: text("name").notNull(),
     slug: text("slug").notNull(),
+    // Subforums use the same compact five-character code as top-level boards.
+    abbreviation: varchar("abbreviation", { length: 5 }).notNull(),
     description: text("description"),
     sortOrder: integer("sort_order").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex("subcategories_category_slug_idx").on(
-      table.categoryId,
-      table.slug,
+    uniqueIndex("subcategories_name_unique_idx").on(sql`lower(${table.name})`),
+    uniqueIndex("subcategories_slug_unique_idx").on(sql`lower(${table.slug})`),
+    uniqueIndex("subcategories_abbreviation_unique_idx").on(
+      sql`lower(${table.abbreviation})`,
     ),
   ],
 );

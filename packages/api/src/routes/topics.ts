@@ -42,6 +42,8 @@ topicsRoutes.get("/", async (c) => {
       createdAt: topics.createdAt,
       authorId: topics.authorId,
       authorName: users.name,
+      // Topic lists need the same live user avatar as individual post rows.
+      authorImage: users.image,
     })
     .from(topics)
     .leftJoin(users, eq(topics.authorId, users.id))

@@ -25,7 +25,7 @@ this app will be an internet forum. It will have a main page with categories. Ea
 docker run -d \
 --name forum-db \
 -e POSTGRES_USER=admin \
--e POSTGRES_PASSWORD=_W1nt3r2026 \
+-e POSTGRES_PASSWORD=<your-password> \
 -e POSTGRES_DB=forum-db \
 -p 5433:5432 \
 -v forum-db-data:/var/lib/postgresql \
@@ -39,6 +39,18 @@ To run this application:
 ```bash
 bun install
 bun --bun run dev
+```
+
+Before starting the app, make sure the PostgreSQL server configured in `.env`
+is running and reachable. The default example points to the QNAP/NAS database at
+`192.168.0.178:5433`.
+
+If the forum cannot reach PostgreSQL, the API returns `503` with
+`code: "DATABASE_UNAVAILABLE"` and the configured database target. You can check
+the database connection directly with:
+
+```bash
+curl http://localhost:4000/health/db
 ```
 
 ## Building For Production
@@ -294,4 +306,103 @@ Verification Summary
 ├───────┼─────────────────────────────────────────────────────────────────┤
 │ 6     │ Docker build succeeds, deploy script pushes to QNAP             │
 └───────┴─────────────────────────────────────────────────────────────────┘
+
+## Troubleshooting: database unavailable
+
+### Error
+
+The forum displayed this error when its API could not connect to PostgreSQL:
+
+```text
+Application error
+
+The forum could not load.
+503 Service Unavailable: Database unavailable at admin@192.168.0.178:5433/forum-db. Check that PostgreSQL is running, that 192.168.0.178:5433 is reachable from this machine, and that the POSTGRES_* values in .env match .env.example.
+
+If this mentions DATABASE_UNAVAILABLE or a database target, check that the PostgreSQL server from .env is running and reachable.
+```
+
+### Cause
+
+The `forum-db` container on the QNAP had received a clean shutdown and had not
+started again. PostgreSQL therefore was not reachable from the development
+machine.
+
+There was also confusion between the container and host ports. PostgreSQL
+listens on port `5432` inside the container, but Docker publishes it as port
+`5433` on the QNAP:
+
+```text
+0.0.0.0:5433->5432/tcp
+```
+
+The application connects through the QNAP host, so `.env` must use
+`POSTGRES_PORT=5433`, not the container's internal port `5432`.
+
+### Recovery steps
+
+1. On the QNAP, check whether the database container is running:
+
+   ```bash
+   docker ps --filter name=forum-db --format 'table {{.Status}}\t{{.Ports}}'
+   ```
+
+2. If it is stopped, start it and inspect its latest logs:
+
+   ```bash
+   docker start forum-db
+   docker logs --tail 30 forum-db
+   ```
+
+   Wait until the logs contain `database system is ready to accept connections`.
+
+3. Confirm that PostgreSQL is healthy inside the container and inspect the
+   published host port:
+
+   ```bash
+   docker exec forum-db pg_isready
+   docker port forum-db
+   ```
+
+   The expected output is equivalent to:
+
+   ```text
+   /var/run/postgresql:5432 - accepting connections
+   5432/tcp -> 0.0.0.0:5433
+   ```
+
+4. On the development machine, confirm that the published QNAP port is
+   reachable:
+
+   ```bash
+   nc -vz -w 3 192.168.0.178 5433
+   ```
+
+5. Check that the database target in `.env` uses the host-side port:
+
+   ```env
+   POSTGRES_HOST=192.168.0.178
+   POSTGRES_PORT=5433
+   POSTGRES_DB=forum-db
+   POSTGRES_USER=admin
+   ```
+
+6. Optionally verify the credentials and database directly. This reads the
+   password from `.env` without printing it:
+
+   ```bash
+   set -a && source .env && set +a
+   PGPASSWORD="$POSTGRES_PASSWORD" psql \
+     -h "$POSTGRES_HOST" \
+     -p "$POSTGRES_PORT" \
+     -U "$POSTGRES_USER" \
+     -d "$POSTGRES_DB" \
+     -c 'select current_database(), current_user;'
+   ```
+
+7. Restart the forum dev server after changing `.env`; the running process does
+   not automatically reload database environment variables.
+
+The connection is fixed when the TCP check succeeds and `psql` reports
+`forum-db` as the current database and `admin` as the current user.
 ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌

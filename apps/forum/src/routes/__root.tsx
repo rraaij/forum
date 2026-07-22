@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+import { Avatar } from "@forum/ui";
 import {
   createRootRoute,
   HeadContent,
@@ -24,6 +25,7 @@ import "../styles.css";
 import { CategoryManagerDialog } from "@/components/CategoryManagerDialog";
 import type { SessionUser } from "@/lib/auth-client";
 import { signOut, useSession } from "@/lib/auth-client";
+import { profileAvatarPreview } from "@/lib/profile-avatar";
 
 type ThemeName = "light" | "dark";
 
@@ -38,8 +40,41 @@ const TOP_SECTIONS = [
 
 export const Route = createRootRoute({
   component: RootComponent,
+  errorComponent: RootErrorComponent,
   shellComponent: RootDocument,
 });
+
+function getErrorMessage(error: unknown) {
+  // Route loaders can throw Error objects or arbitrary values depending on
+  // where the failure came from. Normalize that here so infrastructure issues,
+  // especially database connectivity, are visible on the page immediately.
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return typeof error === "string" ? error : "Unexpected application error";
+}
+
+function RootErrorComponent({ error }: { error: unknown }) {
+  return (
+    <div class="min-h-screen bg-base-300/30 px-4 py-10">
+      <div class="mx-auto max-w-3xl rounded-box border border-error/30 bg-base-100 p-6 shadow">
+        <p class="mb-2 text-sm font-semibold uppercase tracking-wide text-error">
+          Application error
+        </p>
+        <h1 class="mb-4 text-2xl font-bold">The forum could not load.</h1>
+        <p class="whitespace-pre-wrap text-base-content/80">
+          {getErrorMessage(error)}
+        </p>
+        <p class="mt-4 text-sm text-base-content/60">
+          If this mentions <code>DATABASE_UNAVAILABLE</code> or a database
+          target, check that the PostgreSQL server from <code>.env</code> is
+          running and reachable.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function RootDocument({ children }: { children: JSX.Element }) {
   return (
@@ -199,17 +234,25 @@ function RootComponent() {
                       tabindex="0"
                       class="btn btn-ghost btn-circle avatar placeholder"
                     >
-                      <div class="bg-neutral-content/20 text-neutral-content w-8 rounded-full">
-                        <span class="text-xs">
-                          {u().name?.charAt(0).toUpperCase() ?? "?"}
-                        </span>
-                      </div>
+                      <Avatar
+                        src={
+                          profileAvatarPreview() === undefined
+                            ? u().image
+                            : profileAvatarPreview()
+                        }
+                        name={u().name}
+                        size="sm"
+                        class="rounded-full ring-1 ring-neutral-content/30"
+                      />
                     </button>
                     <ul
                       tabindex="0"
                       class="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 text-base-content shadow"
                     >
                       <li class="menu-title">{u().name}</li>
+                      <li>
+                        <Link to="/profile">Profile settings</Link>
+                      </li>
                       <li>
                         <button onClick={() => signOut()}>Sign Out</button>
                       </li>
@@ -222,7 +265,7 @@ function RootComponent() {
         </div>
       </header>
 
-      <main class="mx-auto w-full max-w-7xl px-4 py-6">
+      <main class="mx-auto w-full max-w-7xl px-4 py-2">
         <Suspense>
           <Outlet />
         </Suspense>

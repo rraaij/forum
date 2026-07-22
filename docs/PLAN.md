@@ -1,5 +1,18 @@
 # Forum Monorepo — Implementation Plan
 
+## TODO LIST
+
+- [ ] AI users who log in, create topics, and post replies (for testing)
+- [ ] Full Admin page
+  - [ ] Admin-only features (e.g., user management, category moderation (instead of the 'Manage' dialog))
+  - [ ] Topic moderation (e.g., delete posts, warn users, lock/unlock)
+  - [ ] topic lock/unlock (prevent new posts)
+- [ ] Profile page
+  - [ ] User settings (avatar, email, password)
+- [ ] Topics
+  - [ ] emoticons/emoji picker for posts (steal from Fok.nl or Tweakers.net)
+  - [ ] sticky topics (pinned topics at the top of the list)
+
 ## Context
 
 The forum project is built as a Turborepo monorepo. PostgreSQL + Drizzle ORM replaces Convex DB, deployed to QNAP NAS (same pattern as `stuff-to-watch`).
@@ -65,17 +78,17 @@ Build in dependency order: `config` → `db` → `api` → `ui`.
 
 Database schema:
 
-| Table | Key columns | Notes |
-|-------|------------|-------|
-| `users` | id (text PK), name, email, role, emailVerified | Better Auth generates IDs as text |
-| `sessions` | id, userId FK, token, expiresAt | Better Auth managed |
-| `accounts` | id, userId FK, providerId, password | email/password auth |
-| `categories` | id (uuid), name, slug, description, icon, sortOrder | Top-level forum structure |
-| `subcategories` | id (uuid), categoryId FK, name, slug, sortOrder | Nested under categories |
-| `topics` | id (uuid), subcategoryId FK, authorId FK, title, slug, isPinned, isLocked, viewCount, postCount, lastPostAt | Denormalized counters |
-| `posts` | id (uuid), topicId FK, authorId FK, content, isDeleted, editedAt | Markdown content |
-| `reactions` | id (uuid), postId FK, userId FK, emoji | Unique constraint on (post, user, emoji) |
-| `votes` | id (uuid), postId FK, userId FK, value (+1/-1) | Unique constraint on (post, user) |
+| Table           | Key columns                                                                                                 | Notes                                    |
+|-----------------|-------------------------------------------------------------------------------------------------------------|------------------------------------------|
+| `users`         | id (text PK), name, email, role, emailVerified                                                              | Better Auth generates IDs as text        |
+| `sessions`      | id, userId FK, token, expiresAt                                                                             | Better Auth managed                      |
+| `accounts`      | id, userId FK, providerId, password                                                                         | email/password auth                      |
+| `categories`    | id (uuid), name, slug, description, icon, sortOrder                                                         | Top-level forum structure                |
+| `subcategories` | id (uuid), categoryId FK, name, slug, sortOrder                                                             | Nested under categories                  |
+| `topics`        | id (uuid), subcategoryId FK, authorId FK, title, slug, isPinned, isLocked, viewCount, postCount, lastPostAt | Denormalized counters                    |
+| `posts`         | id (uuid), topicId FK, authorId FK, content, isDeleted, editedAt                                            | Markdown content                         |
+| `reactions`     | id (uuid), postId FK, userId FK, emoji                                                                      | Unique constraint on (post, user, emoji) |
+| `votes`         | id (uuid), postId FK, userId FK, value (+1/-1)                                                              | Unique constraint on (post, user)        |
 
 ### 2C — `packages/api` (Hono backend + Better Auth)
 

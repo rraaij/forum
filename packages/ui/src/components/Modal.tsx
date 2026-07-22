@@ -42,7 +42,9 @@ export function Modal(props: ParentProps<ModalProps>) {
   return (
     <dialog
       ref={dialogRef}
-      class="modal"
+      // Keep a viewport gutter around wide dialogs, especially on phones where
+      // a consumer may request `w-full` for the modal panel.
+      class="modal p-4 sm:p-6"
       onClose={handleClose}
       onClick={handleBackdropClick}
       onKeyDown={handleBackdropKeyDown}

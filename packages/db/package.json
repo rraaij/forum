@@ -9,10 +9,11 @@
   },
   "scripts": {
     "db:generate": "set -a && . ../../.env && set +a && drizzle-kit generate",
-    "db:migrate": "set -a && . ../../.env && set +a && drizzle-kit migrate",
+    "db:migrate": "bun --bun --env-file=../../.env scripts/dedupe-forum-identifiers.ts && set -a && . ../../.env && set +a && drizzle-kit migrate",
     "db:push": "set -a && . ../../.env && set +a && drizzle-kit push",
     "db:studio": "set -a && . ../../.env && set +a && drizzle-kit studio",
-    "db:seed": "bun --bun --env-file ../../.env run scripts/seed.ts"
+    "db:seed": "bun --bun --env-file=../../.env scripts/seed.ts",
+    "db:dedupe-identifiers": "bun --bun --env-file=../../.env scripts/dedupe-forum-identifiers.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -21,6 +22,6 @@
   "devDependencies": {
     "@forum/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
-    "@types/bun": "^1.3.12"
+    "@types/bun": "^1.3.14"
   }
 }
