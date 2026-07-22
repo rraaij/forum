@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@forum/db": "workspace:*",
-    "better-auth": "^1.6.20",
+    "better-auth": "^1.6.24",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.12.26",
+    "hono": "^4.12.31",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
