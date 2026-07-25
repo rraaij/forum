@@ -12,7 +12,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 - [x] Phase 3: Topic discussion module
 - [x] Phase 4: Forum read model and canonical routes
 - [x] Phase 5: Board management module and Admin UI
-- [ ] Phase 6: Profile edit module and UI
+- [x] Phase 6: Profile edit module and UI
 - [ ] Phase 7: Profile activity module and UI
 - [ ] Phase 8: Destructive contract/reset migration
 - [ ] Phase 9: Cleanup and final verification
@@ -561,6 +561,11 @@ interface ProfileEdit {
 }
 ```
 
+Implemented in Phase 6: `PATCH /api/profile` became `PUT` (the contract table
+in section 6 already specified `PUT`), and failures use the standard error
+envelope. Accepted values are unchanged, proven by the Phase 0
+characterization tests still passing.
+
 Keep current HTTP(S), data-URL MIME type, decoded two-megabyte image limit,
 twelve-photo gallery limit, text lengths, date validation, and immutable username
 behavior unless a characterization test proves current behavior is accidental.
@@ -949,9 +954,9 @@ Interaction-write regression tests:
 
 Profile tests:
 
-- [ ] Existing text, URL, date, image MIME/size, and gallery limits.
-- [ ] Profile replacement semantics and independently updated avatar.
-- [ ] Password command remains delegated to Better Auth.
+- [x] Existing text, URL, date, image MIME/size, and gallery limits.
+- [x] Profile replacement semantics and independently updated avatar.
+- [x] Password command remains delegated to Better Auth.
 - [ ] Activity returns opening/reply kind, deletion state, breadcrumbs, and canonical
   route params for root and deeply nested Boards.
 - [ ] Activity deliberately returns all fixture rows.
@@ -963,7 +968,7 @@ Browser tests:
 - [x] Locked Topic rejects reply without corrupting UI state.
 - [x] Reloading/invalidation does not increase views; a new browser session does.
 - [x] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
-- [ ] Profile avatar/gallery edit and activity links work after route redesign.
+- [x] Profile avatar/gallery edit and activity links work after route redesign.
 - [x] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
 - [x] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
   remove a vote after the interaction module migration.
@@ -1217,23 +1222,23 @@ pnpm build
 
 Steps:
 
-- [ ] Move server Profile validation and mapping behind `ProfileEdit` without
+- [x] Move server Profile validation and mapping behind `ProfileEdit` without
   changing accepted values.
-- [ ] Change the Hono route to a runtime-validated adapter and make replacement
+- [x] Change the Hono route to a runtime-validated adapter and make replacement
   semantics explicit in its method/name and tests.
-- [ ] Migrate Profile feature API calls to Hono-derived transport types.
-- [ ] Extract browser image-file validation, controller state, form, gallery, and
+- [x] Migrate Profile feature API calls to Hono-derived transport types.
+- [x] Extract browser image-file validation, controller state, form, gallery, and
   password dialog.
-- [ ] Keep the header avatar preview integration, but expose it through the Profile
+- [x] Keep the header avatar preview integration, but expose it through the Profile
   controller rather than route-local mutation details.
-- [ ] Replace broad global invalidation with Profile/session invalidation required
+- [x] Replace broad global invalidation with Profile/session invalidation required
   by the changed avatar/name.
-- [ ] Run Profile characterization and browser tests.
-- [ ] Confirm the server remains authoritative for image security checks.
+- [x] Run Profile characterization and browser tests.
+- [x] Confirm the server remains authoritative for image security checks.
 
 Gate:
 
-- [ ] Run the complete Phase 6 gate:
+- [x] Run the complete Phase 6 gate:
 
 ```bash
 pnpm test

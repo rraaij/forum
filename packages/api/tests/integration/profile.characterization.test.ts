@@ -1,9 +1,15 @@
 /*
- * Characterization tests: the CURRENT profile validation behavior, recorded
- * before the refactor. Plan section 5.4 keeps these rules (HTTP(S)/data-URL
- * MIME types, decoded 2 MB image limit, 12-photo gallery limit, text
- * lengths, date validation, immutable username, replacement semantics)
- * unless a test here proves a behavior accidental.
+ * Characterization tests for profile validation. Written in Phase 0 against
+ * the pre-refactor route; still asserting the SAME accepted and rejected
+ * VALUES now that the rules live in the ProfileEdit module (plan 5.4):
+ * HTTP(S)/data-URL MIME types, decoded 2 MB image limit, 12-photo gallery
+ * limit, text lengths, date validation, immutable username, replacement
+ * semantics.
+ *
+ * Two things deliberately changed with the module, both recorded in the
+ * plan's contract table: the method is PUT (replacement, not patch) and
+ * failures use the standard { error: { code, message, field } } envelope.
+ * The messages themselves are unchanged.
  */
 
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
@@ -21,12 +27,17 @@ const TINY_PNG =
 // Decodes to exactly 2 MiB + 1 byte: one byte over the limit.
 const OVERSIZED_PNG = `data:image/png;base64,${"A".repeat(2_796_204)}`;
 
-function patch(path: string, body: unknown) {
+function put(path: string, body: unknown) {
   return app.request(path, {
-    method: "PATCH",
+    method: "PUT",
     headers: { "Content-Type": "application/json", Cookie: user.cookie },
     body: JSON.stringify(body),
   });
+}
+
+/** Failure messages moved into the envelope; the wording is unchanged. */
+async function errorMessage(res: Response): Promise<string> {
+  return (await res.json()).error.message;
 }
 
 beforeEach(async () => {
@@ -38,9 +49,9 @@ afterAll(async () => {
   await closeTestSql();
 });
 
-describe("PATCH /api/profile (replacement semantics)", () => {
+describe("PUT /api/profile (replacement semantics)", () => {
   it("accepts a full valid profile and echoes the stored shape", async () => {
-    const res = await patch("/api/profile", {
+    const res = await put("/api/profile", {
       displayName: "  Ramon  ",
       dateOfBirth: "1990-04-01",
       profileText: "Hello",
@@ -57,12 +68,12 @@ describe("PATCH /api/profile (replacement semantics)", () => {
   });
 
   it("REPLACES the profile: omitted fields become null", async () => {
-    await patch("/api/profile", {
+    await put("/api/profile", {
       displayName: "Ramon",
       location: "NL",
       photoUrls: [],
     });
-    const res = await patch("/api/profile", { photoUrls: [] });
+    const res = await put("/api/profile", { photoUrls: [] });
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.displayName).toBeNull();
@@ -70,17 +81,17 @@ describe("PATCH /api/profile (replacement semantics)", () => {
   });
 
   it("requires photoUrls to be an array on every update", async () => {
-    const res = await patch("/api/profile", { displayName: "Ramon" });
+    const res = await put("/api/profile", { displayName: "Ramon" });
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("Photos must be an array of images");
+    expect(await errorMessage(res)).toBe("Photos must be an array of images");
   });
 
   it("rejects more than 12 photos", async () => {
-    const res = await patch("/api/profile", {
+    const res = await put("/api/profile", {
       photoUrls: Array.from({ length: 13 }, () => TINY_PNG),
     });
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe(
+    expect(await errorMessage(res)).toBe(
       "A profile can contain up to 12 photos",
     );
   });
@@ -91,31 +102,31 @@ describe("PATCH /api/profile (replacement semantics)", () => {
       ["1990-02-30", "Date of birth is not a valid date"],
       ["2999-01-01", "Date of birth cannot be in the future"],
     ] as const) {
-      const res = await patch("/api/profile", { dateOfBirth, photoUrls: [] });
+      const res = await put("/api/profile", { dateOfBirth, photoUrls: [] });
       expect(res.status).toBe(400);
-      expect((await res.json()).error).toBe(message);
+      expect(await errorMessage(res)).toBe(message);
     }
   });
 
   it("enforces text lengths and http(s) website URLs", async () => {
-    const longName = await patch("/api/profile", {
+    const longName = await put("/api/profile", {
       displayName: "x".repeat(81),
       photoUrls: [],
     });
     expect(longName.status).toBe(400);
 
-    const badUrl = await patch("/api/profile", {
+    const badUrl = await put("/api/profile", {
       website: "ftp://example.com",
       photoUrls: [],
     });
     expect(badUrl.status).toBe(400);
-    expect((await badUrl.json()).error).toBe(
+    expect(await errorMessage(badUrl)).toBe(
       "Website must be a valid http(s) URL",
     );
   });
 
   it("username (Better Auth name) is not writable through the profile", async () => {
-    const res = await patch("/api/profile", {
+    const res = await put("/api/profile", {
       username: "new-name",
       name: "new-name",
       photoUrls: [],
@@ -125,19 +136,19 @@ describe("PATCH /api/profile (replacement semantics)", () => {
   });
 });
 
-describe("PATCH /api/profile/avatar", () => {
+describe("PUT /api/profile/avatar", () => {
   it("accepts a small data URL and clears with null", async () => {
-    const set = await patch("/api/profile/avatar", { image: TINY_PNG });
+    const set = await put("/api/profile/avatar", { image: TINY_PNG });
     expect(set.status).toBe(200);
     expect((await set.json()).image).toBe(TINY_PNG);
 
-    const clear = await patch("/api/profile/avatar", { image: null });
+    const clear = await put("/api/profile/avatar", { image: null });
     expect(clear.status).toBe(200);
     expect((await clear.json()).image).toBeNull();
   });
 
   it("keeps accepting existing http(s) avatar URLs", async () => {
-    const res = await patch("/api/profile/avatar", {
+    const res = await put("/api/profile/avatar", {
       image: "https://example.com/avatar.png",
     });
     expect(res.status).toBe(200);
@@ -145,18 +156,18 @@ describe("PATCH /api/profile/avatar", () => {
   });
 
   it("rejects non-image MIME types", async () => {
-    const res = await patch("/api/profile/avatar", {
+    const res = await put("/api/profile/avatar", {
       image: "data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=",
     });
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe(
+    expect(await errorMessage(res)).toBe(
       "Avatar must be a JPEG, PNG, WebP, or GIF image selected from your device",
     );
   });
 
   it("rejects images over the decoded 2 MB limit", async () => {
-    const res = await patch("/api/profile/avatar", { image: OVERSIZED_PNG });
+    const res = await put("/api/profile/avatar", { image: OVERSIZED_PNG });
     expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe("Avatar must be no larger than 2 MB");
+    expect(await errorMessage(res)).toBe("Avatar must be no larger than 2 MB");
   });
 });

@@ -57,14 +57,16 @@ describe("unauthenticated writes return 401", () => {
     expect((await res.json()).error.code).toBe("UNAUTHENTICATED");
   });
 
-  it("GET /api/profile and PATCH /api/profile", async () => {
+  it("profile read, replacement, avatar, and activity", async () => {
+    // Profile editing moved to PUT (replacement semantics) with the module.
     expect((await app.request("/api/profile")).status).toBe(401);
-    expect((await app.request("/api/profile", json("PATCH", {}))).status).toBe(
+    expect((await app.request("/api/profile", json("PUT", {}))).status).toBe(
       401,
     );
     expect(
-      (await app.request("/api/profile/avatar", json("PATCH", {}))).status,
+      (await app.request("/api/profile/avatar", json("PUT", {}))).status,
     ).toBe(401);
+    // Activity is still the legacy handler until Phase 7.
     expect((await app.request("/api/profile/activity")).status).toBe(401);
   });
 });

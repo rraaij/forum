@@ -12,6 +12,8 @@ import type { AppEnv } from "../types";
 import type { ErrorResponse } from "./error-envelope";
 
 export const TRANSPORT_JSON_LIMIT = 64 * 1024; // 64 KiB
+// Profile replacement carries image data URLs (plan section 6.1).
+export const PROFILE_BODY_LIMIT = 34 * 1024 * 1024; // 34 MiB
 
 function envelope(
   code: string,
