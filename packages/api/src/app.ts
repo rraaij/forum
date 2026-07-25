@@ -1,8 +1,10 @@
 import { sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger } from "hono/logger";
 import { getDb, getDbTarget, getDbUnavailableMessage } from "./db";
+import { getEnv } from "./env";
 import { sessionMiddleware } from "./middleware/session";
 import { mountRoutes } from "./routes";
 import type { AppEnv } from "./types";
@@ -41,7 +43,7 @@ export function createApp() {
   app.use(
     "*",
     cors({
-      origin: process.env.APP_URL || "http://localhost:3001",
+      origin: getEnv().APP_URL,
       credentials: true,
     }),
   );
@@ -67,6 +69,12 @@ export function createApp() {
   });
 
   app.onError((err, c) => {
+    // Framework-raised request errors (e.g. malformed JSON from the request
+    // validator) keep their status and the legacy { error: string } shape.
+    if (err instanceof HTTPException) {
+      return c.json({ error: err.message || "Request error" }, err.status);
+    }
+
     // Return a specific status/message for the failure that caused the generic
     // "Internal Server Error" page: the API cannot connect to PostgreSQL.
     // This keeps the server log detailed while making the browser-facing error

@@ -1,8 +1,16 @@
 import { reactions } from "@forum/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 import { getDb } from "../db";
+import { requireUser } from "../middleware/require-user";
 import type { AppEnv } from "../types";
+import {
+  legacyJsonBodyLimit,
+  legacyValidator,
+  reactionEmoji,
+  uuid,
+} from "../validation/legacy";
 
 const reactionsRoutes = new Hono<AppEnv>();
 
@@ -28,45 +36,54 @@ reactionsRoutes.get("/", async (c) => {
 });
 
 // POST /api/reactions — toggle reaction (auth required)
-reactionsRoutes.post("/", async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
+reactionsRoutes.post(
+  "/",
+  requireUser,
+  legacyJsonBodyLimit(),
+  legacyValidator(
+    "json",
+    z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
+  ),
+  async (c) => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
 
-  const db = getDb();
-  const body = await c.req.json<{ postId: string; emoji: string }>();
+    const db = getDb();
+    const body = c.req.valid("json");
 
-  // Check if reaction already exists
-  const [existing] = await db
-    .select()
-    .from(reactions)
-    .where(
-      and(
-        eq(reactions.postId, body.postId),
-        eq(reactions.userId, user.id),
-        eq(reactions.emoji, body.emoji),
-      ),
-    )
-    .limit(1);
+    // Check if reaction already exists
+    const [existing] = await db
+      .select()
+      .from(reactions)
+      .where(
+        and(
+          eq(reactions.postId, body.postId),
+          eq(reactions.userId, user.id),
+          eq(reactions.emoji, body.emoji),
+        ),
+      )
+      .limit(1);
 
-  if (existing) {
-    // Remove existing reaction (toggle off)
-    await db.delete(reactions).where(eq(reactions.id, existing.id));
-    return c.json({ action: "removed" });
-  }
+    if (existing) {
+      // Remove existing reaction (toggle off)
+      await db.delete(reactions).where(eq(reactions.id, existing.id));
+      return c.json({ action: "removed" });
+    }
 
-  // Add new reaction
-  const [reaction] = await db
-    .insert(reactions)
-    .values({
-      postId: body.postId,
-      userId: user.id,
-      emoji: body.emoji,
-    })
-    .returning();
+    // Add new reaction
+    const [reaction] = await db
+      .insert(reactions)
+      .values({
+        postId: body.postId,
+        userId: user.id,
+        emoji: body.emoji,
+      })
+      .returning();
 
-  return c.json({ action: "added", reaction }, 201);
-});
+    return c.json({ action: "added", reaction }, 201);
+  },
+);
 
 export { reactionsRoutes };

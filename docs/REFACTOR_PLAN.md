@@ -6,7 +6,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 
 ## Progress Tracker
 
-- [ ] Phase 0: Baseline and safety harness
+- [x] Phase 0: Baseline and safety harness
 - [ ] Phase 1: Pure contracts and domain errors
 - [ ] Phase 2: Additive Forum schema expansion
 - [ ] Phase 3: Topic discussion module
@@ -99,7 +99,7 @@ The following `docs/ROADMAP.md` recommendations are included in this refactor:
 - [ ] Debounce Topic views per browser session through an explicit command.
 - [ ] Update reply counters and activity timestamps transactionally.
 - [ ] Eliminate Category/Board loader N+1 requests with page-oriented reads.
-- [ ] Validate required environment variables at API startup and remove the
+- [x] Validate required environment variables at API startup and remove the
   hardcoded Better Auth secret fallback.
 - [ ] Rewrite the relevant README setup, architecture, testing, and reset sections
   after implementation.
@@ -974,37 +974,37 @@ the final contract/reset migration is not generated or applied earlier.
 
 Files:
 
-- [ ] Root `package.json`, `turbo.json`, and lockfile.
-- [ ] Package manifests for API and frontend tests.
-- [ ] `vitest.config.ts`, `playwright.config.ts`, `docker-compose.test.yml`,
+- [x] Root `package.json`, `turbo.json`, and lockfile.
+- [x] Package manifests for API and frontend tests.
+- [x] `vitest.config.ts`, `playwright.config.ts`, `docker-compose.test.yml`,
   `docker-compose.dev.yml`, `.env.test.example`, and `.env.dev.example`.
-- [ ] Test database bootstrap/cleanup helpers.
-- [ ] `.github/workflows/ci.yml`.
+- [x] Test database bootstrap/cleanup helpers.
+- [x] `.github/workflows/ci.yml`.
 
 Steps:
 
-- [ ] Add scripts and dependencies without changing runtime code.
-- [ ] Implement the fail-closed database target wrapper and explicit safe
+- [x] Add scripts and dependencies without changing runtime code.
+- [x] Implement the fail-closed database target wrapper and explicit safe
   generation/migration scripts before running any database command.
-- [ ] Create ignored `.env.test` and `.env.dev` from their examples with
+- [x] Create ignored `.env.test` and `.env.dev` from their examples with
   loopback-only Docker targets. Document this one-time setup; no QNAP values may be
   copied.
-- [ ] Add fail-closed API/frontend `dev:test` and `dev:dev` scripts and configure
+- [x] Add fail-closed API/frontend `dev:test` and `dev:dev` scripts and configure
   Playwright `webServer` to use the test variants.
-- [ ] Add the pre-history bootstrap SQL and prove that an empty test database can
+- [x] Add the pre-history bootstrap SQL and prove that an empty test database can
   run the full existing migration history.
-- [ ] Add a Hono `createApp().request()` smoke test.
-- [ ] Add characterization tests for current Profile validation and authorization
+- [x] Add a Hono `createApp().request()` smoke test.
+- [x] Add characterization tests for current Profile validation and authorization
   status codes that this redesign intends to retain.
-- [ ] Add runtime Zod validation to every currently exposed legacy write endpoint,
+- [x] Add runtime Zod validation to every currently exposed legacy write endpoint,
   including Topic/Post, reaction/vote, Admin, and Profile mutations.
-- [ ] Add the startup environment schema and remove the Better Auth fallback secret.
-- [ ] Add one browser smoke test for Forum startup and authentication fixture setup.
-- [ ] Add CI after all Phase 0 commands are deterministic and locally green.
+- [x] Add the startup environment schema and remove the Better Auth fallback secret.
+- [x] Add one browser smoke test for Forum startup and authentication fixture setup.
+- [x] Add CI after all Phase 0 commands are deterministic and locally green.
 
 Gate:
 
-- [ ] Run the complete Phase 0 gate:
+- [x] Run the complete Phase 0 gate:
 
 ```bash
 docker compose -f docker-compose.test.yml up -d --wait
@@ -1016,7 +1016,7 @@ pnpm exec biome check .
 pnpm build
 ```
 
-- [ ] Confirm no test or CI command can connect to `192.168.0.178` or the normal
+- [x] Confirm no test or CI command can connect to `192.168.0.178` or the normal
   `.env` database. Stop immediately if this check fails.
 
 ### Phase 1: Pure contracts and domain errors

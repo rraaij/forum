@@ -7,8 +7,15 @@ import {
 } from "@forum/db/schema";
 import { desc, eq, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 import { getDb } from "../db";
+import { requireUser } from "../middleware/require-user";
 import type { AppEnv } from "../types";
+import {
+  legacyJsonBodyLimit,
+  legacyValidator,
+  PROFILE_BODY_LIMIT,
+} from "../validation/legacy";
 
 const profileRoutes = new Hono<AppEnv>();
 
@@ -18,15 +25,28 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const IMAGE_DATA_PATTERN =
   /^data:image\/(?:jpeg|png|webp|gif);base64,([A-Za-z0-9+/]+={0,2})$/;
 
-type ProfileUpdate = {
-  displayName?: unknown;
-  dateOfBirth?: unknown;
-  profileText?: unknown;
-  image?: unknown;
-  location?: unknown;
-  website?: unknown;
-  photoUrls?: unknown;
-};
+/*
+ * Structural transport validation only: field-level rules (lengths, MIME
+ * types, image bytes, dates) stay in the validators below so their error
+ * messages — which the characterization tests pin — are unchanged.
+ */
+const profileUpdateSchema = z.object({
+  displayName: z.string({ message: "Display name must be text" }).nullish(),
+  dateOfBirth: z.string({ message: "Date of birth must be text" }).nullish(),
+  profileText: z.string({ message: "Profile text must be text" }).nullish(),
+  image: z.string({ message: "Avatar must be text" }).nullish(),
+  location: z.string({ message: "Location must be text" }).nullish(),
+  website: z.string({ message: "Website must be text" }).nullish(),
+  photoUrls: z.array(z.string({ message: "Photos must be images" }), {
+    message: "Photos must be an array of images",
+  }),
+});
+
+const avatarUpdateSchema = z.object({
+  image: z.string({ message: "Avatar must be text" }).nullish(),
+});
+
+type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
 
 function optionalText(
   value: unknown,
@@ -188,96 +208,111 @@ profileRoutes.get("/activity", async (c) => {
 
 // Avatar changes save independently so selecting a file can update author
 // imagery everywhere without also committing unrelated in-progress form edits.
-profileRoutes.patch("/avatar", async (c) => {
-  const sessionUser = c.get("user");
-  if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
+profileRoutes.patch(
+  "/avatar",
+  requireUser,
+  legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
+  legacyValidator("json", avatarUpdateSchema),
+  async (c) => {
+    const sessionUser = c.get("user");
+    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-  try {
-    const body = await c.req.json<{ image?: unknown }>();
-    const [updatedUser] = await getDb()
-      .update(users)
-      .set({
-        image: optionalImage(body.image, "Avatar"),
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, sessionUser.id))
-      .returning();
+    try {
+      const body = c.req.valid("json");
+      const [updatedUser] = await getDb()
+        .update(users)
+        .set({
+          image: optionalImage(body.image, "Avatar"),
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, sessionUser.id))
+        .returning();
 
-    if (!updatedUser) return c.json({ error: "User not found" }, 404);
-    return c.json(profileShape(updatedUser));
-  } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Invalid avatar" },
-      400,
-    );
-  }
-});
-
-profileRoutes.patch("/", async (c) => {
-  const sessionUser = c.get("user");
-  if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
-
-  const body = await c.req.json<ProfileUpdate>();
-
-  try {
-    const dateOfBirth = optionalText(body.dateOfBirth, "Date of birth", 10);
-    if (dateOfBirth && !DATE_PATTERN.test(dateOfBirth)) {
-      return c.json({ error: "Date of birth must use YYYY-MM-DD" }, 400);
-    }
-    if (dateOfBirth) {
-      const parsedDate = new Date(`${dateOfBirth}T00:00:00Z`);
-      if (
-        Number.isNaN(parsedDate.getTime()) ||
-        parsedDate.toISOString().slice(0, 10) !== dateOfBirth
-      ) {
-        return c.json({ error: "Date of birth is not a valid date" }, 400);
-      }
-      if (parsedDate > new Date()) {
-        return c.json({ error: "Date of birth cannot be in the future" }, 400);
-      }
-    }
-
-    if (!Array.isArray(body.photoUrls)) {
-      return c.json({ error: "Photos must be an array of images" }, 400);
-    }
-    if (body.photoUrls.length > MAX_PHOTOS) {
+      if (!updatedUser) return c.json({ error: "User not found" }, 404);
+      return c.json(profileShape(updatedUser));
+    } catch (error) {
       return c.json(
-        { error: `A profile can contain up to ${MAX_PHOTOS} photos` },
+        { error: error instanceof Error ? error.message : "Invalid avatar" },
         400,
       );
     }
+  },
+);
 
-    // Validate every gallery image before writing anything, so a bad final item
-    // cannot leave the user's other profile fields partially updated.
-    const photoUrls = body.photoUrls.map((photo, index) => {
-      const validated = optionalImage(photo, `Photo ${index + 1}`);
-      if (!validated) throw new Error(`Photo ${index + 1} cannot be empty`);
-      return validated;
-    });
+profileRoutes.patch(
+  "/",
+  requireUser,
+  legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
+  legacyValidator("json", profileUpdateSchema),
+  async (c) => {
+    const sessionUser = c.get("user");
+    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-    const [updatedUser] = await getDb()
-      .update(users)
-      .set({
-        displayName: optionalText(body.displayName, "Display name", 80),
-        dateOfBirth,
-        profileText: optionalText(body.profileText, "Profile text", 2_000),
-        image: optionalImage(body.image, "Avatar"),
-        location: optionalText(body.location, "Location", 100),
-        website: optionalUrl(body.website, "Website"),
-        photoUrls,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, sessionUser.id))
-      .returning();
+    const body: ProfileUpdate = c.req.valid("json");
 
-    if (!updatedUser) return c.json({ error: "User not found" }, 404);
-    return c.json(profileShape(updatedUser));
-  } catch (error) {
-    return c.json(
-      { error: error instanceof Error ? error.message : "Invalid profile" },
-      400,
-    );
-  }
-});
+    try {
+      const dateOfBirth = optionalText(body.dateOfBirth, "Date of birth", 10);
+      if (dateOfBirth && !DATE_PATTERN.test(dateOfBirth)) {
+        return c.json({ error: "Date of birth must use YYYY-MM-DD" }, 400);
+      }
+      if (dateOfBirth) {
+        const parsedDate = new Date(`${dateOfBirth}T00:00:00Z`);
+        if (
+          Number.isNaN(parsedDate.getTime()) ||
+          parsedDate.toISOString().slice(0, 10) !== dateOfBirth
+        ) {
+          return c.json({ error: "Date of birth is not a valid date" }, 400);
+        }
+        if (parsedDate > new Date()) {
+          return c.json(
+            { error: "Date of birth cannot be in the future" },
+            400,
+          );
+        }
+      }
+
+      if (!Array.isArray(body.photoUrls)) {
+        return c.json({ error: "Photos must be an array of images" }, 400);
+      }
+      if (body.photoUrls.length > MAX_PHOTOS) {
+        return c.json(
+          { error: `A profile can contain up to ${MAX_PHOTOS} photos` },
+          400,
+        );
+      }
+
+      // Validate every gallery image before writing anything, so a bad final item
+      // cannot leave the user's other profile fields partially updated.
+      const photoUrls = body.photoUrls.map((photo, index) => {
+        const validated = optionalImage(photo, `Photo ${index + 1}`);
+        if (!validated) throw new Error(`Photo ${index + 1} cannot be empty`);
+        return validated;
+      });
+
+      const [updatedUser] = await getDb()
+        .update(users)
+        .set({
+          displayName: optionalText(body.displayName, "Display name", 80),
+          dateOfBirth,
+          profileText: optionalText(body.profileText, "Profile text", 2_000),
+          image: optionalImage(body.image, "Avatar"),
+          location: optionalText(body.location, "Location", 100),
+          website: optionalUrl(body.website, "Website"),
+          photoUrls,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, sessionUser.id))
+        .returning();
+
+      if (!updatedUser) return c.json({ error: "User not found" }, 404);
+      return c.json(profileShape(updatedUser));
+    } catch (error) {
+      return c.json(
+        { error: error instanceof Error ? error.message : "Invalid profile" },
+        400,
+      );
+    }
+  },
+);
 
 export { profileRoutes };

@@ -1,6 +1,7 @@
 {
   "name": "forum",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "turbo run dev",
@@ -8,6 +9,10 @@
     "format": "biome format --write .",
     "lint": "biome lint --write .",
     "check": "tsc -b && biome check --write .",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration --concurrency=1",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -b && tsc --project apps/forum/tsconfig.json --noEmit",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:push": "turbo run db:push",
@@ -16,6 +21,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
+    "@playwright/test": "^1.55.0",
     "turbo": "^2.10.6",
     "typescript": "^7.0.2"
   },

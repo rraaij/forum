@@ -21,7 +21,10 @@
       "!**/src/styles.css",
       "!**/worker-configuration.d.ts",
       "!apps/forum/.vinxi",
-      "!apps/forum/.tsc-out"
+      "!apps/forum/.tsc-out",
+      "!**/.turbo/**/*",
+      "!**/test-results/**/*",
+      "!**/playwright-report/**/*"
     ]
   },
   "formatter": {

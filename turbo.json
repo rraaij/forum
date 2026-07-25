@@ -16,6 +16,14 @@
     "check": {
       "dependsOn": ["^build"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
     "db:generate": {
       "cache": false
     },

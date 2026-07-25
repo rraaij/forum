@@ -7,8 +7,17 @@ import {
 } from "@forum/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
 import { getDb } from "../db";
+import { requireUser } from "../middleware/require-user";
 import type { AppEnv } from "../types";
+import {
+  legacyJsonBodyLimit,
+  legacyValidator,
+  postContent,
+  topicTitle,
+  uuid,
+} from "../validation/legacy";
 
 const topicsRoutes = new Hono<AppEnv>();
 
@@ -98,74 +107,88 @@ topicsRoutes.get("/:id", async (c) => {
   return c.json({ ...topic, posts: topicPosts });
 });
 
-// POST /api/topics — create topic (auth required)
-topicsRoutes.post("/", async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  const db = getDb();
-  const body = await c.req.json<{
-    categoryId?: string;
-    subcategoryId?: string;
-    title: string;
-    content: string;
-  }>();
-
-  if (!body.categoryId && !body.subcategoryId) {
-    return c.json({ error: "categoryId or subcategoryId is required" }, 400);
-  }
-  if (body.categoryId && body.subcategoryId) {
-    return c.json(
-      { error: "Provide categoryId or subcategoryId, not both" },
-      400,
-    );
-  }
-
-  // Verify parent exists
-  if (body.subcategoryId) {
-    const [sub] = await db
-      .select()
-      .from(subcategories)
-      .where(eq(subcategories.id, body.subcategoryId))
-      .limit(1);
-    if (!sub) return c.json({ error: "Subcategory not found" }, 404);
-  } else {
-    const [cat] = await db
-      .select()
-      .from(categories)
-      // biome-ignore lint/style/noNonNullAssertion: guarded by preceding !body.subcategoryId check
-      .where(eq(categories.id, body.categoryId!))
-      .limit(1);
-    if (!cat) return c.json({ error: "Category not found" }, 404);
-  }
-
-  const slug = body.title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
-  const [topic] = await db
-    .insert(topics)
-    .values({
-      categoryId: body.categoryId ?? null,
-      subcategoryId: body.subcategoryId ?? null,
-      authorId: user.id,
-      title: body.title,
-      slug,
-      postCount: 1,
-      lastPostAt: new Date(),
-    })
-    .returning();
-
-  await db.insert(posts).values({
-    topicId: topic.id,
-    authorId: user.id,
-    content: body.content,
+const createTopicSchema = z
+  .object({
+    categoryId: uuid("categoryId").optional(),
+    subcategoryId: uuid("subcategoryId").optional(),
+    title: topicTitle,
+    content: postContent,
+  })
+  .superRefine((body, ctx) => {
+    if (!body.categoryId && !body.subcategoryId) {
+      ctx.addIssue({
+        code: "custom",
+        message: "categoryId or subcategoryId is required",
+      });
+    }
+    if (body.categoryId && body.subcategoryId) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Provide categoryId or subcategoryId, not both",
+      });
+    }
   });
 
-  return c.json(topic, 201);
-});
+// POST /api/topics — create topic (auth required)
+topicsRoutes.post(
+  "/",
+  requireUser,
+  legacyJsonBodyLimit(),
+  legacyValidator("json", createTopicSchema),
+  async (c) => {
+    // requireUser middleware guarantees the actor exists.
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const db = getDb();
+    const body = c.req.valid("json");
+
+    // Verify parent exists
+    if (body.subcategoryId) {
+      const [sub] = await db
+        .select()
+        .from(subcategories)
+        .where(eq(subcategories.id, body.subcategoryId))
+        .limit(1);
+      if (!sub) return c.json({ error: "Subcategory not found" }, 404);
+    } else {
+      const [cat] = await db
+        .select()
+        .from(categories)
+        // biome-ignore lint/style/noNonNullAssertion: guarded by preceding !body.subcategoryId check
+        .where(eq(categories.id, body.categoryId!))
+        .limit(1);
+      if (!cat) return c.json({ error: "Category not found" }, 404);
+    }
+
+    const slug = body.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    const [topic] = await db
+      .insert(topics)
+      .values({
+        categoryId: body.categoryId ?? null,
+        subcategoryId: body.subcategoryId ?? null,
+        authorId: user.id,
+        title: body.title,
+        slug,
+        postCount: 1,
+        lastPostAt: new Date(),
+      })
+      .returning();
+
+    await db.insert(posts).values({
+      topicId: topic.id,
+      authorId: user.id,
+      content: body.content,
+    });
+
+    return c.json(topic, 201);
+  },
+);
 
 export { topicsRoutes };
