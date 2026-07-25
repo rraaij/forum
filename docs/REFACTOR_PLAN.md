@@ -9,7 +9,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 - [x] Phase 0: Baseline and safety harness
 - [x] Phase 1: Pure contracts and domain errors
 - [x] Phase 2: Additive Forum schema expansion
-- [ ] Phase 3: Topic discussion module
+- [x] Phase 3: Topic discussion module
 - [ ] Phase 4: Forum read model and canonical routes
 - [ ] Phase 5: Board management module and Admin UI
 - [ ] Phase 6: Profile edit module and UI
@@ -877,19 +877,19 @@ worker.
 
 Topic discussion integration tests:
 
-- [ ] Topic plus opening Post commit together and roll back together.
-- [ ] Exactly one opening Post exists.
-- [ ] Empty title/content and missing Board are rejected.
-- [ ] Global case-insensitive Topic slug conflict returns the typed conflict.
-- [ ] Reply to locked Topic is rejected while holding the Topic lock.
-- [ ] Reply insertion updates `replyCount` and `lastActivityAt` atomically.
-- [ ] Quote snapshot is copied from the source Post and ignores forged client fields.
-- [ ] Deleted source Posts cannot be quoted.
-- [ ] Opening Posts cannot be deleted.
-- [ ] Reply deletion decrements once and recomputes last activity.
-- [ ] Deleted Posts cannot be edited.
-- [ ] View command counts once per Topic/session pair.
-- [ ] Missing, malformed, and oversized Topic/Post bodies fail transport validation
+- [x] Topic plus opening Post commit together and roll back together.
+- [x] Exactly one opening Post exists.
+- [x] Empty title/content and missing Board are rejected.
+- [x] Global case-insensitive Topic slug conflict returns the typed conflict.
+- [x] Reply to locked Topic is rejected while holding the Topic lock.
+- [x] Reply insertion updates `replyCount` and `lastActivityAt` atomically.
+- [x] Quote snapshot is copied from the source Post and ignores forged client fields.
+- [x] Deleted source Posts cannot be quoted.
+- [x] Opening Posts cannot be deleted.
+- [x] Reply deletion decrements once and recomputes last activity.
+- [x] Deleted Posts cannot be edited.
+- [x] View command counts once per Topic/session pair.
+- [x] Missing, malformed, and oversized Topic/Post bodies fail transport validation
   before a transaction starts.
 
 Forum read integration tests:
@@ -1091,24 +1091,24 @@ pnpm exec biome check .
 
 Steps:
 
-- [ ] Implement the transaction-aware repository and inject it into commands.
-- [ ] Implement `createTopic`, `replyToTopic`, `editPost`, `deleteReply`, and
+- [x] Implement the transaction-aware repository and inject it into commands.
+- [x] Implement `createTopic`, `replyToTopic`, `editPost`, `deleteReply`, and
   `recordTopicView` in that order.
-- [ ] Enforce the locked-Topic rule while holding the Topic row lock.
-- [ ] Add transaction rollback and concurrency integration tests before adapting
+- [x] Enforce the locked-Topic rule while holding the Topic row lock.
+- [x] Add transaction rollback and concurrency integration tests before adapting
   HTTP.
-- [ ] Implement runtime-validated replacement Topic/Post Hono adapters and test them
+- [x] Implement runtime-validated replacement Topic/Post Hono adapters and test them
   directly without mounting them in `packages/api/src/routes/index.ts`.
-- [ ] Leave legacy write handlers mounted so the existing frontend remains
+- [x] Leave legacy write handlers mounted so the existing frontend remains
   operational.
-- [ ] Run all Topic discussion unit, PostgreSQL integration, and Hono contract tests.
-- [ ] Inject a failure between each related write and confirm no partial data remains.
-- [ ] Confirm frontend writes remain on legacy handlers until Phase 4 provides the
+- [x] Run all Topic discussion unit, PostgreSQL integration, and Hono contract tests.
+- [x] Inject a failure between each related write and confirm no partial data remains.
+- [x] Confirm frontend writes remain on legacy handlers until Phase 4 provides the
   new Topic read model and canonical route.
 
 Gate:
 
-- [ ] Run the complete Phase 3 gate:
+- [x] Run the complete Phase 3 gate:
 
 ```bash
 pnpm test
