@@ -1,35 +1,19 @@
 /*
- * HTTP contract tests for the REPLACEMENT topic-discussion adapters (plan
- * Phase 3). The adapters are tested directly on a private Hono app — they
- * are intentionally NOT mounted in routes/index.ts until Phase 4. Every
- * error uses the standard envelope { error: { code, message, field? } }.
+ * HTTP contract tests for the replacement topic-discussion adapters. Built
+ * unmounted in Phase 3; mounted through the real app since the Phase 4
+ * swap. Every error uses the standard envelope
+ * { error: { code, message, field? } }.
  */
 
-import { Hono } from "hono";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
-import { sessionMiddleware } from "../../src/middleware/session";
-import { createTopicDiscussion } from "../../src/modules/topic-discussion/commands";
-import { createDrizzleTopicDiscussionStore } from "../../src/modules/topic-discussion/repository";
-// Private test app: auth routes for the sign-up fixture + the replacement
-// adapters, composed exactly like the future Phase 4 mounting.
-import { authRoutes } from "../../src/routes/auth";
-import {
-  createReplacementPostRoutes,
-  createReplacementTopicRoutes,
-} from "../../src/routes/replacement/topic-discussion";
-import type { AppEnv } from "../../src/types";
+import { createApp } from "../../src/app";
 import { signUpUser, type TestUser } from "../helpers/auth";
-import { closeTestSql, testDrizzle, testSql, truncateAll } from "../helpers/db";
+import { closeTestSql, testSql, truncateAll } from "../helpers/db";
 import { insertBoard } from "../helpers/fixtures";
 
-const discussion = createTopicDiscussion(
-  createDrizzleTopicDiscussionStore(testDrizzle()),
-);
-const app = new Hono<AppEnv>()
-  .use("/api/*", sessionMiddleware)
-  .route("/api/auth", authRoutes)
-  .route("/api/topics", createReplacementTopicRoutes(discussion))
-  .route("/api/posts", createReplacementPostRoutes(discussion));
+// Since the Phase 4 swap these adapters are MOUNTED: contract-test them
+// through the real app composition.
+const app = createApp();
 
 let user: TestUser;
 let boardId: string;

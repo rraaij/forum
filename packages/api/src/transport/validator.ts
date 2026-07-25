@@ -23,10 +23,15 @@ function envelope(
 
 type ValidationTarget = "json" | "param" | "query";
 
-export function transportValidator<T extends z.ZodType>(
-  target: ValidationTarget,
-  schema: T,
-) {
+/*
+ * `Target` is generic so the literal ("json" | "param" | "query") survives
+ * inference. Typing the parameter as the union instead makes Hono believe
+ * every route validates all three targets, which breaks hc<AppType>.
+ */
+export function transportValidator<
+  T extends z.ZodType,
+  Target extends ValidationTarget,
+>(target: Target, schema: T) {
   return zValidator(target, schema, (result, c: Context) => {
     if (!result.success) {
       const issue = result.error.issues[0];

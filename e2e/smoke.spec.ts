@@ -7,6 +7,7 @@
 
 import { expect, test } from "@playwright/test";
 import { connect, loadTestTarget } from "../packages/db/tests/helpers/test-db";
+import { fillWhenReady } from "./helpers";
 
 test.beforeAll(async () => {
   // Deterministic fixtures: wipe forum + auth content in forum_test.
@@ -29,9 +30,9 @@ test("forum renders for a signed-out visitor", async ({ page }) => {
 
 test("sign-up through the UI creates a working session", async ({ page }) => {
   await page.goto("/auth/sign-up");
-  await page.getByPlaceholder("Name").fill("e2e-user");
-  await page.getByPlaceholder("Email").fill("e2e-user@example.test");
-  await page.getByPlaceholder("Password").fill("test-password-123");
+  await fillWhenReady(page.getByPlaceholder("Name"), "e2e-user");
+  await fillWhenReady(page.getByPlaceholder("Email"), "e2e-user@example.test");
+  await fillWhenReady(page.getByPlaceholder("Password"), "test-password-123");
   await page.getByRole("button", { name: "Sign Up" }).click();
 
   // Successful sign-up navigates home and the header shows the user.

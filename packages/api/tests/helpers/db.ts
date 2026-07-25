@@ -50,6 +50,23 @@ export function testDrizzle() {
   return drizzleDb;
 }
 
+/*
+ * Same connection pool, but every executed query bumps the counter. Used by
+ * the fixed-query assertions that prevent reintroducing one-query-per-board.
+ */
+export function countingDrizzle(counter: { count: number }) {
+  testDrizzle(); // ensure the shared client exists
+  if (!drizzleClient) throw new Error("drizzle client not initialized");
+  return drizzle(drizzleClient, {
+    schema,
+    logger: {
+      logQuery() {
+        counter.count += 1;
+      },
+    },
+  });
+}
+
 export async function closeTestSql(): Promise<void> {
   await client?.end();
   client = null;

@@ -9,7 +9,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../../src/app";
 import { makeAdmin, signUpUser } from "../helpers/auth";
-import { closeTestSql, testSql, truncateAll } from "../helpers/db";
+import { closeTestSql, truncateAll } from "../helpers/db";
 
 const app = createApp();
 
@@ -33,15 +33,28 @@ afterAll(async () => {
 });
 
 describe("unauthenticated writes return 401", () => {
+  // Still-legacy endpoints keep the legacy { error: string } shape.
   it.each([
-    ["POST", "/api/topics", { title: "t", content: "c" }],
-    ["POST", "/api/posts", { topicId: "x", content: "c" }],
     ["POST", "/api/reactions", { postId: "x", emoji: "👍" }],
     ["POST", "/api/votes", { postId: "x", value: 1 }],
   ])("%s %s", async (method, path, body) => {
     const res = await app.request(path, json(method, body));
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: "Unauthorized" });
+  });
+
+  // Replaced topic/post writes use the standard envelope since Phase 4.
+  it.each([
+    ["POST", "/api/topics", { title: "t", content: "c" }],
+    [
+      "PATCH",
+      "/api/posts/6f6dcbcf-2f3e-4c39-9a4a-111111111111",
+      { content: "c" },
+    ],
+  ])("%s %s (envelope)", async (method, path, body) => {
+    const res = await app.request(path, json(method, body));
+    expect(res.status).toBe(401);
+    expect((await res.json()).error.code).toBe("UNAUTHENTICATED");
   });
 
   it("GET /api/profile and PATCH /api/profile", async () => {
@@ -90,69 +103,9 @@ describe("adminGuard returns 403 for missing and non-admin actors", () => {
   });
 });
 
-describe("topic and post rules", () => {
-  async function createTopicFixture() {
-    const author = await signUpUser(app, "author");
-    await makeAdmin(author.id);
-    const categoryRes = await app.request(
-      "/api/admin/categories",
-      json(
-        "POST",
-        { name: "General", slug: "general", abbreviation: "GEN" },
-        author.cookie,
-      ),
-    );
-    const category = await categoryRes.json();
-    const topicRes = await app.request(
-      "/api/topics",
-      json(
-        "POST",
-        { categoryId: category.id, title: "Hello world", content: "First!" },
-        author.cookie,
-      ),
-    );
-    expect(topicRes.status).toBe(201);
-    return { author, topic: await topicRes.json() };
-  }
-
-  it("locked topics reject replies with 403", async () => {
-    const { author, topic } = await createTopicFixture();
-    await testSql()`UPDATE topics SET is_locked = true WHERE id = ${topic.id}`;
-    const res = await app.request(
-      "/api/posts",
-      json("POST", { topicId: topic.id, content: "reply" }, author.cookie),
-    );
-    expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: "Topic is locked" });
-  });
-
-  it("non-authors cannot edit posts (403) and admins can delete", async () => {
-    const { author, topic } = await createTopicFixture();
-    const replyRes = await app.request(
-      "/api/posts",
-      json("POST", { topicId: topic.id, content: "reply" }, author.cookie),
-    );
-    const reply = await replyRes.json();
-
-    const other = await signUpUser(app, "other");
-    const editRes = await app.request(
-      `/api/posts/${reply.id}`,
-      json("PUT", { content: "hijack" }, other.cookie),
-    );
-    expect(editRes.status).toBe(403);
-
-    const deleteRes = await app.request(`/api/posts/${reply.id}`, {
-      method: "DELETE",
-      headers: { Cookie: other.cookie },
-    });
-    expect(deleteRes.status).toBe(403);
-
-    await makeAdmin(other.id);
-    const adminDelete = await app.request(`/api/posts/${reply.id}`, {
-      method: "DELETE",
-      headers: { Cookie: other.cookie },
-    });
-    expect(adminDelete.status).toBe(200);
-    expect(await adminDelete.json()).toEqual({ success: true });
-  });
-});
+/*
+ * The former "topic and post rules" characterization block is retired: the
+ * legacy topic/post handlers were replaced in Phase 4, and the replacement
+ * behavior (locked topics, author-only edits, admin deletes) is covered by
+ * topic-discussion.http.test.ts and topic-discussion.module.test.ts.
+ */

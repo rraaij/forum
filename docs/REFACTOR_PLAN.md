@@ -10,7 +10,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 - [x] Phase 1: Pure contracts and domain errors
 - [x] Phase 2: Additive Forum schema expansion
 - [x] Phase 3: Topic discussion module
-- [ ] Phase 4: Forum read model and canonical routes
+- [x] Phase 4: Forum read model and canonical routes
 - [ ] Phase 5: Board management module and Admin UI
 - [ ] Phase 6: Profile edit module and UI
 - [ ] Phase 7: Profile activity module and UI
@@ -35,13 +35,13 @@ be deleted by the reset.
 
 The work is complete when every item below is checked:
 
-- [ ] Topic creation, reply creation, Post editing, Post deletion, and Topic counters
+- [x] Topic creation, reply creation, Post editing, Post deletion, and Topic counters
   are transactional and tested through one Topic discussion interface.
 - [ ] Categories and Subcategories are represented by one arbitrary-depth `boards`
   hierarchy.
-- [ ] Forum pages each load one page-oriented read model instead of rebuilding the
+- [x] Forum pages each load one page-oriented read model instead of rebuilding the
   hierarchy through multiple HTTP calls.
-- [ ] Board Topic lists and Topic replies use deterministic keyset pagination with
+- [x] Board Topic lists and Topic replies use deterministic keyset pagination with
   documented live-feed consistency.
 - [ ] Admin Board commands own hierarchy rules, normalization, conflict handling, and
   recursive purge behavior.
@@ -90,15 +90,15 @@ Changing one of these decisions requires updating this document before implement
 
 The following `docs/ROADMAP.md` recommendations are included in this refactor:
 
-- [ ] Add runtime validation to currently exposed writes first, then every new
+- [x] Add runtime validation to currently exposed writes first, then every new
   adapter.
-- [ ] Enforce locked-Topic reply rejection transactionally on the server.
-- [ ] Add keyset pagination and matching indexes for Board Topics and Topic replies.
+- [x] Enforce locked-Topic reply rejection transactionally on the server.
+- [x] Add keyset pagination and matching indexes for Board Topics and Topic replies.
 - [ ] Replace hand-maintained frontend transport types with Hono RPC derivation.
 - [ ] Add Vitest, PostgreSQL integration tests, Playwright smoke flows, and CI.
-- [ ] Debounce Topic views per browser session through an explicit command.
-- [ ] Update reply counters and activity timestamps transactionally.
-- [ ] Eliminate Category/Board loader N+1 requests with page-oriented reads.
+- [x] Debounce Topic views per browser session through an explicit command.
+- [x] Update reply counters and activity timestamps transactionally.
+- [x] Eliminate Category/Board loader N+1 requests with page-oriented reads.
 - [x] Validate required environment variables at API startup and remove the
   hardcoded Better Auth secret fallback.
 - [ ] Rewrite the relevant README setup, architecture, testing, and reset sections
@@ -894,24 +894,24 @@ Topic discussion integration tests:
 
 Forum read integration tests:
 
-- [ ] Empty Forum, root-only, and at least five-level Board trees.
-- [ ] Sibling ordering and sibling-scoped slug reuse under different parents.
-- [ ] Recursive direct/aggregate Topic counts.
-- [ ] Root Category lookup by case-insensitive slug.
-- [ ] Board/category ancestry mismatch returns not found.
-- [ ] Topic lookup by globally unique slug.
-- [ ] Explicit opening Post and ordered replies.
-- [ ] Stable ordering for equal activity timestamps.
-- [ ] Query-count assertion prevents reintroducing one query per Board.
-- [ ] Topic and reply pages have no duplicate IDs across adjacent pages.
-- [ ] Equal timestamps use IDs as stable cursor tie-breakers.
-- [ ] Cursor tampering, malformed tuples, unsupported versions, and over-limit requests
+- [x] Empty Forum, root-only, and at least five-level Board trees.
+- [x] Sibling ordering and sibling-scoped slug reuse under different parents.
+- [x] Recursive direct/aggregate Topic counts.
+- [x] Root Category lookup by case-insensitive slug.
+- [x] Board/category ancestry mismatch returns not found.
+- [x] Topic lookup by globally unique slug.
+- [x] Explicit opening Post and ordered replies.
+- [x] Stable ordering for equal activity timestamps.
+- [x] Query-count assertion prevents reintroducing one query per Board.
+- [x] Topic and reply pages have no duplicate IDs across adjacent pages.
+- [x] Equal timestamps use IDs as stable cursor tie-breakers.
+- [x] Cursor tampering, malformed tuples, unsupported versions, and over-limit requests
   return validation errors.
-- [ ] Newer Topic activity does not duplicate accumulated IDs; refreshing restarts
+- [x] Newer Topic activity does not duplicate accumulated IDs; refreshing restarts
   traversal and surfaces the current ordering.
-- [ ] Deleting a latest reply can move a previously rendered Topic behind the active
+- [x] Deleting a latest reply can move a previously rendered Topic behind the active
   cursor; the frontend drops the repeated Topic ID instead of rendering a duplicate.
-- [ ] Reply pagination does not duplicate or skip replies inserted after the current
+- [x] Reply pagination does not duplicate or skip replies inserted after the current
   cursor.
 
 Board management integration tests:
@@ -949,13 +949,13 @@ Profile tests:
 
 Browser tests:
 
-- [ ] Browse arbitrary-depth Boards and open root/nested Topics using canonical URLs.
-- [ ] Create Topic, create reply, quote reply, edit reply, and soft-delete reply.
-- [ ] Locked Topic rejects reply without corrupting UI state.
-- [ ] Reloading/invalidation does not increase views; a new browser session does.
+- [x] Browse arbitrary-depth Boards and open root/nested Topics using canonical URLs.
+- [x] Create Topic, create reply, quote reply, edit reply, and soft-delete reply.
+- [x] Locked Topic rejects reply without corrupting UI state.
+- [x] Reloading/invalidation does not increase views; a new browser session does.
 - [ ] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
 - [ ] Profile avatar/gallery edit and activity links work after route redesign.
-- [ ] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
+- [x] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
 - [ ] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
   remove a vote after the interaction module migration.
 
@@ -1121,42 +1121,42 @@ pnpm exec biome check .
 
 Steps:
 
-- [ ] Implement recursive Board reads and fixed-query aggregate loading.
-- [ ] Implement versioned cursor encoding/decoding and seek predicates matching the
+- [x] Implement recursive Board reads and fixed-query aggregate loading.
+- [x] Implement versioned cursor encoding/decoding and seek predicates matching the
   Topic/reply indexes.
-- [ ] Implement the four page-oriented queries with paginated direct Topics/replies.
-- [ ] Add runtime-validated Hono read adapters and response contract tests.
-- [ ] Add the canonical TanStack route files listed in section 7.1.
-- [ ] Migrate the home loader, then Category loader, then Board loader, then Topic
+- [x] Implement the four page-oriented queries with paginated direct Topics/replies.
+- [x] Add runtime-validated Hono read adapters and response contract tests.
+- [x] Add the canonical TanStack route files listed in section 7.1.
+- [x] Migrate the home loader, then Category loader, then Board loader, then Topic
   loader. After each migration, remove its old N+1 composition code.
-- [ ] Add “Load more” behavior for Board Topics and Topic replies with ID
+- [x] Add “Load more” behavior for Board Topics and Topic replies with ID
   deduplication.
-- [ ] Atomically replace route registration and frontend callers in one commit: first
+- [x] Atomically replace route registration and frontend callers in one commit: first
   update the UI calls, then swap `routes/index.ts` from legacy to replacement
   adapters before committing. Never register old and new handlers for the same
   method/path simultaneously.
-- [ ] Run mounted HTTP/browser contract tests against the replacement routes, then
+- [x] Run mounted HTTP/browser contract tests against the replacement routes, then
   delete the now-unmounted legacy handler files and their duplicated validation,
   slug, authorization, and counter logic.
-- [ ] Replace quote text serialization with `quotedPostId` input and immutable
+- [x] Replace quote text serialization with `quotedPostId` input and immutable
   snapshot output.
-- [ ] Add browser-session view recording after successful client render.
-- [ ] Replace every migrated Forum Topic link with typed canonical `to` and `params`,
+- [x] Add browser-session view recording after successful client render.
+- [x] Replace every migrated Forum Topic link with typed canonical `to` and `params`,
   including `TopicsList`, Category pages, and Topic pages. Profile activity moves
   in Phase 7.
-- [ ] Migrate feature API calls to `hc<AppType>` inferred transport types.
-- [ ] Remove the `DIRECT_CATEGORY_SEGMENT` constant and old compact route files.
-- [ ] Run Vite route generation/build and inspect `routeTree.gen.ts` changes.
-- [ ] Remove obsolete read endpoints and manual response types only after no caller
+- [x] Migrate feature API calls to `hc<AppType>` inferred transport types.
+- [x] Remove the `DIRECT_CATEGORY_SEGMENT` constant and old compact route files.
+- [x] Run Vite route generation/build and inspect `routeTree.gen.ts` changes.
+- [x] Remove obsolete read endpoints and manual response types only after no caller
   remains.
-- [ ] Confirm each page makes one initial page-read request and additional requests
+- [x] Confirm each page makes one initial page-read request and additional requests
   only when “Load more” is invoked.
-- [ ] Confirm deep Board navigation and the complete Topic browser flow pass.
-- [ ] Confirm no source reference to the reserved-segment convention remains.
+- [x] Confirm deep Board navigation and the complete Topic browser flow pass.
+- [x] Confirm no source reference to the reserved-segment convention remains.
 
 Gate:
 
-- [ ] Run the complete Phase 4 gate:
+- [x] Run the complete Phase 4 gate:
 
 ```bash
 pnpm test

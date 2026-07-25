@@ -97,12 +97,19 @@ function ActivityTopicLink(props: { activity: UserPostActivity }) {
         }
       >
         {(categorySlug) => (
+          /*
+           * TEMPORARY bridge until Phase 7 moves profile activity onto the
+           * ProfileActivity module. The legacy endpoint still returns
+           * category/subcategory slugs, but topic slugs are globally unique
+           * and the topic loader resolves by slug alone, so the canonical
+           * root-topic path renders the right topic. Phase 7 replaces this
+           * with backend-supplied canonical route params.
+           */
           <Link
-            to="/$category/$sub/$topic"
+            to="/categories/$categorySlug/topics/$topicSlug"
             params={{
-              category: categorySlug(),
-              sub: props.activity.subcategorySlug ?? "topics",
-              topic: props.activity.topicSlug,
+              categorySlug: categorySlug(),
+              topicSlug: props.activity.topicSlug,
             }}
             class="font-semibold text-info hover:underline"
             onMouseEnter={(event) => showPreview(event.currentTarget)}

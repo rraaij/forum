@@ -1,10 +1,9 @@
 import { createSignal, Show } from "solid-js";
-import { apiFetch } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
-import type { CreatedTopic, TopicParent } from "@/types/forum";
+import { type CreatedTopic, createTopic } from "./api";
 
 type CreateTopicPanelProps = {
-  parent: TopicParent;
+  boardId: string;
   onCreated: (topic: CreatedTopic) => void | Promise<void>;
   class?: string;
 };
@@ -42,18 +41,11 @@ export function CreateTopicPanel(props: CreateTopicPanelProps) {
     setSuccessMessage(null);
 
     try {
-      /*
-       * Submit directly from the browser so `credentials: "include"` in
-       * apiFetch sends the active authentication cookie. The previous server
-       * function call did not forward that browser cookie to the API.
-       */
-      const topic = await apiFetch<CreatedTopic>("/topics", {
-        method: "POST",
-        body: JSON.stringify({
-          ...props.parent,
-          title: trimmedTitle,
-          content: trimmedContent,
-        }),
+      // Submitted from the browser so the Better Auth cookie is included.
+      const topic = await createTopic({
+        boardId: props.boardId,
+        title: trimmedTitle,
+        content: trimmedContent,
       });
 
       // Let each route decide whether to invalidate data, navigate, or both.
@@ -76,8 +68,6 @@ export function CreateTopicPanel(props: CreateTopicPanelProps) {
 
   return (
     <Show when={user()}>
-      {/* Consumers can add container styling, such as PageHeader's divider,
-          without rendering an empty shell when no user is signed in. */}
       <div class={`space-y-3 ${props.class ?? ""}`}>
         <div class="flex justify-end">
           <button
