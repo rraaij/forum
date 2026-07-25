@@ -50,25 +50,23 @@ export function createApp() {
   app.use("*", logger());
   app.use("/api/*", sessionMiddleware);
 
-  // Routes
-  mountRoutes(app);
+  // Routes and health checks are chained so the returned instance carries
+  // the full route schema into AppType (see routes/index.ts).
+  const routes = mountRoutes(app)
+    .get("/health", (c) => c.json({ status: "ok" }))
+    .get("/health/db", async (c) => {
+      // Unlike /health, this route actually opens a database connection. Use
+      // it when the forum page shows a data-loading error and you need a fast
+      // yes/no answer for the configured POSTGRES_* target.
+      await getDb().execute(sql`select 1`);
 
-  // Health check
-  app.get("/health", (c) => c.json({ status: "ok" }));
-
-  app.get("/health/db", async (c) => {
-    // Unlike /health, this route actually opens a database connection. Use it
-    // when the forum page shows a data-loading error and you need a fast yes/no
-    // answer for the configured POSTGRES_* target.
-    await getDb().execute(sql`select 1`);
-
-    return c.json({
-      status: "ok",
-      database: getDbTarget(),
+      return c.json({
+        status: "ok",
+        database: getDbTarget(),
+      });
     });
-  });
 
-  app.onError((err, c) => {
+  routes.onError((err, c) => {
     // Framework-raised request errors (e.g. malformed JSON from the request
     // validator) keep their status and the legacy { error: string } shape.
     if (err instanceof HTTPException) {
@@ -96,5 +94,12 @@ export function createApp() {
     return c.json({ error: "Internal server error" }, 500);
   });
 
-  return app;
+  return routes;
 }
+
+/*
+ * Exported Hono route schema (refactor plan section 6.2). The frontend
+ * creates its transport client with hc<AppType> and infers request/response
+ * types from it instead of maintaining them by hand.
+ */
+export type AppType = ReturnType<typeof createApp>;

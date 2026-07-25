@@ -17,11 +17,13 @@
     "@tanstack/solid-router": "^1.170.18",
     "@tanstack/solid-start": "^1.168.32",
     "better-auth": "^1.6.25",
+    "hono": "^4.12.32",
     "solid-js": "^1.9.14"
   },
   "devDependencies": {
     "@forum/config": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^26.1.1",
     "daisyui": "^5.7.0",
     "tailwindcss": "^4.3.3",
     "vite": "^8.1.5",

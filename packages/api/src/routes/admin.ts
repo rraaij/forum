@@ -12,10 +12,6 @@ import {
   uuid,
 } from "../validation/legacy";
 
-const adminRoutes = new Hono<AppEnv>();
-
-adminRoutes.use("*", adminGuard);
-
 const idParam = z.object({ id: uuid("id") });
 
 const identifierFields = {
@@ -183,299 +179,307 @@ async function findSubcategoryIdentifierConflict(
 
 // ── Categories ────────────────────────────────────────────
 
-adminRoutes.post(
-  "/categories",
-  legacyJsonBodyLimit(),
-  legacyValidator("json", categoryCreateSchema),
-  async (c) => {
-    const db = getDb();
-    const body = c.req.valid("json");
+// Registrations are chained so the route schema reaches AppType.
+const adminRoutes = new Hono<AppEnv>()
+  .use("*", adminGuard)
+  .post(
+    "/categories",
+    legacyJsonBodyLimit(),
+    legacyValidator("json", categoryCreateSchema),
+    async (c) => {
+      const db = getDb();
+      const body = c.req.valid("json");
 
-    const name = body.name?.trim();
-    const slug = body.slug?.trim().toLowerCase();
-    const abbreviation = body.abbreviation?.trim().toUpperCase();
-    if (!name || !slug || !abbreviation) {
-      return c.json({ error: "name, slug and abbreviation are required" }, 400);
-    }
-    if (abbreviation.length > 5) {
-      return c.json(
-        { error: "abbreviation must contain at most 5 characters" },
-        400,
-      );
-    }
-
-    const conflict = await findCategoryIdentifierConflict({
-      name,
-      slug,
-      abbreviation,
-    });
-    if (conflict) {
-      return c.json({ error: `Category ${conflict} must be unique` }, 409);
-    }
-
-    try {
-      const [category] = await db
-        .insert(categories)
-        .values({
-          name,
-          slug,
-          abbreviation,
-          description: body.description?.trim() || null,
-          icon: body.icon ?? null,
-          sortOrder: body.sortOrder ?? 0,
-        })
-        .returning();
-
-      return c.json(category, 201);
-    } catch (error) {
-      if (isUniqueViolation(error)) {
-        return c.json({ error: "Category identifiers must be unique" }, 409);
+      const name = body.name?.trim();
+      const slug = body.slug?.trim().toLowerCase();
+      const abbreviation = body.abbreviation?.trim().toUpperCase();
+      if (!name || !slug || !abbreviation) {
+        return c.json(
+          { error: "name, slug and abbreviation are required" },
+          400,
+        );
       }
-      throw error;
-    }
-  },
-);
-
-adminRoutes.put(
-  "/categories/:id",
-  legacyJsonBodyLimit(),
-  legacyValidator("param", idParam),
-  legacyValidator("json", categoryUpdateSchema),
-  async (c) => {
-    const db = getDb();
-    const { id } = c.req.valid("param");
-    const body = c.req.valid("json");
-
-    /*
-     * Build a normalized update object instead of passing request data directly
-     * to Drizzle. This keeps whitespace and casing rules identical to creation.
-     */
-    const name = body.name?.trim();
-    const slug = body.slug?.trim().toLowerCase();
-    const abbreviation = body.abbreviation?.trim().toUpperCase();
-    if (body.name !== undefined && !name) {
-      return c.json({ error: "name is required" }, 400);
-    }
-    if (body.slug !== undefined && !slug) {
-      return c.json({ error: "slug is required" }, 400);
-    }
-    if (
-      body.abbreviation !== undefined &&
-      (!abbreviation || abbreviation.length > 5)
-    ) {
-      return c.json(
-        { error: "abbreviation must contain between 1 and 5 characters" },
-        400,
-      );
-    }
-
-    const conflict = await findCategoryIdentifierConflict(
-      { name, slug, abbreviation },
-      id,
-    );
-    if (conflict) {
-      return c.json({ error: `Category ${conflict} must be unique` }, 409);
-    }
-
-    const update: Partial<typeof categories.$inferInsert> = {};
-    if (name !== undefined) update.name = name;
-    if (slug !== undefined) update.slug = slug;
-    if (body.description !== undefined) {
-      update.description = body.description?.trim() || null;
-    }
-    if (body.icon !== undefined) update.icon = body.icon;
-    if (body.sortOrder !== undefined) update.sortOrder = body.sortOrder;
-    if (abbreviation !== undefined) update.abbreviation = abbreviation;
-
-    try {
-      const [updated] = await db
-        .update(categories)
-        .set(update)
-        .where(eq(categories.id, id))
-        .returning();
-
-      if (!updated) return c.json({ error: "Not found" }, 404);
-      return c.json(updated);
-    } catch (error) {
-      if (isUniqueViolation(error)) {
-        return c.json({ error: "Category identifiers must be unique" }, 409);
+      if (abbreviation.length > 5) {
+        return c.json(
+          { error: "abbreviation must contain at most 5 characters" },
+          400,
+        );
       }
-      throw error;
-    }
-  },
-);
 
-adminRoutes.delete(
-  "/categories/:id",
-  legacyValidator("param", idParam),
-  async (c) => {
+      const conflict = await findCategoryIdentifierConflict({
+        name,
+        slug,
+        abbreviation,
+      });
+      if (conflict) {
+        return c.json({ error: `Category ${conflict} must be unique` }, 409);
+      }
+
+      try {
+        const [category] = await db
+          .insert(categories)
+          .values({
+            name,
+            slug,
+            abbreviation,
+            description: body.description?.trim() || null,
+            icon: body.icon ?? null,
+            sortOrder: body.sortOrder ?? 0,
+          })
+          .returning();
+
+        return c.json(category, 201);
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          return c.json({ error: "Category identifiers must be unique" }, 409);
+        }
+        throw error;
+      }
+    },
+  )
+
+  .put(
+    "/categories/:id",
+    legacyJsonBodyLimit(),
+    legacyValidator("param", idParam),
+    legacyValidator("json", categoryUpdateSchema),
+    async (c) => {
+      const db = getDb();
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
+
+      /*
+       * Build a normalized update object instead of passing request data directly
+       * to Drizzle. This keeps whitespace and casing rules identical to creation.
+       */
+      const name = body.name?.trim();
+      const slug = body.slug?.trim().toLowerCase();
+      const abbreviation = body.abbreviation?.trim().toUpperCase();
+      if (body.name !== undefined && !name) {
+        return c.json({ error: "name is required" }, 400);
+      }
+      if (body.slug !== undefined && !slug) {
+        return c.json({ error: "slug is required" }, 400);
+      }
+      if (
+        body.abbreviation !== undefined &&
+        (!abbreviation || abbreviation.length > 5)
+      ) {
+        return c.json(
+          { error: "abbreviation must contain between 1 and 5 characters" },
+          400,
+        );
+      }
+
+      const conflict = await findCategoryIdentifierConflict(
+        { name, slug, abbreviation },
+        id,
+      );
+      if (conflict) {
+        return c.json({ error: `Category ${conflict} must be unique` }, 409);
+      }
+
+      const update: Partial<typeof categories.$inferInsert> = {};
+      if (name !== undefined) update.name = name;
+      if (slug !== undefined) update.slug = slug;
+      if (body.description !== undefined) {
+        update.description = body.description?.trim() || null;
+      }
+      if (body.icon !== undefined) update.icon = body.icon;
+      if (body.sortOrder !== undefined) update.sortOrder = body.sortOrder;
+      if (abbreviation !== undefined) update.abbreviation = abbreviation;
+
+      try {
+        const [updated] = await db
+          .update(categories)
+          .set(update)
+          .where(eq(categories.id, id))
+          .returning();
+
+        if (!updated) return c.json({ error: "Not found" }, 404);
+        return c.json(updated);
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          return c.json({ error: "Category identifiers must be unique" }, 409);
+        }
+        throw error;
+      }
+    },
+  )
+
+  .delete("/categories/:id", legacyValidator("param", idParam), async (c) => {
     const db = getDb();
     const { id } = c.req.valid("param");
     await db.delete(categories).where(eq(categories.id, id));
     return c.json({ success: true });
-  },
-);
+  })
 
-// ── Subcategories ─────────────────────────────────────────
+  // ── Subcategories ─────────────────────────────────────────
 
-adminRoutes.post(
-  "/subcategories",
-  legacyJsonBodyLimit(),
-  legacyValidator("json", subcategoryCreateSchema),
-  async (c) => {
-    const db = getDb();
-    const body = c.req.valid("json");
+  .post(
+    "/subcategories",
+    legacyJsonBodyLimit(),
+    legacyValidator("json", subcategoryCreateSchema),
+    async (c) => {
+      const db = getDb();
+      const body = c.req.valid("json");
 
-    const name = body.name?.trim();
-    const slug = body.slug?.trim().toLowerCase();
-    const abbreviation = body.abbreviation?.trim().toUpperCase();
-    if (!body.categoryId || !name || !slug || !abbreviation) {
-      return c.json(
-        { error: "categoryId, name, slug and abbreviation are required" },
-        400,
-      );
-    }
-    if (abbreviation.length > 5) {
-      return c.json(
-        { error: "abbreviation must contain at most 5 characters" },
-        400,
-      );
-    }
+      const name = body.name?.trim();
+      const slug = body.slug?.trim().toLowerCase();
+      const abbreviation = body.abbreviation?.trim().toUpperCase();
+      if (!body.categoryId || !name || !slug || !abbreviation) {
+        return c.json(
+          { error: "categoryId, name, slug and abbreviation are required" },
+          400,
+        );
+      }
+      if (abbreviation.length > 5) {
+        return c.json(
+          { error: "abbreviation must contain at most 5 characters" },
+          400,
+        );
+      }
 
-    const conflict = await findSubcategoryIdentifierConflict({
-      name,
-      slug,
-      abbreviation,
-    });
-    if (conflict) {
-      return c.json({ error: `Subcategory ${conflict} must be unique` }, 409);
-    }
+      const conflict = await findSubcategoryIdentifierConflict({
+        name,
+        slug,
+        abbreviation,
+      });
+      if (conflict) {
+        return c.json({ error: `Subcategory ${conflict} must be unique` }, 409);
+      }
 
-    // Verify category exists
-    const [cat] = await db
-      .select()
-      .from(categories)
-      .where(eq(categories.id, body.categoryId))
-      .limit(1);
-
-    if (!cat) return c.json({ error: "Category not found" }, 404);
-
-    // Enforce max 1 level of nesting
-    if (body.parentSubcategoryId) {
-      const [parent] = await db
+      // Verify category exists
+      const [cat] = await db
         .select()
-        .from(subcategories)
-        .where(eq(subcategories.id, body.parentSubcategoryId))
+        .from(categories)
+        .where(eq(categories.id, body.categoryId))
         .limit(1);
 
-      if (!parent)
-        return c.json({ error: "Parent subcategory not found" }, 404);
-      if (parent.parentSubcategoryId) {
-        return c.json({ error: "Maximum nesting depth reached" }, 400);
+      if (!cat) return c.json({ error: "Category not found" }, 404);
+
+      // Enforce max 1 level of nesting
+      if (body.parentSubcategoryId) {
+        const [parent] = await db
+          .select()
+          .from(subcategories)
+          .where(eq(subcategories.id, body.parentSubcategoryId))
+          .limit(1);
+
+        if (!parent)
+          return c.json({ error: "Parent subcategory not found" }, 404);
+        if (parent.parentSubcategoryId) {
+          return c.json({ error: "Maximum nesting depth reached" }, 400);
+        }
       }
-    }
 
-    try {
-      const [sub] = await db
-        .insert(subcategories)
-        .values({
-          categoryId: body.categoryId,
-          parentSubcategoryId: body.parentSubcategoryId ?? null,
-          name,
-          slug,
-          abbreviation,
-          description: body.description?.trim() || null,
-          sortOrder: body.sortOrder ?? 0,
-        })
-        .returning();
+      try {
+        const [sub] = await db
+          .insert(subcategories)
+          .values({
+            categoryId: body.categoryId,
+            parentSubcategoryId: body.parentSubcategoryId ?? null,
+            name,
+            slug,
+            abbreviation,
+            description: body.description?.trim() || null,
+            sortOrder: body.sortOrder ?? 0,
+          })
+          .returning();
 
-      return c.json(sub, 201);
-    } catch (error) {
-      if (isUniqueViolation(error)) {
-        return c.json({ error: "Subcategory identifiers must be unique" }, 409);
+        return c.json(sub, 201);
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          return c.json(
+            { error: "Subcategory identifiers must be unique" },
+            409,
+          );
+        }
+        throw error;
       }
-      throw error;
-    }
-  },
-);
+    },
+  )
 
-adminRoutes.put(
-  "/subcategories/:id",
-  legacyJsonBodyLimit(),
-  legacyValidator("param", idParam),
-  legacyValidator("json", subcategoryUpdateSchema),
-  async (c) => {
-    const db = getDb();
-    const { id } = c.req.valid("param");
-    const body = c.req.valid("json");
+  .put(
+    "/subcategories/:id",
+    legacyJsonBodyLimit(),
+    legacyValidator("param", idParam),
+    legacyValidator("json", subcategoryUpdateSchema),
+    async (c) => {
+      const db = getDb();
+      const { id } = c.req.valid("param");
+      const body = c.req.valid("json");
 
-    /*
-     * Normalize subcategory updates exactly like category updates. Building an
-     * explicit object also prevents arbitrary request keys from reaching SQL.
-     */
-    const name = body.name?.trim();
-    const slug = body.slug?.trim().toLowerCase();
-    const abbreviation = body.abbreviation?.trim().toUpperCase();
-    if (body.name !== undefined && !name) {
-      return c.json({ error: "name is required" }, 400);
-    }
-    if (body.slug !== undefined && !slug) {
-      return c.json({ error: "slug is required" }, 400);
-    }
-    if (
-      body.abbreviation !== undefined &&
-      (!abbreviation || abbreviation.length > 5)
-    ) {
-      return c.json(
-        { error: "abbreviation must contain between 1 and 5 characters" },
-        400,
+      /*
+       * Normalize subcategory updates exactly like category updates. Building an
+       * explicit object also prevents arbitrary request keys from reaching SQL.
+       */
+      const name = body.name?.trim();
+      const slug = body.slug?.trim().toLowerCase();
+      const abbreviation = body.abbreviation?.trim().toUpperCase();
+      if (body.name !== undefined && !name) {
+        return c.json({ error: "name is required" }, 400);
+      }
+      if (body.slug !== undefined && !slug) {
+        return c.json({ error: "slug is required" }, 400);
+      }
+      if (
+        body.abbreviation !== undefined &&
+        (!abbreviation || abbreviation.length > 5)
+      ) {
+        return c.json(
+          { error: "abbreviation must contain between 1 and 5 characters" },
+          400,
+        );
+      }
+
+      const conflict = await findSubcategoryIdentifierConflict(
+        { name, slug, abbreviation },
+        id,
       );
-    }
-
-    const conflict = await findSubcategoryIdentifierConflict(
-      { name, slug, abbreviation },
-      id,
-    );
-    if (conflict) {
-      return c.json({ error: `Subcategory ${conflict} must be unique` }, 409);
-    }
-
-    const update: Partial<typeof subcategories.$inferInsert> = {};
-    if (name !== undefined) update.name = name;
-    if (slug !== undefined) update.slug = slug;
-    if (body.description !== undefined) {
-      update.description = body.description?.trim() || null;
-    }
-    if (body.sortOrder !== undefined) update.sortOrder = body.sortOrder;
-    if (abbreviation !== undefined) update.abbreviation = abbreviation;
-
-    try {
-      const [updated] = await db
-        .update(subcategories)
-        .set(update)
-        .where(eq(subcategories.id, id))
-        .returning();
-
-      if (!updated) return c.json({ error: "Not found" }, 404);
-      return c.json(updated);
-    } catch (error) {
-      if (isUniqueViolation(error)) {
-        return c.json({ error: "Subcategory identifiers must be unique" }, 409);
+      if (conflict) {
+        return c.json({ error: `Subcategory ${conflict} must be unique` }, 409);
       }
-      throw error;
-    }
-  },
-);
 
-adminRoutes.delete(
-  "/subcategories/:id",
-  legacyValidator("param", idParam),
-  async (c) => {
-    const db = getDb();
-    const { id } = c.req.valid("param");
-    await db.delete(subcategories).where(eq(subcategories.id, id));
-    return c.json({ success: true });
-  },
-);
+      const update: Partial<typeof subcategories.$inferInsert> = {};
+      if (name !== undefined) update.name = name;
+      if (slug !== undefined) update.slug = slug;
+      if (body.description !== undefined) {
+        update.description = body.description?.trim() || null;
+      }
+      if (body.sortOrder !== undefined) update.sortOrder = body.sortOrder;
+      if (abbreviation !== undefined) update.abbreviation = abbreviation;
+
+      try {
+        const [updated] = await db
+          .update(subcategories)
+          .set(update)
+          .where(eq(subcategories.id, id))
+          .returning();
+
+        if (!updated) return c.json({ error: "Not found" }, 404);
+        return c.json(updated);
+      } catch (error) {
+        if (isUniqueViolation(error)) {
+          return c.json(
+            { error: "Subcategory identifiers must be unique" },
+            409,
+          );
+        }
+        throw error;
+      }
+    },
+  )
+
+  .delete(
+    "/subcategories/:id",
+    legacyValidator("param", idParam),
+    async (c) => {
+      const db = getDb();
+      const { id } = c.req.valid("param");
+      await db.delete(subcategories).where(eq(subcategories.id, id));
+      return c.json({ success: true });
+    },
+  );
 
 export { adminRoutes };

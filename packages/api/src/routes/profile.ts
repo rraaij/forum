@@ -17,8 +17,6 @@ import {
   PROFILE_BODY_LIMIT,
 } from "../validation/legacy";
 
-const profileRoutes = new Hono<AppEnv>();
-
 const MAX_PHOTOS = 12;
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -134,185 +132,185 @@ function profileShape(user: typeof users.$inferSelect) {
   };
 }
 
-profileRoutes.get("/", async (c) => {
-  const sessionUser = c.get("user");
-  if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
+// Registrations are chained so the route schema reaches AppType.
+const profileRoutes = new Hono<AppEnv>()
+  .get("/", async (c) => {
+    const sessionUser = c.get("user");
+    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-  const [user] = await getDb()
-    .select()
-    .from(users)
-    .where(eq(users.id, sessionUser.id))
-    .limit(1);
+    const [user] = await getDb()
+      .select()
+      .from(users)
+      .where(eq(users.id, sessionUser.id))
+      .limit(1);
 
-  if (!user) return c.json({ error: "User not found" }, 404);
-  return c.json(profileShape(user));
-});
+    if (!user) return c.json({ error: "User not found" }, 404);
+    return c.json(profileShape(user));
+  })
+  .get("/activity", async (c) => {
+    const sessionUser = c.get("user");
+    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-profileRoutes.get("/activity", async (c) => {
-  const sessionUser = c.get("user");
-  if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
-
-  const rows = await getDb()
-    .select({
-      postId: posts.id,
-      postContent: posts.content,
-      postCreatedAt: posts.createdAt,
-      postDeleted: posts.isDeleted,
-      topicId: topics.id,
-      topicTitle: topics.title,
-      topicSlug: topics.slug,
-      topicCreatedAt: topics.createdAt,
-      topicAuthorId: topics.authorId,
-      categorySlug: categories.slug,
-      subcategorySlug: subcategories.slug,
-      /*
-       * The query is restricted to one author. For a topic that user created,
-       * their first post is therefore its opening post.
-       */
-      authorPostPosition: sql<number>`row_number() over (
+    const rows = await getDb()
+      .select({
+        postId: posts.id,
+        postContent: posts.content,
+        postCreatedAt: posts.createdAt,
+        postDeleted: posts.isDeleted,
+        topicId: topics.id,
+        topicTitle: topics.title,
+        topicSlug: topics.slug,
+        topicCreatedAt: topics.createdAt,
+        topicAuthorId: topics.authorId,
+        categorySlug: categories.slug,
+        subcategorySlug: subcategories.slug,
+        /*
+         * The query is restricted to one author. For a topic that user created,
+         * their first post is therefore its opening post.
+         */
+        authorPostPosition: sql<number>`row_number() over (
         partition by ${topics.id}
         order by ${posts.createdAt}, ${posts.id}
       )`,
-    })
-    .from(posts)
-    .innerJoin(topics, eq(posts.topicId, topics.id))
-    .leftJoin(subcategories, eq(topics.subcategoryId, subcategories.id))
-    .leftJoin(
-      categories,
-      or(
-        eq(categories.id, topics.categoryId),
-        eq(categories.id, subcategories.categoryId),
-      ),
-    )
-    .where(eq(posts.authorId, sessionUser.id))
-    .orderBy(desc(posts.createdAt));
+      })
+      .from(posts)
+      .innerJoin(topics, eq(posts.topicId, topics.id))
+      .leftJoin(subcategories, eq(topics.subcategoryId, subcategories.id))
+      .leftJoin(
+        categories,
+        or(
+          eq(categories.id, topics.categoryId),
+          eq(categories.id, subcategories.categoryId),
+        ),
+      )
+      .where(eq(posts.authorId, sessionUser.id))
+      .orderBy(desc(posts.createdAt));
 
-  return c.json(
-    rows.map((row) => ({
-      postId: row.postId,
-      postContent: row.postContent,
-      postCreatedAt: row.postCreatedAt,
-      postDeleted: row.postDeleted,
-      topicId: row.topicId,
-      topicTitle: row.topicTitle,
-      topicSlug: row.topicSlug,
-      topicCreatedAt: row.topicCreatedAt,
-      categorySlug: row.categorySlug,
-      subcategorySlug: row.subcategorySlug,
-      isTopicStart:
-        row.topicAuthorId === sessionUser.id &&
-        Number(row.authorPostPosition) === 1,
-    })),
-  );
-});
+    return c.json(
+      rows.map((row) => ({
+        postId: row.postId,
+        postContent: row.postContent,
+        postCreatedAt: row.postCreatedAt,
+        postDeleted: row.postDeleted,
+        topicId: row.topicId,
+        topicTitle: row.topicTitle,
+        topicSlug: row.topicSlug,
+        topicCreatedAt: row.topicCreatedAt,
+        categorySlug: row.categorySlug,
+        subcategorySlug: row.subcategorySlug,
+        isTopicStart:
+          row.topicAuthorId === sessionUser.id &&
+          Number(row.authorPostPosition) === 1,
+      })),
+    );
+  })
+  // Avatar changes save independently so selecting a file can update author
+  // imagery everywhere without also committing unrelated in-progress form
+  // edits.
+  .patch(
+    "/avatar",
+    requireUser,
+    legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
+    legacyValidator("json", avatarUpdateSchema),
+    async (c) => {
+      const sessionUser = c.get("user");
+      if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-// Avatar changes save independently so selecting a file can update author
-// imagery everywhere without also committing unrelated in-progress form edits.
-profileRoutes.patch(
-  "/avatar",
-  requireUser,
-  legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
-  legacyValidator("json", avatarUpdateSchema),
-  async (c) => {
-    const sessionUser = c.get("user");
-    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
+      try {
+        const body = c.req.valid("json");
+        const [updatedUser] = await getDb()
+          .update(users)
+          .set({
+            image: optionalImage(body.image, "Avatar"),
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, sessionUser.id))
+          .returning();
 
-    try {
-      const body = c.req.valid("json");
-      const [updatedUser] = await getDb()
-        .update(users)
-        .set({
-          image: optionalImage(body.image, "Avatar"),
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, sessionUser.id))
-        .returning();
-
-      if (!updatedUser) return c.json({ error: "User not found" }, 404);
-      return c.json(profileShape(updatedUser));
-    } catch (error) {
-      return c.json(
-        { error: error instanceof Error ? error.message : "Invalid avatar" },
-        400,
-      );
-    }
-  },
-);
-
-profileRoutes.patch(
-  "/",
-  requireUser,
-  legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
-  legacyValidator("json", profileUpdateSchema),
-  async (c) => {
-    const sessionUser = c.get("user");
-    if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
-
-    const body: ProfileUpdate = c.req.valid("json");
-
-    try {
-      const dateOfBirth = optionalText(body.dateOfBirth, "Date of birth", 10);
-      if (dateOfBirth && !DATE_PATTERN.test(dateOfBirth)) {
-        return c.json({ error: "Date of birth must use YYYY-MM-DD" }, 400);
-      }
-      if (dateOfBirth) {
-        const parsedDate = new Date(`${dateOfBirth}T00:00:00Z`);
-        if (
-          Number.isNaN(parsedDate.getTime()) ||
-          parsedDate.toISOString().slice(0, 10) !== dateOfBirth
-        ) {
-          return c.json({ error: "Date of birth is not a valid date" }, 400);
-        }
-        if (parsedDate > new Date()) {
-          return c.json(
-            { error: "Date of birth cannot be in the future" },
-            400,
-          );
-        }
-      }
-
-      if (!Array.isArray(body.photoUrls)) {
-        return c.json({ error: "Photos must be an array of images" }, 400);
-      }
-      if (body.photoUrls.length > MAX_PHOTOS) {
+        if (!updatedUser) return c.json({ error: "User not found" }, 404);
+        return c.json(profileShape(updatedUser));
+      } catch (error) {
         return c.json(
-          { error: `A profile can contain up to ${MAX_PHOTOS} photos` },
+          { error: error instanceof Error ? error.message : "Invalid avatar" },
           400,
         );
       }
+    },
+  )
+  .patch(
+    "/",
+    requireUser,
+    legacyJsonBodyLimit(PROFILE_BODY_LIMIT),
+    legacyValidator("json", profileUpdateSchema),
+    async (c) => {
+      const sessionUser = c.get("user");
+      if (!sessionUser) return c.json({ error: "Unauthorized" }, 401);
 
-      // Validate every gallery image before writing anything, so a bad final item
-      // cannot leave the user's other profile fields partially updated.
-      const photoUrls = body.photoUrls.map((photo, index) => {
-        const validated = optionalImage(photo, `Photo ${index + 1}`);
-        if (!validated) throw new Error(`Photo ${index + 1} cannot be empty`);
-        return validated;
-      });
+      const body: ProfileUpdate = c.req.valid("json");
 
-      const [updatedUser] = await getDb()
-        .update(users)
-        .set({
-          displayName: optionalText(body.displayName, "Display name", 80),
-          dateOfBirth,
-          profileText: optionalText(body.profileText, "Profile text", 2_000),
-          image: optionalImage(body.image, "Avatar"),
-          location: optionalText(body.location, "Location", 100),
-          website: optionalUrl(body.website, "Website"),
-          photoUrls,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, sessionUser.id))
-        .returning();
+      try {
+        const dateOfBirth = optionalText(body.dateOfBirth, "Date of birth", 10);
+        if (dateOfBirth && !DATE_PATTERN.test(dateOfBirth)) {
+          return c.json({ error: "Date of birth must use YYYY-MM-DD" }, 400);
+        }
+        if (dateOfBirth) {
+          const parsedDate = new Date(`${dateOfBirth}T00:00:00Z`);
+          if (
+            Number.isNaN(parsedDate.getTime()) ||
+            parsedDate.toISOString().slice(0, 10) !== dateOfBirth
+          ) {
+            return c.json({ error: "Date of birth is not a valid date" }, 400);
+          }
+          if (parsedDate > new Date()) {
+            return c.json(
+              { error: "Date of birth cannot be in the future" },
+              400,
+            );
+          }
+        }
 
-      if (!updatedUser) return c.json({ error: "User not found" }, 404);
-      return c.json(profileShape(updatedUser));
-    } catch (error) {
-      return c.json(
-        { error: error instanceof Error ? error.message : "Invalid profile" },
-        400,
-      );
-    }
-  },
-);
+        if (!Array.isArray(body.photoUrls)) {
+          return c.json({ error: "Photos must be an array of images" }, 400);
+        }
+        if (body.photoUrls.length > MAX_PHOTOS) {
+          return c.json(
+            { error: `A profile can contain up to ${MAX_PHOTOS} photos` },
+            400,
+          );
+        }
+
+        // Validate every gallery image before writing anything, so a bad final item
+        // cannot leave the user's other profile fields partially updated.
+        const photoUrls = body.photoUrls.map((photo, index) => {
+          const validated = optionalImage(photo, `Photo ${index + 1}`);
+          if (!validated) throw new Error(`Photo ${index + 1} cannot be empty`);
+          return validated;
+        });
+
+        const [updatedUser] = await getDb()
+          .update(users)
+          .set({
+            displayName: optionalText(body.displayName, "Display name", 80),
+            dateOfBirth,
+            profileText: optionalText(body.profileText, "Profile text", 2_000),
+            image: optionalImage(body.image, "Avatar"),
+            location: optionalText(body.location, "Location", 100),
+            website: optionalUrl(body.website, "Website"),
+            photoUrls,
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, sessionUser.id))
+          .returning();
+
+        if (!updatedUser) return c.json({ error: "User not found" }, 404);
+        return c.json(profileShape(updatedUser));
+      } catch (error) {
+        return c.json(
+          { error: error instanceof Error ? error.message : "Invalid profile" },
+          400,
+        );
+      }
+    },
+  );
 
 export { profileRoutes };

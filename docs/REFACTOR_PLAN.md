@@ -7,7 +7,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 ## Progress Tracker
 
 - [x] Phase 0: Baseline and safety harness
-- [ ] Phase 1: Pure contracts and domain errors
+- [x] Phase 1: Pure contracts and domain errors
 - [ ] Phase 2: Additive Forum schema expansion
 - [ ] Phase 3: Topic discussion module
 - [ ] Phase 4: Forum read model and canonical routes
@@ -1023,23 +1023,23 @@ pnpm build
 
 Steps:
 
-- [ ] Define the module input/result/error types described in sections 5 and 6.
-- [ ] Define `PageRequest`, `Page<T>`, versioned Topic/reply cursors, default limit
+- [x] Define the module input/result/error types described in sections 5 and 6.
+- [x] Define `PageRequest`, `Page<T>`, versioned Topic/reply cursors, default limit
   `25`, and hard maximum `100`.
-- [ ] Extract and test normalization functions for Board and Topic fields.
-- [ ] Define `QuoteSnapshotV1` and pure validation.
-- [ ] Define canonical frontend route-param result types without importing TanStack
+- [x] Extract and test normalization functions for Board and Topic fields.
+- [x] Define `QuoteSnapshotV1` and pure validation.
+- [x] Define canonical frontend route-param result types without importing TanStack
   Router into backend modules.
-- [ ] Define Zod transport schemas for all replacement path, query, and JSON inputs.
-- [ ] Add one route-level error mapper from typed domain errors to the standard HTTP
+- [x] Define Zod transport schemas for all replacement path, query, and JSON inputs.
+- [x] Add one route-level error mapper from typed domain errors to the standard HTTP
   envelope.
-- [ ] Export the Hono `AppType`, create the typed frontend `hc<AppType>` composition
+- [x] Export the Hono `AppType`, create the typed frontend `hc<AppType>` composition
   seam, and add a compile-only contract test.
-- [ ] Confirm no endpoint or database behavior changed in this phase.
+- [x] Confirm no endpoint or database behavior changed in this phase.
 
 Gate:
 
-- [ ] Run the complete Phase 1 gate:
+- [x] Run the complete Phase 1 gate:
 
 ```bash
 pnpm test

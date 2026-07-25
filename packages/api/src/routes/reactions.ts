@@ -12,78 +12,77 @@ import {
   uuid,
 } from "../validation/legacy";
 
-const reactionsRoutes = new Hono<AppEnv>();
-
-// GET /api/reactions?postId=... — get reactions for a post
-reactionsRoutes.get("/", async (c) => {
-  const db = getDb();
-  const postId = c.req.query("postId");
-
-  if (!postId) {
-    return c.json({ error: "postId is required" }, 400);
-  }
-
-  const result = await db
-    .select({
-      emoji: reactions.emoji,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(reactions)
-    .where(eq(reactions.postId, postId))
-    .groupBy(reactions.emoji);
-
-  return c.json(result);
-});
-
-// POST /api/reactions — toggle reaction (auth required)
-reactionsRoutes.post(
-  "/",
-  requireUser,
-  legacyJsonBodyLimit(),
-  legacyValidator(
-    "json",
-    z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
-  ),
-  async (c) => {
-    const user = c.get("user");
-    if (!user) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
+// Registrations are chained so the route schema reaches AppType.
+const reactionsRoutes = new Hono<AppEnv>()
+  // GET /api/reactions?postId=... — get reactions for a post
+  .get("/", async (c) => {
     const db = getDb();
-    const body = c.req.valid("json");
+    const postId = c.req.query("postId");
 
-    // Check if reaction already exists
-    const [existing] = await db
-      .select()
-      .from(reactions)
-      .where(
-        and(
-          eq(reactions.postId, body.postId),
-          eq(reactions.userId, user.id),
-          eq(reactions.emoji, body.emoji),
-        ),
-      )
-      .limit(1);
-
-    if (existing) {
-      // Remove existing reaction (toggle off)
-      await db.delete(reactions).where(eq(reactions.id, existing.id));
-      return c.json({ action: "removed" });
+    if (!postId) {
+      return c.json({ error: "postId is required" }, 400);
     }
 
-    // Add new reaction
-    const [reaction] = await db
-      .insert(reactions)
-      .values({
-        postId: body.postId,
-        userId: user.id,
-        emoji: body.emoji,
+    const result = await db
+      .select({
+        emoji: reactions.emoji,
+        count: sql<number>`count(*)::int`,
       })
-      .returning();
+      .from(reactions)
+      .where(eq(reactions.postId, postId))
+      .groupBy(reactions.emoji);
 
-    return c.json({ action: "added", reaction }, 201);
-  },
-);
+    return c.json(result);
+  })
+  // POST /api/reactions — toggle reaction (auth required)
+  .post(
+    "/",
+    requireUser,
+    legacyJsonBodyLimit(),
+    legacyValidator(
+      "json",
+      z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
+    ),
+    async (c) => {
+      const user = c.get("user");
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const db = getDb();
+      const body = c.req.valid("json");
+
+      // Check if reaction already exists
+      const [existing] = await db
+        .select()
+        .from(reactions)
+        .where(
+          and(
+            eq(reactions.postId, body.postId),
+            eq(reactions.userId, user.id),
+            eq(reactions.emoji, body.emoji),
+          ),
+        )
+        .limit(1);
+
+      if (existing) {
+        // Remove existing reaction (toggle off)
+        await db.delete(reactions).where(eq(reactions.id, existing.id));
+        return c.json({ action: "removed" });
+      }
+
+      // Add new reaction
+      const [reaction] = await db
+        .insert(reactions)
+        .values({
+          postId: body.postId,
+          userId: user.id,
+          emoji: body.emoji,
+        })
+        .returning();
+
+      return c.json({ action: "added", reaction }, 201);
+    },
+  );
 
 export { reactionsRoutes };
