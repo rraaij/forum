@@ -37,10 +37,15 @@ function firstIssueMessage(error: {
 
 type ValidationTarget = "json" | "param" | "query";
 
-export function legacyValidator<T extends z.ZodType>(
-  target: ValidationTarget,
-  schema: T,
-) {
+/*
+ * `Target` is generic so the literal survives inference. Typing the
+ * parameter as the union instead makes Hono believe every route validates
+ * all three targets, which breaks hc<AppType> for its callers.
+ */
+export function legacyValidator<
+  T extends z.ZodType,
+  Target extends ValidationTarget,
+>(target: Target, schema: T) {
   return zValidator(target, schema, (result, c: Context) => {
     if (!result.success) {
       return c.json({ error: firstIssueMessage(result.error) }, 400);

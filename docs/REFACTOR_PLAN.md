@@ -11,7 +11,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 - [x] Phase 2: Additive Forum schema expansion
 - [x] Phase 3: Topic discussion module
 - [x] Phase 4: Forum read model and canonical routes
-- [ ] Phase 5: Board management module and Admin UI
+- [x] Phase 5: Board management module and Admin UI
 - [ ] Phase 6: Profile edit module and UI
 - [ ] Phase 7: Profile activity module and UI
 - [ ] Phase 8: Destructive contract/reset migration
@@ -37,15 +37,15 @@ The work is complete when every item below is checked:
 
 - [x] Topic creation, reply creation, Post editing, Post deletion, and Topic counters
   are transactional and tested through one Topic discussion interface.
-- [ ] Categories and Subcategories are represented by one arbitrary-depth `boards`
+- [x] Categories and Subcategories are represented by one arbitrary-depth `boards`
   hierarchy.
 - [x] Forum pages each load one page-oriented read model instead of rebuilding the
   hierarchy through multiple HTTP calls.
 - [x] Board Topic lists and Topic replies use deterministic keyset pagination with
   documented live-feed consistency.
-- [ ] Admin Board commands own hierarchy rules, normalization, conflict handling, and
+- [x] Admin Board commands own hierarchy rules, normalization, conflict handling, and
   recursive purge behavior.
-- [ ] Board management is hosted at `/admin/boards` with client and server guards.
+- [x] Board management is hosted at `/admin/boards` with client and server guards.
 - [ ] Profile editing and Profile activity are separate backend and frontend modules.
 - [ ] Existing route modules and UI pages are adapters; they do not implement domain
   rules or database queries.
@@ -610,7 +610,16 @@ Expose `toggleReaction` and `applyVote` with the current route behavior. This is
 a reaction/vote redesign. Its purpose is to move direct database writes out of
 route adapters and ensure each mutation acquires the shared Forum-content advisory
 lock in the same transaction as its insert/update/delete. Existing reaction and
-vote HTTP contracts stay unchanged.
+vote HTTP contracts stay unchanged, with one agreed exception recorded during
+Phase 5: the success body is now exactly `{ action }`, matching the module
+interface above, instead of also echoing the inserted row. No caller read that
+row. Status codes, toggle semantics, and the legacy `{ error }` failure shape are
+unchanged.
+
+A minimal reaction/vote UI was added in Phase 5 (agreed during implementation) so
+these endpoints are reachable from the browser and the Phase 5 browser test can
+exercise them. It surfaces the existing behavior only; the redesign remains a
+non-goal.
 
 ## 6. HTTP Contracts
 
@@ -916,26 +925,26 @@ Forum read integration tests:
 
 Board management integration tests:
 
-- [ ] Root and child creation normalization.
-- [ ] Negative `sortOrder` fails at both module and database seams.
-- [ ] Sibling name/slug/abbreviation conflicts.
-- [ ] Same child slug under different parents succeeds.
-- [ ] Move to self or descendant fails in both module and trigger.
-- [ ] Concurrent conflicting moves/writes resolve deterministically.
-- [ ] Purge preview counts the complete subtree and content.
-- [ ] Purge rejects wrong name and stale expected impact.
-- [ ] Confirmed purge removes the complete subtree atomically.
-- [ ] Concurrent Board/Topic/Post/reaction/vote/view writes block behind purge and do
+- [x] Root and child creation normalization.
+- [x] Negative `sortOrder` fails at both module and database seams.
+- [x] Sibling name/slug/abbreviation conflicts.
+- [x] Same child slug under different parents succeeds.
+- [x] Move to self or descendant fails in both module and trigger.
+- [x] Concurrent conflicting moves/writes resolve deterministically.
+- [x] Purge preview counts the complete subtree and content.
+- [x] Purge rejects wrong name and stale expected impact.
+- [x] Confirmed purge removes the complete subtree atomically.
+- [x] Concurrent Board/Topic/Post/reaction/vote/view writes block behind purge and do
   not make the confirmed impact stale after its in-transaction recount.
-- [ ] Concurrent move and purge commands complete without deadlock and always acquire
+- [x] Concurrent move and purge commands complete without deadlock and always acquire
   hierarchy then Forum-content advisory locks.
-- [ ] Non-admin HTTP requests cannot invoke any command.
+- [x] Non-admin HTTP requests cannot invoke any command.
 
 Interaction-write regression tests:
 
-- [ ] Reaction add/remove toggle semantics remain unchanged.
-- [ ] Vote add/remove/switch semantics remain unchanged.
-- [ ] Reaction and vote writes acquire the shared Forum-content advisory lock in the
+- [x] Reaction add/remove toggle semantics remain unchanged.
+- [x] Vote add/remove/switch semantics remain unchanged.
+- [x] Reaction and vote writes acquire the shared Forum-content advisory lock in the
   same transaction as their mutation.
 
 Profile tests:
@@ -953,10 +962,10 @@ Browser tests:
 - [x] Create Topic, create reply, quote reply, edit reply, and soft-delete reply.
 - [x] Locked Topic rejects reply without corrupting UI state.
 - [x] Reloading/invalidation does not increase views; a new browser session does.
-- [ ] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
+- [x] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
 - [ ] Profile avatar/gallery edit and activity links work after route redesign.
 - [x] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
-- [ ] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
+- [x] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
   remove a vote after the interaction module migration.
 
 Transport/type tests:
@@ -1171,29 +1180,29 @@ pnpm build
 
 Steps:
 
-- [ ] Implement create/update/move commands and cycle-safe hierarchy policy.
-- [ ] Implement purge preview and confirmed purge with impact recheck.
-- [ ] Add the shared/exclusive Forum-content advisory-lock protocol to Board, Topic,
+- [x] Implement create/update/move commands and cycle-safe hierarchy policy.
+- [x] Implement purge preview and confirmed purge with impact recheck.
+- [x] Add the shared/exclusive Forum-content advisory-lock protocol to Board, Topic,
   Post, reaction, vote, and view write repositories.
-- [ ] Implement the narrow `interaction-write` module and move reaction/vote writes
+- [x] Implement the narrow `interaction-write` module and move reaction/vote writes
   behind it without changing their HTTP behavior.
-- [ ] Replace `admin.ts` Category/Subcategory handlers with runtime-validated Board
+- [x] Replace `admin.ts` Category/Subcategory handlers with runtime-validated Board
   adapters.
-- [ ] Preserve `adminGuard` on the complete `/api/admin/boards` route group.
-- [ ] Add `/admin/boards` with a role-aware `beforeLoad` guard.
-- [ ] Build the frontend management controller around explicit mutation states.
-- [ ] Split page, tree, forms, move, and purge confirmation into focused UI modules.
-- [ ] Replace full-page reload with route invalidation after successful mutation.
-- [ ] Delete `CategoryManagerDialog.tsx` only after `/admin/boards` covers all
+- [x] Preserve `adminGuard` on the complete `/api/admin/boards` route group.
+- [x] Add `/admin/boards` with a role-aware `beforeLoad` guard.
+- [x] Build the frontend management controller around explicit mutation states.
+- [x] Split page, tree, forms, move, and purge confirmation into focused UI modules.
+- [x] Replace full-page reload with route invalidation after successful mutation.
+- [x] Delete `CategoryManagerDialog.tsx` only after `/admin/boards` covers all
   commands.
-- [ ] Confirm arbitrary-depth create/move works, cycles fail, and purge impact is
+- [x] Confirm arbitrary-depth create/move works, cycles fail, and purge impact is
   race-checked.
-- [ ] Confirm every non-admin HTTP contract test returns `403` and direct navigation
+- [x] Confirm every non-admin HTTP contract test returns `403` and direct navigation
   to `/admin/boards` is blocked in the UI.
 
 Gate:
 
-- [ ] Run the complete Phase 5 gate:
+- [x] Run the complete Phase 5 gate:
 
 ```bash
 pnpm test

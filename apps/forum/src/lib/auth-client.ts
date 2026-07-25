@@ -13,3 +13,5 @@ export const signIn = authClient.signIn;
 export const signUp = authClient.signUp;
 export const signOut = authClient.signOut;
 export const changePassword = authClient.changePassword;
+// One-shot session read for route guards, where a reactive hook cannot run.
+export const getSession = authClient.getSession;

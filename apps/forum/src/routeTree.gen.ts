@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as AdminBoardsRouteImport } from './routes/admin/boards'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
 import { Route as CategoriesCategorySlugIndexRouteImport } from './routes/categories/$categorySlug/index'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBoardsRoute = AdminBoardsRouteImport.update({
+  id: '/admin/boards',
+  path: '/admin/boards',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -68,6 +74,7 @@ const CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$categorySlug/': typeof CategoriesCategorySlugIndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$categorySlug': typeof CategoriesCategorySlugIndexRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
   '/categories/$categorySlug/': typeof CategoriesCategorySlugIndexRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$categorySlug/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$categorySlug'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/categories/$categorySlug/'
@@ -132,6 +144,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProfileRoute: typeof ProfileRoute
+  AdminBoardsRoute: typeof AdminBoardsRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
   CategoriesCategorySlugIndexRoute: typeof CategoriesCategorySlugIndexRoute
@@ -154,6 +167,13 @@ declare module '@tanstack/solid-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/boards': {
+      id: '/admin/boards'
+      path: '/admin/boards'
+      fullPath: '/admin/boards'
+      preLoaderRoute: typeof AdminBoardsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -204,6 +224,7 @@ declare module '@tanstack/solid-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProfileRoute: ProfileRoute,
+  AdminBoardsRoute: AdminBoardsRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
   CategoriesCategorySlugIndexRoute: CategoriesCategorySlugIndexRoute,

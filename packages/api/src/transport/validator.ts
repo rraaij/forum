@@ -62,3 +62,16 @@ export async function requireActor(c: Context<AppEnv>, next: Next) {
   }
   await next();
 }
+
+/*
+ * Administrator gate. Deliberately preserves the historical adminGuard
+ * contract (plan section 6): BOTH a missing actor and a signed-in
+ * non-admin receive 403, never 401 — admin routes do not disclose whether
+ * authentication alone would have been enough.
+ */
+export async function requireAdmin(c: Context<AppEnv>, next: Next) {
+  if (c.get("user")?.role !== "admin") {
+    return c.json(envelope("FORBIDDEN", "Administrator access required"), 403);
+  }
+  await next();
+}

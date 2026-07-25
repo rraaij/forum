@@ -1,9 +1,10 @@
 import { votes } from "@forum/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { getDb } from "../db";
 import { requireUser } from "../middleware/require-user";
+import type { InteractionWrite } from "../modules/interaction-write/types";
 import type { AppEnv } from "../types";
 import {
   legacyJsonBodyLimit,
@@ -11,85 +12,66 @@ import {
   uuid,
 } from "../validation/legacy";
 
-// Registrations are chained so the route schema reaches AppType.
-const votesRoutes = new Hono<AppEnv>()
-  // GET /api/votes?postId=... — get vote score for a post
-  .get("/", async (c) => {
-    const db = getDb();
-    const postId = c.req.query("postId");
+/*
+ * Vote routes. The WRITE now goes through the interaction-write module so
+ * it takes the shared forum-content advisory lock (plan section 5.6);
+ * add/switch/remove semantics and the legacy error shape are unchanged.
+ */
+export function createVoteRoutes(interactions: InteractionWrite) {
+  return (
+    new Hono<AppEnv>()
+      // GET /api/votes?postId=... — get vote score for a post
+      .get("/", async (c) => {
+        const db = getDb();
+        const postId = c.req.query("postId");
 
-    if (!postId) {
-      return c.json({ error: "postId is required" }, 400);
-    }
-
-    const [result] = await db
-      .select({
-        score: sql<number>`coalesce(sum(${votes.value}), 0)::int`,
-      })
-      .from(votes)
-      .where(eq(votes.postId, postId));
-
-    return c.json({ score: result?.score ?? 0 });
-  })
-  // POST /api/votes — toggle vote (auth required)
-  .post(
-    "/",
-    requireUser,
-    legacyJsonBodyLimit(),
-    legacyValidator(
-      "json",
-      z.object({
-        postId: uuid("postId"),
-        value: z
-          .number({ message: "value must be 1 or -1" })
-          .refine(
-            (value) => value === 1 || value === -1,
-            "value must be 1 or -1",
-          ),
-      }),
-    ),
-    async (c) => {
-      const user = c.get("user");
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
-
-      const db = getDb();
-      const body = c.req.valid("json");
-
-      // Check existing vote
-      const [existing] = await db
-        .select()
-        .from(votes)
-        .where(and(eq(votes.postId, body.postId), eq(votes.userId, user.id)))
-        .limit(1);
-
-      if (existing) {
-        if (existing.value === body.value) {
-          // Same vote → remove (un-vote)
-          await db.delete(votes).where(eq(votes.id, existing.id));
-          return c.json({ action: "removed" });
+        if (!postId) {
+          return c.json({ error: "postId is required" }, 400);
         }
-        // Different vote → switch
-        await db
-          .update(votes)
-          .set({ value: body.value })
-          .where(eq(votes.id, existing.id));
-        return c.json({ action: "switched" });
-      }
 
-      // New vote
-      const [vote] = await db
-        .insert(votes)
-        .values({
-          postId: body.postId,
-          userId: user.id,
-          value: body.value,
-        })
-        .returning();
+        const [result] = await db
+          .select({
+            score: sql<number>`coalesce(sum(${votes.value}), 0)::int`,
+          })
+          .from(votes)
+          .where(eq(votes.postId, postId));
 
-      return c.json({ action: "added", vote }, 201);
-    },
+        return c.json({ score: result?.score ?? 0 });
+      })
+      // POST /api/votes — toggle vote (auth required)
+      .post(
+        "/",
+        requireUser,
+        legacyJsonBodyLimit(),
+        legacyValidator(
+          "json",
+          z.object({
+            postId: uuid("postId"),
+            value: z
+              .number({ message: "value must be 1 or -1" })
+              .refine(
+                (value) => value === 1 || value === -1,
+                "value must be 1 or -1",
+              ),
+          }),
+        ),
+        async (c) => {
+          const user = c.get("user");
+          if (!user) {
+            return c.json({ error: "Unauthorized" }, 401);
+          }
+
+          const body = c.req.valid("json");
+          const result = await interactions.applyVote({
+            actorId: user.id,
+            postId: body.postId,
+            value: body.value as 1 | -1,
+          });
+
+          return result.action === "added"
+            ? c.json(result, 201)
+            : c.json(result);
+        },
+      )
   );
-
-export { votesRoutes };
+}

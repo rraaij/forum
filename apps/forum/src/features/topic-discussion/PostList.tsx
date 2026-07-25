@@ -1,6 +1,7 @@
 import { Avatar } from "@forum/ui";
 import { createSignal, For, Show } from "solid-js";
 import type { PostView } from "@/features/forum-read/api";
+import { PostInteractions } from "@/features/interactions/PostInteractions";
 import { useSession } from "@/lib/auth-client";
 import { deleteReply, editPost } from "./api";
 import { QuoteSnapshot } from "./QuoteSnapshot";
@@ -203,6 +204,7 @@ function ReplyCard(props: {
                   Edited on {formatDateTime(props.post.editedAt)}
                 </p>
               </Show>
+              <PostInteractions postId={props.post.id} />
             </div>
           </Show>
         </div>

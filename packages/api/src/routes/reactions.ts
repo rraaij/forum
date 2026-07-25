@@ -1,9 +1,10 @@
 import { reactions } from "@forum/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { getDb } from "../db";
 import { requireUser } from "../middleware/require-user";
+import type { InteractionWrite } from "../modules/interaction-write/types";
 import type { AppEnv } from "../types";
 import {
   legacyJsonBodyLimit,
@@ -12,77 +13,61 @@ import {
   uuid,
 } from "../validation/legacy";
 
-// Registrations are chained so the route schema reaches AppType.
-const reactionsRoutes = new Hono<AppEnv>()
-  // GET /api/reactions?postId=... — get reactions for a post
-  .get("/", async (c) => {
-    const db = getDb();
-    const postId = c.req.query("postId");
+/*
+ * Reaction routes. The WRITE now goes through the interaction-write module
+ * so it takes the shared forum-content advisory lock (plan section 5.6);
+ * the HTTP contract and the legacy { error: string } shape are unchanged.
+ * The read stays inline until reactions are redesigned (out of scope).
+ */
+export function createReactionRoutes(interactions: InteractionWrite) {
+  return (
+    new Hono<AppEnv>()
+      // GET /api/reactions?postId=... — get reactions for a post
+      .get("/", async (c) => {
+        const db = getDb();
+        const postId = c.req.query("postId");
 
-    if (!postId) {
-      return c.json({ error: "postId is required" }, 400);
-    }
+        if (!postId) {
+          return c.json({ error: "postId is required" }, 400);
+        }
 
-    const result = await db
-      .select({
-        emoji: reactions.emoji,
-        count: sql<number>`count(*)::int`,
+        const result = await db
+          .select({
+            emoji: reactions.emoji,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(reactions)
+          .where(eq(reactions.postId, postId))
+          .groupBy(reactions.emoji);
+
+        return c.json(result);
       })
-      .from(reactions)
-      .where(eq(reactions.postId, postId))
-      .groupBy(reactions.emoji);
+      // POST /api/reactions — toggle reaction (auth required)
+      .post(
+        "/",
+        requireUser,
+        legacyJsonBodyLimit(),
+        legacyValidator(
+          "json",
+          z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
+        ),
+        async (c) => {
+          const user = c.get("user");
+          if (!user) {
+            return c.json({ error: "Unauthorized" }, 401);
+          }
 
-    return c.json(result);
-  })
-  // POST /api/reactions — toggle reaction (auth required)
-  .post(
-    "/",
-    requireUser,
-    legacyJsonBodyLimit(),
-    legacyValidator(
-      "json",
-      z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
-    ),
-    async (c) => {
-      const user = c.get("user");
-      if (!user) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+          const body = c.req.valid("json");
+          const result = await interactions.toggleReaction({
+            actorId: user.id,
+            postId: body.postId,
+            emoji: body.emoji,
+          });
 
-      const db = getDb();
-      const body = c.req.valid("json");
-
-      // Check if reaction already exists
-      const [existing] = await db
-        .select()
-        .from(reactions)
-        .where(
-          and(
-            eq(reactions.postId, body.postId),
-            eq(reactions.userId, user.id),
-            eq(reactions.emoji, body.emoji),
-          ),
-        )
-        .limit(1);
-
-      if (existing) {
-        // Remove existing reaction (toggle off)
-        await db.delete(reactions).where(eq(reactions.id, existing.id));
-        return c.json({ action: "removed" });
-      }
-
-      // Add new reaction
-      const [reaction] = await db
-        .insert(reactions)
-        .values({
-          postId: body.postId,
-          userId: user.id,
-          emoji: body.emoji,
-        })
-        .returning();
-
-      return c.json({ action: "added", reaction }, 201);
-    },
+          return result.action === "added"
+            ? c.json(result, 201)
+            : c.json(result);
+        },
+      )
   );
-
-export { reactionsRoutes };
+}

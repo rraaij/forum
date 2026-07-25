@@ -9,6 +9,7 @@
 import { boards, posts, topics, topicViews, users } from "@forum/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "../../db";
+import { acquireForumContentLockShared } from "../shared/locks";
 import type { QuoteSnapshotV1 } from "../shared/quote-snapshot";
 
 export interface LockedTopic {
@@ -87,6 +88,14 @@ export function createDrizzleTopicDiscussionStore(
   return {
     transaction(fn) {
       return db.transaction(async (tx) => {
+        /*
+         * Every topic/post/view write takes the SHARED forum-content lock
+         * (plan section 5.3): concurrent writes never block each other, but
+         * all of them block behind an in-flight recursive board purge, so
+         * purge cannot delete content that is mid-write.
+         */
+        await acquireForumContentLockShared(tx);
+
         const ops: TopicDiscussionTx = {
           async boardExists(boardId) {
             const rows = await tx

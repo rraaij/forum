@@ -69,21 +69,31 @@ describe("unauthenticated writes return 401", () => {
   });
 });
 
-describe("adminGuard returns 403 for missing and non-admin actors", () => {
+/*
+ * The admin guard keeps its historical contract on the replacement board
+ * routes: a MISSING actor and a signed-in NON-ADMIN both receive 403 (never
+ * 401), so admin routes never disclose that authentication alone would have
+ * sufficed. Only the body shape moved to the standard envelope.
+ */
+describe("admin guard returns 403 for missing and non-admin actors", () => {
+  const board = {
+    parentId: null,
+    name: "General",
+    slug: "general",
+    abbreviation: "GEN",
+  };
+
   it("missing actor", async () => {
-    const res = await app.request(
-      "/api/admin/categories",
-      json("POST", { name: "General", abbreviation: "GEN" }),
-    );
+    const res = await app.request("/api/admin/boards", json("POST", board));
     expect(res.status).toBe(403);
-    expect(await res.json()).toEqual({ error: "Forbidden" });
+    expect((await res.json()).error.code).toBe("FORBIDDEN");
   });
 
   it("signed-in non-admin actor", async () => {
     const user = await signUpUser(app, "regular");
     const res = await app.request(
-      "/api/admin/categories",
-      json("POST", { name: "General", abbreviation: "GEN" }, user.cookie),
+      "/api/admin/boards",
+      json("POST", board, user.cookie),
     );
     expect(res.status).toBe(403);
   });
@@ -92,12 +102,8 @@ describe("adminGuard returns 403 for missing and non-admin actors", () => {
     const user = await signUpUser(app, "admin-user");
     await makeAdmin(user.id);
     const res = await app.request(
-      "/api/admin/categories",
-      json(
-        "POST",
-        { name: "General", slug: "general", abbreviation: "GEN" },
-        user.cookie,
-      ),
+      "/api/admin/boards",
+      json("POST", board, user.cookie),
     );
     expect(res.status).toBe(201);
   });

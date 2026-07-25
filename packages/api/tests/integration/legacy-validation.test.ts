@@ -71,19 +71,6 @@ describe("legacy write validation", () => {
     expect((await res.json()).error).toBe("Request body too large");
   });
 
-  it("rejects negative admin sortOrder", async () => {
-    const res = await post("/api/admin/categories", {
-      name: "Sorted",
-      slug: "sorted",
-      abbreviation: "SRT",
-      sortOrder: -1,
-    });
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toBe(
-      "sortOrder must be a non-negative integer",
-    );
-  });
-
   it("rejects non-JSON bodies with 400", async () => {
     const res = await app.request("/api/votes", {
       method: "POST",
