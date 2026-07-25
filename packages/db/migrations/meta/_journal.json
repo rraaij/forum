@@ -43,6 +43,13 @@
       "when": 1782051066859,
       "tag": "0005_modern_kid_colt",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784981151129,
+      "tag": "0006_low_viper",
+      "breakpoints": true
     }
   ]
 }

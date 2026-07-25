@@ -100,10 +100,11 @@ console.log(
   `[safe-db] ${action} (${mode}) against ${describeDbTarget(target)} from .env.${mode}`,
 );
 
-if (mode === "test" && action === "migrate") {
+if (action === "migrate") {
   // The committed migration history starts from a schema-pushed database, so
-  // a completely empty forum_test first receives the test-only legacy
-  // bootstrap (exact pre-0000 schema). Non-empty databases are left alone.
+  // a completely EMPTY, safety-checked _test/_dev database first receives
+  // the legacy bootstrap (exact pre-0000 schema). Non-empty databases are
+  // left alone; the loopback/suffix guard above already excludes QNAP.
   const { default: postgres } = await import("postgres");
   const sql = postgres({
     host: target.host,
@@ -122,7 +123,7 @@ if (mode === "test" && action === "migrate") {
     `;
     if (count === 0) {
       console.log(
-        "[safe-db] empty test database; applying test-only legacy bootstrap (pre-0000 schema)",
+        `[safe-db] empty ${mode} database; applying legacy bootstrap (pre-0000 schema)`,
       );
       const bootstrapPath = resolve(packageDir, "sql/legacy-bootstrap.sql");
       await sql.unsafe(readFileSync(bootstrapPath, "utf8"));

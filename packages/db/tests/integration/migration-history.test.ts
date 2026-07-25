@@ -108,7 +108,9 @@ describe("legacy bootstrap and migration history", () => {
       WHERE table_schema = 'public' AND column_name = 'abbreviation'
       ORDER BY table_name
     `;
+    // boards (added in 0006) also carries an abbreviation column.
     expect(abbrev.map((r) => [r.table_name, r.is_nullable])).toEqual([
+      ["boards", "NO"],
       ["categories", "NO"],
       ["subcategories", "NO"],
     ]);

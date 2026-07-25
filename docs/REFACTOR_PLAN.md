@@ -8,7 +8,7 @@ Scope: development only; production and QNAP rollout are not part of this plan
 
 - [x] Phase 0: Baseline and safety harness
 - [x] Phase 1: Pure contracts and domain errors
-- [ ] Phase 2: Additive Forum schema expansion
+- [x] Phase 2: Additive Forum schema expansion
 - [ ] Phase 3: Topic discussion module
 - [ ] Phase 4: Forum read model and canonical routes
 - [ ] Phase 5: Board management module and Admin UI
@@ -294,10 +294,10 @@ though production compatibility is not required.
 
 The additive expansion migration must:
 
-- [ ] Create `boards`, `topic_views`, the Post-kind enum, indexes, and cycle trigger.
-- [ ] Add the new Topic/Post columns as nullable while legacy routes still compile.
-- [ ] Leave Categories, Subcategories, and legacy Topic columns in place temporarily.
-- [ ] Make no seed-data changes; migrations must produce an empty Forum when
+- [x] Create `boards`, `topic_views`, the Post-kind enum, indexes, and cycle trigger.
+- [x] Add the new Topic/Post columns as nullable while legacy routes still compile.
+- [x] Leave Categories, Subcategories, and legacy Topic columns in place temporarily.
+- [x] Make no seed-data changes; migrations must produce an empty Forum when
   starting from an empty database.
 
 After every caller has moved, generate one clearly named destructive contract/reset
@@ -853,9 +853,11 @@ The test bootstrap must abort unless all are true:
 
 The committed migration history starts from a previously schema-pushed database:
 `0000_romantic_blackheart.sql` alters `categories` rather than creating the initial
-tables. Add an idempotent test-only legacy bootstrap SQL file that reconstructs the
+tables. Add an idempotent legacy bootstrap SQL file that reconstructs the
 exact pre-`0000` schema expected by the historical migrations. It may run only
-against an empty, safety-checked `_test` database. Then run every committed
+against an empty, safety-checked `_test` or `_dev` database (the `_dev` case is
+required because `db:migrate:dev` must work from an empty `forum_dev`; the same
+fail-closed loopback/suffix guard applies). Then run every committed
 migration, including expansion and contract/reset migrations. A migration smoke
 test must prove empty database -> legacy bootstrap -> complete history -> target
 schema.
@@ -1051,24 +1053,24 @@ pnpm exec biome check .
 
 Steps:
 
-- [ ] Add `boards` beside Categories/Subcategories.
-- [ ] Add nullable `boardId`, `replyCount`, `lastActivityAt`, Post kind/snapshot/
+- [x] Add `boards` beside Categories/Subcategories.
+- [x] Add nullable `boardId`, `replyCount`, `lastActivityAt`, Post kind/snapshot/
   deletion fields, and `topic_views` beside legacy fields.
-- [ ] Add null-compatible checks, cycle trigger, Board Topic keyset index, and reply
+- [x] Add null-compatible checks, cycle trigger, Board Topic keyset index, and reply
   keyset index; defer final `NOT NULL` and obsolete-column removal.
-- [ ] Verify the safe generation/migration wrappers against rejected QNAP, wrong
+- [x] Verify the safe generation/migration wrappers against rejected QNAP, wrong
   suffix, and accepted loopback targets. Do not route them through normal `.env`.
-- [ ] Generate and manually inspect the additive migration.
-- [ ] Update the development seed to create an arbitrary-depth Board hierarchy only.
-- [ ] Apply through `db:migrate:test` and run DB tests without seed data.
-- [ ] Start `docker-compose.dev.yml` with readiness waiting, apply through
+- [x] Generate and manually inspect the additive migration.
+- [x] Update the development seed to create an arbitrary-depth Board hierarchy only.
+- [x] Apply through `db:migrate:test` and run DB tests without seed data.
+- [x] Start `docker-compose.dev.yml` with readiness waiting, apply through
   `db:migrate:dev`, then run a separately safety-checked `db:seed:dev` command for
   the Board-only development seed.
-- [ ] Verify authentication/Profile rows are unchanged.
+- [x] Verify authentication/Profile rows are unchanged.
 
 Gate:
 
-- [ ] Run the complete Phase 2 gate:
+- [x] Run the complete Phase 2 gate:
 
 ```bash
 pnpm --filter @forum/db db:generate:dev
@@ -1082,7 +1084,7 @@ pnpm typecheck
 pnpm exec biome check .
 ```
 
-- [ ] Confirm the migration does not touch authentication tables or drop a legacy
+- [x] Confirm the migration does not touch authentication tables or drop a legacy
   field/table. Stop if this or any cycle/index/constraint migration test fails.
 
 ### Phase 3: Topic discussion module
