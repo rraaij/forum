@@ -7,19 +7,16 @@ import type { Page, PageRequest } from "../shared/pagination";
 import type { QuoteSnapshotV1 } from "../shared/quote-snapshot";
 import type { TopicRouteParams } from "../shared/route-params";
 
+// Breadcrumbs are hierarchy navigation, owned by the shared mapper.
+export type { BreadcrumbItem } from "../shared/board-hierarchy";
+
+import type { BreadcrumbItem } from "../shared/board-hierarchy";
+
 export interface AuthorSummary {
   id: string;
   name: string | null;
   displayName: string | null;
   image: string | null;
-}
-
-export interface BreadcrumbItem {
-  boardId: string;
-  name: string;
-  slug: string;
-  /** Root boards are presented as categories (plan section 2). */
-  isRoot: boolean;
 }
 
 export interface BoardSummary {

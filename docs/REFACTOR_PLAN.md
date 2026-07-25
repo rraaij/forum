@@ -957,9 +957,9 @@ Profile tests:
 - [x] Existing text, URL, date, image MIME/size, and gallery limits.
 - [x] Profile replacement semantics and independently updated avatar.
 - [x] Password command remains delegated to Better Auth.
-- [ ] Activity returns opening/reply kind, deletion state, breadcrumbs, and canonical
+- [x] Activity returns opening/reply kind, deletion state, breadcrumbs, and canonical
   route params for root and deeply nested Boards.
-- [ ] Activity deliberately returns all fixture rows.
+- [x] Activity deliberately returns all fixture rows.
 
 Browser tests:
 
@@ -1253,20 +1253,29 @@ pnpm build
 
 Steps:
 
-- [ ] Replace the route-local SQL with `ProfileActivity.getAllForUser`.
-- [ ] Query explicit Post kind and Board ancestry from the redesigned schema.
-- [ ] Return canonical route params from one mapper shared conceptually with Forum
-  reads; do not duplicate route policy in SQL or UI.
-- [ ] Extract `ActivityTopicLink` and activity presentation from `profile.tsx`.
-- [ ] Migrate Profile activity transport calls to Hono-derived types.
-- [ ] Verify all rows are returned, including documented deleted-Post presentation.
-- [ ] Delete old window-function opening-Post inference and legacy URL construction.
-- [ ] Confirm root and deeply nested Topic links navigate correctly.
-- [ ] Record query duration and row count in the large-fixture integration test.
+- [x] Replace the route-local SQL with `ProfileActivity.getAllForUser`.
+- [x] Query explicit Post kind and Board ancestry from the redesigned schema.
+- [x] Return canonical route params from one mapper shared conceptually with Forum
+  reads; do not duplicate route policy in SQL or UI. The mapper is now literal,
+  not conceptual: `modules/shared/board-hierarchy.ts` on the backend (used by both
+  Forum reads and activity) and `features/forum-read/topic-link.ts` in the UI.
+- [x] Extract `ActivityTopicLink` and activity presentation from `profile.tsx`.
+- [x] Migrate Profile activity transport calls to Hono-derived types.
+- [x] Verify all rows are returned, including documented deleted-Post presentation.
+  Deleted replies are returned with `isDeleted`; masking stays a UI decision, as
+  in the Topic read model.
+- [x] Delete old window-function opening-Post inference and legacy URL construction.
+- [x] Confirm root and deeply nested Topic links navigate correctly.
+- [x] Record query duration and row count in the large-fixture integration test.
+  240 rows over a 5-level hierarchy resolve in ~3ms using 2 queries.
+
+Contract note: `routeParams` is nullable. A Topic whose `board_id` is still null
+cannot be addressed, and the author's own record shows it unlinked rather than
+hiding the row. Phase 8's NOT NULL constraint retires the case.
 
 Gate:
 
-- [ ] Run the complete Phase 7 gate:
+- [x] Run the complete Phase 7 gate:
 
 ```bash
 pnpm test

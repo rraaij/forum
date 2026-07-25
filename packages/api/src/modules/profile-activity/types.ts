@@ -6,7 +6,7 @@
  * accepted non-goal.
  */
 
-import type { BreadcrumbItem } from "../forum-read/types";
+import type { BreadcrumbItem } from "../shared/board-hierarchy";
 import type { TopicRouteParams } from "../shared/route-params";
 
 export interface ProfileActivityItem {
@@ -18,8 +18,15 @@ export interface ProfileActivityItem {
   topicId: string;
   topicTitle: string;
   topicSlug: string;
+  /** Root-first ancestry; empty when the topic has no reachable board. */
   breadcrumbs: BreadcrumbItem[];
-  routeParams: TopicRouteParams;
+  /*
+   * Null when the topic predates the board hierarchy and cannot be linked.
+   * Every row is still returned — activity is the author's record, so an
+   * unlinkable topic is presented without a link rather than hidden. Phase 8
+   * makes topics.board_id NOT NULL and retires the case.
+   */
+  routeParams: TopicRouteParams | null;
 }
 
 export interface ProfileActivity {

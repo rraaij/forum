@@ -66,8 +66,11 @@ describe("unauthenticated writes return 401", () => {
     expect(
       (await app.request("/api/profile/avatar", json("PUT", {}))).status,
     ).toBe(401);
-    // Activity is still the legacy handler until Phase 7.
-    expect((await app.request("/api/profile/activity")).status).toBe(401);
+    // Activity moved to the ProfileActivity module in Phase 7; the status
+    // is unchanged and the body is now the standard envelope.
+    const activity = await app.request("/api/profile/activity");
+    expect(activity.status).toBe(401);
+    expect((await activity.json()).error.code).toBe("UNAUTHENTICATED");
   });
 });
 

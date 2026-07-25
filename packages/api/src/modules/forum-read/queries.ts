@@ -6,6 +6,10 @@
  */
 
 import {
+  type BoardHierarchy,
+  buildBoardHierarchy,
+} from "../shared/board-hierarchy";
+import {
   DEFAULT_PAGE_LIMIT,
   decodeReplyCursor,
   decodeTopicCursor,
@@ -37,7 +41,6 @@ import type {
   BoardPageReadModel,
   BoardSummary,
   BoardTreeNode,
-  BreadcrumbItem,
   CategoryPageReadModel,
   ForumIndexReadModel,
   ForumReadModel,
@@ -47,18 +50,13 @@ import type {
 } from "./types";
 
 interface BoardsContext {
-  byId: Map<string, BoardRow>;
-  childrenOf: Map<string | null, BoardRow[]>;
+  /** Ancestry, breadcrumbs and route params (shared mapper). */
+  hierarchy: BoardHierarchy<BoardRow>;
   /** Direct + descendant topic count per board. */
   subtreeCounts: Map<string, number>;
   /** Newest activity in the board's subtree. */
   subtreeLatest: Map<string, BoardActivityRow>;
   directCounts: Map<string, number>;
-  rootOf: Map<string, BoardRow>;
-}
-
-function sortSiblings(a: BoardRow, b: BoardRow): number {
-  return a.sortOrder - b.sortOrder || a.name.localeCompare(b.name);
 }
 
 function buildContext(
@@ -66,25 +64,15 @@ function buildContext(
   directCounts: Map<string, number>,
   latest: Map<string, BoardActivityRow>,
 ): BoardsContext {
-  const byId = new Map(rows.map((row) => [row.id, row]));
-  const childrenOf = new Map<string | null, BoardRow[]>();
-  for (const row of rows) {
-    const list = childrenOf.get(row.parentId) ?? [];
-    list.push(row);
-    childrenOf.set(row.parentId, list);
-  }
-  for (const list of childrenOf.values()) list.sort(sortSiblings);
-
+  const hierarchy = buildBoardHierarchy(rows);
   const subtreeCounts = new Map<string, number>();
   const subtreeLatest = new Map<string, BoardActivityRow>();
-  const rootOf = new Map<string, BoardRow>();
 
-  const visit = (row: BoardRow, root: BoardRow): void => {
-    rootOf.set(row.id, root);
+  const visit = (row: BoardRow): void => {
     let count = directCounts.get(row.id) ?? 0;
     let newest = latest.get(row.id);
-    for (const child of childrenOf.get(row.id) ?? []) {
-      visit(child, root);
+    for (const child of hierarchy.childrenOf.get(row.id) ?? []) {
+      visit(child);
       count += subtreeCounts.get(child.id) ?? 0;
       const childLatest = subtreeLatest.get(child.id);
       if (childLatest && (!newest || childLatest.at > newest.at)) {
@@ -94,37 +82,16 @@ function buildContext(
     subtreeCounts.set(row.id, count);
     if (newest) subtreeLatest.set(row.id, newest);
   };
-  for (const root of childrenOf.get(null) ?? []) visit(root, root);
+  for (const root of hierarchy.roots) visit(root);
 
-  return {
-    byId,
-    childrenOf,
-    subtreeCounts,
-    subtreeLatest,
-    directCounts,
-    rootOf,
-  };
-}
-
-function topicRouteParams(
-  board: BoardRow,
-  root: BoardRow,
-  topicSlug: string,
-): TopicRouteParams {
-  return board.parentId === null
-    ? { kind: "rootTopic", categorySlug: board.slug, topicSlug }
-    : {
-        kind: "boardTopic",
-        categorySlug: root.slug,
-        boardId: board.id,
-        topicSlug,
-      };
+  return { hierarchy, subtreeCounts, subtreeLatest, directCounts };
 }
 
 function boardSummary(ctx: BoardsContext, row: BoardRow): BoardSummary {
-  const root = ctx.rootOf.get(row.id) ?? row;
   const newest = ctx.subtreeLatest.get(row.id);
-  const activityBoard = newest ? ctx.byId.get(newest.boardId) : undefined;
+  const activityRoute = newest
+    ? ctx.hierarchy.topicRouteParams(newest.boardId, newest.topicSlug)
+    : null;
   return {
     id: row.id,
     parentId: row.parentId,
@@ -137,16 +104,12 @@ function boardSummary(ctx: BoardsContext, row: BoardRow): BoardSummary {
     directTopicCount: ctx.directCounts.get(row.id) ?? 0,
     totalTopicCount: ctx.subtreeCounts.get(row.id) ?? 0,
     latestActivity:
-      newest && activityBoard
+      newest && activityRoute
         ? {
             topicId: newest.topicId,
             topicTitle: newest.topicTitle,
             at: newest.at.toISOString(),
-            routeParams: topicRouteParams(
-              activityBoard,
-              ctx.rootOf.get(activityBoard.id) ?? root,
-              newest.topicSlug,
-            ),
+            routeParams: activityRoute,
           }
         : null,
   };
@@ -155,25 +118,10 @@ function boardSummary(ctx: BoardsContext, row: BoardRow): BoardSummary {
 function boardTree(ctx: BoardsContext, row: BoardRow): BoardTreeNode {
   return {
     ...boardSummary(ctx, row),
-    children: (ctx.childrenOf.get(row.id) ?? []).map((child) =>
+    children: (ctx.hierarchy.childrenOf.get(row.id) ?? []).map((child) =>
       boardTree(ctx, child),
     ),
   };
-}
-
-function breadcrumbs(ctx: BoardsContext, board: BoardRow): BreadcrumbItem[] {
-  const chain: BreadcrumbItem[] = [];
-  let current: BoardRow | undefined = board;
-  while (current) {
-    chain.unshift({
-      boardId: current.id,
-      name: current.name,
-      slug: current.slug,
-      isRoot: current.parentId === null,
-    });
-    current = current.parentId ? ctx.byId.get(current.parentId) : undefined;
-  }
-  return chain;
 }
 
 function author(row: {
@@ -192,8 +140,7 @@ function author(row: {
 
 function topicListItem(
   row: TopicPageRow,
-  board: BoardRow,
-  root: BoardRow,
+  routeParams: TopicRouteParams,
 ): TopicListItem {
   return {
     id: row.id,
@@ -206,7 +153,7 @@ function topicListItem(
     createdAt: row.createdAt.toISOString(),
     lastActivityAt: row.lastActivityAt.toISOString(),
     author: author(row),
-    routeParams: topicRouteParams(board, root, row.slug),
+    routeParams,
   };
 }
 
@@ -243,12 +190,16 @@ async function topicPageFor(
 ): Promise<Page<TopicListItem>> {
   const limit = normalizePageLimit(request.limit ?? DEFAULT_PAGE_LIMIT);
   const cursor = request.cursor ? decodeTopicCursor(request.cursor) : null;
-  const root = ctx.rootOf.get(board.id) ?? board;
   const rows = await store.topicPage(board.id, cursor, limit + 1);
   const pageRows = rows.slice(0, limit);
   const last = pageRows.at(-1);
   return {
-    items: pageRows.map((row) => topicListItem(row, board, root)),
+    // The board was reached through the hierarchy, so route params always
+    // resolve; the guard exists so a listed topic is never rendered unlinked.
+    items: pageRows.flatMap((row) => {
+      const routeParams = ctx.hierarchy.topicRouteParams(board.id, row.slug);
+      return routeParams ? [topicListItem(row, routeParams)] : [];
+    }),
     nextCursor:
       rows.length > limit && last
         ? encodeTopicCursor({
@@ -265,23 +216,21 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
     async getForumIndex(): Promise<ForumIndexReadModel> {
       const ctx = await loadContext(store);
       return {
-        categories: (ctx.childrenOf.get(null) ?? []).map((root) =>
-          boardTree(ctx, root),
-        ),
+        categories: ctx.hierarchy.roots.map((root) => boardTree(ctx, root)),
       };
     },
 
     async getCategoryPage(input): Promise<CategoryPageReadModel> {
       const ctx = await loadContext(store);
-      const category = (ctx.childrenOf.get(null) ?? []).find(
+      const category = ctx.hierarchy.roots.find(
         (row) => row.slug.toLowerCase() === input.categorySlug.toLowerCase(),
       );
       if (!category) throw categoryNotFound();
       return {
         category: boardSummary(ctx, category),
-        breadcrumbs: breadcrumbs(ctx, category),
-        childBoards: (ctx.childrenOf.get(category.id) ?? []).map((child) =>
-          boardSummary(ctx, child),
+        breadcrumbs: ctx.hierarchy.breadcrumbs(category.id),
+        childBoards: (ctx.hierarchy.childrenOf.get(category.id) ?? []).map(
+          (child) => boardSummary(ctx, child),
         ),
         topics: await topicPageFor(store, ctx, category, input.topics),
       };
@@ -289,8 +238,8 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
 
     async getBoardPage(input): Promise<BoardPageReadModel> {
       const ctx = await loadContext(store);
-      const board = ctx.byId.get(input.boardId);
-      const root = board ? ctx.rootOf.get(board.id) : undefined;
+      const board = ctx.hierarchy.byId.get(input.boardId);
+      const root = board ? ctx.hierarchy.rootOf(board.id) : undefined;
       // A root board is addressed by the category path, never this one; a
       // board whose root slug differs from the URL is presented as absent.
       if (
@@ -303,9 +252,9 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
       }
       return {
         board: boardSummary(ctx, board),
-        breadcrumbs: breadcrumbs(ctx, board),
-        childBoards: (ctx.childrenOf.get(board.id) ?? []).map((child) =>
-          boardSummary(ctx, child),
+        breadcrumbs: ctx.hierarchy.breadcrumbs(board.id),
+        childBoards: (ctx.hierarchy.childrenOf.get(board.id) ?? []).map(
+          (child) => boardSummary(ctx, child),
         ),
         topics: await topicPageFor(store, ctx, board, input.topics),
       };
@@ -316,9 +265,11 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
       if (!header) throw forumTopicNotFound();
 
       const ctx = await loadContext(store);
-      const board = ctx.byId.get(header.boardId);
-      const root = board ? ctx.rootOf.get(board.id) : undefined;
-      if (!board || !root) throw forumTopicNotFound();
+      const routeParams = ctx.hierarchy.topicRouteParams(
+        header.boardId,
+        header.slug,
+      );
+      if (!routeParams) throw forumTopicNotFound();
 
       const opening = await store.openingPost(header.id);
       if (!opening) throw forumTopicNotFound();
@@ -346,8 +297,8 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
           lastActivityAt: header.lastActivityAt.toISOString(),
           author: author(header),
         },
-        routeParams: topicRouteParams(board, root, header.slug),
-        breadcrumbs: breadcrumbs(ctx, board),
+        routeParams,
+        breadcrumbs: ctx.hierarchy.breadcrumbs(header.boardId),
         openingPost: postView(opening),
         replies: {
           items: pageRows.map(postView),

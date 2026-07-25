@@ -62,6 +62,24 @@ export type TopicPageShape = Assert<
     : false
 >;
 
+/*
+ * Activity carries the post's own kind and the canonical route params, so
+ * the profile UI never re-derives a topic URL from slugs.
+ */
+type ActivityResponse = InferResponseType<
+  typeof apiClient.api.profile.activity.$get,
+  200
+>;
+export type ActivityShape = Assert<
+  ActivityResponse extends Array<{
+    postKind: "opening" | "reply";
+    isDeleted: boolean;
+    routeParams: { kind: "rootTopic" | "boardTopic" } | null;
+  }>
+    ? true
+    : false
+>;
+
 // Legacy vote endpoint remains until Phase 5.
 type VoteRequest = InferRequestType<typeof apiClient.api.votes.$post>["json"];
 export type VoteValueIsNumber = Assert<

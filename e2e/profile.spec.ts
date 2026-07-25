@@ -1,11 +1,18 @@
 /*
  * Phase 6 browser flow (plan section 8.3): profile avatar and gallery
  * editing, replacement save semantics, and server-authoritative validation.
+ * Phase 7 adds activity: canonical links for root and nested topics.
  */
 
 import { expect, test } from "@playwright/test";
 import { connect, loadTestTarget } from "../packages/db/tests/helpers/test-db";
-import { fillWhenReady, resetForumTest, signUp } from "./helpers";
+import {
+  createTopicViaUi,
+  fillWhenReady,
+  resetForumTest,
+  seedBoards,
+  signUp,
+} from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -108,4 +115,45 @@ test("the server rejects an invalid website and reports it", async ({
     "Website must be a valid http(s) URL",
   );
   expect((await storedProfile("validation-user")).website).toBeNull();
+});
+
+/*
+ * Activity links are built from backend route params, so a topic on a root
+ * board and one four levels deep must both land on their canonical URL.
+ */
+test("activity links navigate to root and deeply nested topics", async ({
+  page,
+}) => {
+  const boardIds = await seedBoards([
+    { name: "General", slug: "general", children: ["Deep One", "Deep Two"] },
+  ]);
+  await signUp(page, "activity-user");
+
+  await page.goto("/categories/general");
+  await createTopicViaUi(page, "Root level topic", "posted at the root");
+
+  await page.goto(`/categories/general/subcategories/${boardIds["Deep Two"]}`);
+  await createTopicViaUi(page, "Nested topic", "posted deep");
+
+  await page.goto("/profile");
+  const activity = page.locator("table:has(th:text-is('Kind'))");
+  await expect(
+    activity.getByRole("link", { name: "Nested topic" }),
+  ).toBeVisible();
+
+  // Both posts are opening posts, read from the row's own kind.
+  await expect(activity.locator("tbody tr")).toHaveCount(2);
+  await expect(activity.getByText("Reply")).toHaveCount(0);
+
+  await activity.getByRole("link", { name: "Nested topic" }).click();
+  await expect(page).toHaveURL(
+    new RegExp(
+      `/categories/general/subcategories/${boardIds["Deep Two"]}/topics/`,
+    ),
+  );
+
+  await page.goto("/profile");
+  await activity.getByRole("link", { name: "Root level topic" }).click();
+  // A root-board topic uses the category path, with no subcategory segment.
+  await expect(page).toHaveURL(/\/categories\/general\/topics\//);
 });

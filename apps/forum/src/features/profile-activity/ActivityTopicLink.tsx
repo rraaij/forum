@@ -1,14 +1,15 @@
 import { Link } from "@tanstack/solid-router";
 import { createSignal, Show } from "solid-js";
 import { Portal } from "solid-js/web";
-import type { UserPostActivity } from "@/types/forum";
+import { topicLinkProps } from "@/features/forum-read/topic-link";
+import type { ProfileActivityItem } from "./api";
 
 /*
- * LEGACY profile activity link, moved out of the route file unchanged so
- * the profile page could be rebuilt around the profile-edit feature.
- * Phase 7 replaces it with backend-supplied canonical route params.
+ * Topic link with a hover preview of the post. The destination comes from
+ * the backend's canonical route params (plan section 7.1) — this component
+ * never derives a URL from slugs.
  */
-export function ActivityTopicLink(props: { activity: UserPostActivity }) {
+export function ActivityTopicLink(props: { activity: ProfileActivityItem }) {
   const [previewPosition, setPreviewPosition] = createSignal<{
     top: number;
     left: number;
@@ -31,45 +32,36 @@ export function ActivityTopicLink(props: { activity: UserPostActivity }) {
     setPreviewPosition({ top, left });
   };
 
+  const previewHandlers = () => ({
+    onMouseEnter: (event: { currentTarget: HTMLElement }) =>
+      showPreview(event.currentTarget),
+    onMouseLeave: () => setPreviewPosition(undefined),
+    onFocus: (event: { currentTarget: HTMLElement }) =>
+      showPreview(event.currentTarget),
+    onBlur: () => setPreviewPosition(undefined),
+    "aria-describedby": `post-preview-${props.activity.postId}`,
+  });
+
   return (
     <>
       <Show
-        when={props.activity.categorySlug}
+        when={props.activity.routeParams}
         fallback={
-          <button
-            type="button"
-            class="font-semibold"
-            onMouseEnter={(event) => showPreview(event.currentTarget)}
-            onMouseLeave={() => setPreviewPosition(undefined)}
-            onFocus={(event) => showPreview(event.currentTarget)}
-            onBlur={() => setPreviewPosition(undefined)}
-            aria-describedby={`post-preview-${props.activity.postId}`}
-          >
+          /*
+           * A topic without a board cannot be addressed. The row stays in
+           * the author's record, presented without a link. Phase 8 makes
+           * topics.board_id NOT NULL and retires this branch.
+           */
+          <button type="button" class="font-semibold" {...previewHandlers()}>
             {props.activity.topicTitle}
           </button>
         }
       >
-        {(categorySlug) => (
-          /*
-           * TEMPORARY bridge until Phase 7 moves profile activity onto the
-           * ProfileActivity module. The legacy endpoint still returns
-           * category/subcategory slugs, but topic slugs are globally unique
-           * and the topic loader resolves by slug alone, so the canonical
-           * root-topic path renders the right topic. Phase 7 replaces this
-           * with backend-supplied canonical route params.
-           */
+        {(routeParams) => (
           <Link
-            to="/categories/$categorySlug/topics/$topicSlug"
-            params={{
-              categorySlug: categorySlug(),
-              topicSlug: props.activity.topicSlug,
-            }}
+            {...topicLinkProps(routeParams())}
             class="font-semibold text-info hover:underline"
-            onMouseEnter={(event) => showPreview(event.currentTarget)}
-            onMouseLeave={() => setPreviewPosition(undefined)}
-            onFocus={(event) => showPreview(event.currentTarget)}
-            onBlur={() => setPreviewPosition(undefined)}
-            aria-describedby={`post-preview-${props.activity.postId}`}
+            {...previewHandlers()}
           >
             {props.activity.topicTitle}
           </Link>
@@ -96,17 +88,19 @@ export function ActivityTopicLink(props: { activity: UserPostActivity }) {
               <div class="mb-2 flex items-center justify-between gap-3">
                 <strong class="text-sm">{props.activity.topicTitle}</strong>
                 <span class="badge badge-ghost badge-sm">
-                  {props.activity.isTopicStart ? "Opening post" : "Reply"}
+                  {props.activity.postKind === "opening"
+                    ? "Opening post"
+                    : "Reply"}
                 </span>
               </div>
               <p
                 classList={{
                   "max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed": true,
-                  "italic text-base-content/55": props.activity.postDeleted,
-                  "text-base-content/80": !props.activity.postDeleted,
+                  "italic text-base-content/55": props.activity.isDeleted,
+                  "text-base-content/80": !props.activity.isDeleted,
                 }}
               >
-                {props.activity.postDeleted
+                {props.activity.isDeleted
                   ? "This post has been deleted."
                   : props.activity.postContent}
               </p>
