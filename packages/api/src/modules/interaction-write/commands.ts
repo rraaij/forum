@@ -10,6 +10,7 @@ import type {
   ApplyVoteInput,
   ApplyVoteResult,
   InteractionWrite,
+  ReactionCount,
   ToggleReactionInput,
   ToggleReactionResult,
 } from "./types";
@@ -50,6 +51,18 @@ export function createInteractionWrite(
         await tx.insertVote(input.postId, input.actorId, input.value);
         return { action: "added" };
       });
+    },
+
+    /*
+     * Reads need no lock: they are single statements, and a purge removing
+     * the post concurrently simply yields an empty result.
+     */
+    async getReactions(postId: string): Promise<ReactionCount[]> {
+      return store.reactionCounts(postId);
+    },
+
+    async getVoteScore(postId: string): Promise<{ score: number }> {
+      return { score: await store.voteScore(postId) };
     },
   };
 }

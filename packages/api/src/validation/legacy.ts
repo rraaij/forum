@@ -1,9 +1,12 @@
 /*
- * Runtime validation for the LEGACY write endpoints (refactor plan Phase 0,
- * section 6.1). These endpoints stay mounted until the Phase 4 frontend
- * cutover, so their inputs get bounded Zod schemas now. Validation failures
- * intentionally keep the legacy `{ error: string }` shape — the structured
- * error envelope arrives with the replacement adapters in later phases.
+ * Runtime validation for the reaction and vote endpoints (refactor plan
+ * sections 5.6 and 6.1).
+ *
+ * These two endpoints deliberately kept their original HTTP contract through
+ * the refactor, including the `{ error: string }` failure shape, because
+ * redesigning reactions and votes was an explicit non-goal. Everything else
+ * speaks the structured envelope in transport/validator.ts. The split is
+ * intentional and permanent, not migration debt.
  */
 
 import { zValidator } from "@hono/zod-validator";

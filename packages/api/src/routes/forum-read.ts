@@ -5,18 +5,18 @@
  */
 
 import { Hono } from "hono";
-import type { ForumReadModel } from "../../modules/forum-read/types";
-import { isDomainError } from "../../modules/shared/errors";
-import { respondWithDomainError } from "../../transport/error-envelope";
+import type { ForumReadModel } from "../modules/forum-read/types";
+import { isDomainError } from "../modules/shared/errors";
+import { respondWithDomainError } from "../transport/error-envelope";
 import {
   boardPageParamsSchema,
   categoryPageParamsSchema,
   replyPageRequestQuerySchema,
   topicPageParamsSchema,
   topicPageRequestQuerySchema,
-} from "../../transport/schemas";
-import { transportValidator } from "../../transport/validator";
-import type { AppEnv } from "../../types";
+} from "../transport/schemas";
+import { transportValidator } from "../transport/validator";
+import type { AppEnv } from "../types";
 
 export function createForumReadRoutes(readModel: ForumReadModel) {
   return new Hono<AppEnv>()

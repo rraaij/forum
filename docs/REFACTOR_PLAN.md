@@ -13,9 +13,9 @@ Scope: development only; production and QNAP rollout are not part of this plan
 - [x] Phase 4: Forum read model and canonical routes
 - [x] Phase 5: Board management module and Admin UI
 - [x] Phase 6: Profile edit module and UI
-- [ ] Phase 7: Profile activity module and UI
-- [ ] Phase 8: Destructive contract/reset migration
-- [ ] Phase 9: Cleanup and final verification
+- [x] Phase 7: Profile activity module and UI
+- [x] Phase 8: Destructive contract/reset migration
+- [x] Phase 9: Cleanup and final verification
 
 Check a phase only after every phase item, required test, review boundary, and gate
 is checked. Check an individual item only after its implementation and relevant
@@ -46,14 +46,14 @@ The work is complete when every item below is checked:
 - [x] Admin Board commands own hierarchy rules, normalization, conflict handling, and
   recursive purge behavior.
 - [x] Board management is hosted at `/admin/boards` with client and server guards.
-- [ ] Profile editing and Profile activity are separate backend and frontend modules.
-- [ ] Existing route modules and UI pages are adapters; they do not implement domain
+- [x] Profile editing and Profile activity are separate backend and frontend modules.
+- [x] Existing route modules and UI pages are adapters; they do not implement domain
   rules or database queries.
-- [ ] Every transport input is runtime-validated before module invocation.
-- [ ] Frontend HTTP types are derived from Hono instead of maintained manually.
-- [ ] Unit, PostgreSQL integration, HTTP contract, and critical browser tests run from
+- [x] Every transport input is runtime-validated before module invocation.
+- [x] Frontend HTTP types are derived from Hono instead of maintained manually.
+- [x] Unit, PostgreSQL integration, HTTP contract, and critical browser tests run from
   documented workspace scripts.
-- [ ] Pull requests run deterministic type, format, test, and build gates in CI.
+- [x] Pull requests run deterministic type, format, test, and build gates in CI.
 
 ## 2. Decisions Fixed by This Plan
 
@@ -94,14 +94,14 @@ The following `docs/ROADMAP.md` recommendations are included in this refactor:
   adapter.
 - [x] Enforce locked-Topic reply rejection transactionally on the server.
 - [x] Add keyset pagination and matching indexes for Board Topics and Topic replies.
-- [ ] Replace hand-maintained frontend transport types with Hono RPC derivation.
-- [ ] Add Vitest, PostgreSQL integration tests, Playwright smoke flows, and CI.
+- [x] Replace hand-maintained frontend transport types with Hono RPC derivation.
+- [x] Add Vitest, PostgreSQL integration tests, Playwright smoke flows, and CI.
 - [x] Debounce Topic views per browser session through an explicit command.
 - [x] Update reply counters and activity timestamps transactionally.
 - [x] Eliminate Category/Board loader N+1 requests with page-oriented reads.
 - [x] Validate required environment variables at API startup and remove the
   hardcoded Better Auth secret fallback.
-- [ ] Rewrite the relevant README setup, architecture, testing, and reset sections
+- [x] Rewrite the relevant README setup, architecture, testing, and reset sections
   after implementation.
 
 Resolved differences from the roadmap:
@@ -977,9 +977,9 @@ Browser tests:
 
 Transport/type tests:
 
-- [ ] Every exposed path/query/body schema rejects malformed UUIDs and invalid bounds.
-- [ ] Legacy write endpoints are runtime-validated until they are removed.
-- [ ] The Hono `AppType` client compiles against all frontend feature API calls without
+- [x] Every exposed path/query/body schema rejects malformed UUIDs and invalid bounds.
+- [x] Legacy write endpoints are runtime-validated until they are removed.
+- [x] The Hono `AppType` client compiles against all frontend feature API calls without
   hand-authored response types.
 
 ## 9. Implementation Phases
@@ -1330,19 +1330,34 @@ pnpm build
 
 Steps:
 
-- [ ] Search for obsolete schema names, endpoint paths, counters, quote codec
-  markers, and reserved segments.
-- [ ] Remove dead exports, hand-maintained transport response types, and superseded
-  comments.
-- [ ] Confirm route adapters contain only runtime validation, actor extraction,
-  module invocation, and HTTP mapping.
-- [ ] Confirm modules accept dependencies and expose no Drizzle/Hono/Solid types.
-- [ ] Confirm all frontend transport calls derive from the exported Hono `AppType`.
-- [ ] Confirm CI runs migration safety, unit/integration/E2E tests, type checks,
+- [x] Search for obsolete schema names, endpoint paths, counters, quote codec
+  markers, and reserved segments. All searches below return no runtime matches.
+- [x] Remove dead exports, hand-maintained transport response types, and superseded
+  comments. `apps/forum/src/types/forum.ts` was deleted in Phase 7; Phase 9
+  removed the unguarded root database scripts, `dedupe-forum-identifiers.ts`
+  (which queried the dropped tables), and the `routes/replacement/` directory —
+  nothing is being replaced any more, so its adapters moved up into `routes/`.
+- [x] Confirm route adapters contain only runtime validation, actor extraction,
+  module invocation, and HTTP mapping. This check FAILED on first pass: the
+  reaction and vote adapters still ran inline Drizzle queries for their `GET`
+  reads. Those moved behind `InteractionWrite.getReactions/getVoteScore`,
+  preserving the HTTP contract. No adapter now imports the schema or `getDb()`.
+- [x] Confirm modules accept dependencies and expose no Drizzle/Hono/Solid types.
+  `profile-edit/mapper.ts` took a Drizzle row type and now declares the columns
+  it reads structurally.
+- [x] Confirm all frontend transport calls derive from the exported Hono `AppType`.
+- [x] Confirm CI runs migration safety, unit/integration/E2E tests, type checks,
   read-only Biome, and builds using only `_test` configuration.
-- [ ] Update README development, environment, database reset, pagination, testing,
-  Hono client, canonical URL, and CI documentation.
-- [ ] Render and manually inspect the Forum on desktop and mobile.
+- [x] Update README development, environment, database reset, pagination, testing,
+  Hono client, canonical URL, and CI documentation. Rewritten; the pre-refactor
+  TODO list and pasted implementation plan are gone.
+- [x] Render and manually inspect the Forum on desktop and mobile. Index,
+  category, nested board, topic, profile activity and `/admin/boards` all render
+  against `forum_dev` with no console errors and no horizontal page overflow at
+  375px. Two observations, both pre-existing design rather than refactor
+  regressions: the sticky reply composer overlaps content when the viewport is
+  shorter than roughly 600px, and reactions/votes appear on replies but not on
+  the opening post, which is rendered inside the topic header.
 
 Required searches return no runtime matches:
 
@@ -1361,7 +1376,12 @@ GET /api/topics?subcategoryId
 
 Final gate:
 
-- [ ] Run the complete final gate:
+- [x] Run the complete final gate. Both Docker builds failed on first attempt for
+  reasons unrelated to the refactor and were fixed: the standalone pnpm installer
+  from `get.pnpm.io` is glibc-only and segfaults on Alpine's musl, so the
+  dependency and build stages now use the Node image with Corepack (which reads
+  the pinned version from `packageManager`), and the app build stage sets
+  `CI=true` so pnpm reconciles `node_modules` without a TTY.
 
 ```bash
 pnpm install --frozen-lockfile

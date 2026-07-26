@@ -1,8 +1,8 @@
 /*
- * Profile edit contract (refactor plan section 5.4). Implementation arrives
- * in Phase 6. updateProfile has REPLACEMENT semantics: omitted optional
- * fields become null, matching the characterized current behavior. Password
- * changes stay in Better Auth and are not part of this module.
+ * Profile edit contract (refactor plan section 5.4). updateProfile has
+ * REPLACEMENT semantics: omitted optional fields become null, matching the
+ * characterized current behavior. Password changes stay in Better Auth and
+ * are not part of this module.
  */
 
 export interface EditableProfile {

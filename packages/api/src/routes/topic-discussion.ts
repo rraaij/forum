@@ -1,14 +1,13 @@
 /*
- * Replacement Hono adapters for the topic discussion module (refactor plan
- * Phase 3). NOT mounted in routes/index.ts yet — the legacy handlers stay
- * live until the Phase 4 frontend cutover. Adapters contain only runtime
- * validation, actor extraction, module invocation, and HTTP mapping.
+ * Hono adapters for the topic discussion module (refactor plan section 6).
+ * Adapters contain only runtime validation, actor extraction, module
+ * invocation, and HTTP mapping.
  */
 
 import { Hono } from "hono";
-import { isDomainError } from "../../modules/shared/errors";
-import type { TopicDiscussion } from "../../modules/topic-discussion/types";
-import { respondWithDomainError } from "../../transport/error-envelope";
+import { isDomainError } from "../modules/shared/errors";
+import type { TopicDiscussion } from "../modules/topic-discussion/types";
+import { respondWithDomainError } from "../transport/error-envelope";
 import {
   createTopicBodySchema,
   editPostBodySchema,
@@ -16,15 +15,15 @@ import {
   recordTopicViewBodySchema,
   replyToTopicBodySchema,
   topicIdParamSchema,
-} from "../../transport/schemas";
+} from "../transport/schemas";
 import {
   requireActor,
   transportBodyLimit,
   transportValidator,
-} from "../../transport/validator";
-import type { AppEnv } from "../../types";
+} from "../transport/validator";
+import type { AppEnv } from "../types";
 
-export function createReplacementTopicRoutes(discussion: TopicDiscussion) {
+export function createTopicRoutes(discussion: TopicDiscussion) {
   return (
     new Hono<AppEnv>()
       // POST /api/topics — create topic with its opening post
@@ -93,7 +92,7 @@ export function createReplacementTopicRoutes(discussion: TopicDiscussion) {
   );
 }
 
-export function createReplacementPostRoutes(discussion: TopicDiscussion) {
+export function createPostRoutes(discussion: TopicDiscussion) {
   return (
     new Hono<AppEnv>()
       // PATCH /api/posts/:postId — edit content (author only)

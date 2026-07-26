@@ -5,20 +5,20 @@
  */
 
 import { Hono } from "hono";
-import type { ProfileEdit } from "../../modules/profile-edit/types";
-import { isDomainError } from "../../modules/shared/errors";
-import { respondWithDomainError } from "../../transport/error-envelope";
+import type { ProfileEdit } from "../modules/profile-edit/types";
+import { isDomainError } from "../modules/shared/errors";
+import { respondWithDomainError } from "../transport/error-envelope";
 import {
   updateAvatarBodySchema,
   updateProfileBodySchema,
-} from "../../transport/schemas";
+} from "../transport/schemas";
 import {
   PROFILE_BODY_LIMIT,
   requireActor,
   transportBodyLimit,
   transportValidator,
-} from "../../transport/validator";
-import type { AppEnv } from "../../types";
+} from "../transport/validator";
+import type { AppEnv } from "../types";
 
 export function createProfileEditRoutes(profiles: ProfileEdit) {
   return (

@@ -5,22 +5,22 @@
  */
 
 import { Hono } from "hono";
-import type { BoardManagement } from "../../modules/board-management/types";
-import { isDomainError } from "../../modules/shared/errors";
-import { respondWithDomainError } from "../../transport/error-envelope";
+import type { BoardManagement } from "../modules/board-management/types";
+import { isDomainError } from "../modules/shared/errors";
+import { respondWithDomainError } from "../transport/error-envelope";
 import {
   boardIdParamSchema,
   createBoardBodySchema,
   moveBoardBodySchema,
   purgeBoardBodySchema,
   updateBoardBodySchema,
-} from "../../transport/schemas";
+} from "../transport/schemas";
 import {
   requireAdmin,
   transportBodyLimit,
   transportValidator,
-} from "../../transport/validator";
-import type { AppEnv } from "../../types";
+} from "../transport/validator";
+import type { AppEnv } from "../types";
 
 export function createAdminBoardRoutes(boards: BoardManagement) {
   return (

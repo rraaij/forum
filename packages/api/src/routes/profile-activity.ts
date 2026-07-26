@@ -5,11 +5,11 @@
  */
 
 import { Hono } from "hono";
-import type { ProfileActivity } from "../../modules/profile-activity/types";
-import { isDomainError } from "../../modules/shared/errors";
-import { respondWithDomainError } from "../../transport/error-envelope";
-import { requireActor } from "../../transport/validator";
-import type { AppEnv } from "../../types";
+import type { ProfileActivity } from "../modules/profile-activity/types";
+import { isDomainError } from "../modules/shared/errors";
+import { respondWithDomainError } from "../transport/error-envelope";
+import { requireActor } from "../transport/validator";
+import type { AppEnv } from "../types";
 
 export function createProfileActivityRoutes(activity: ProfileActivity) {
   return new Hono<AppEnv>().get("/activity", requireActor, async (c) => {

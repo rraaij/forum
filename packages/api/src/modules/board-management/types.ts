@@ -1,7 +1,7 @@
 /*
- * Board management contract (refactor plan section 5.3). Implementation
- * arrives in Phase 5. Boards form one arbitrary-depth adjacency list; a root
- * board is presented as a category, a non-root board as a subcategory.
+ * Board management contract (refactor plan section 5.3). Boards form one
+ * arbitrary-depth adjacency list; a root board is presented as a category,
+ * a non-root board as a subcategory.
  */
 
 export interface CreateBoardInput {

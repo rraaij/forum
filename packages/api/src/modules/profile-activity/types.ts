@@ -1,9 +1,8 @@
 /*
- * Profile activity contract (refactor plan section 5.5). Implementation
- * arrives in Phase 7. Items expose explicit post kind, deletion state, board
- * breadcrumbs, and canonical route params — never window-position inference
- * or legacy URL construction. All activity is returned; pagination is an
- * accepted non-goal.
+ * Profile activity contract (refactor plan section 5.5). Items expose
+ * explicit post kind, deletion state, board breadcrumbs, and canonical route
+ * params — never window-position inference or URL construction. All activity
+ * is returned; pagination is an accepted non-goal.
  */
 
 import type { BreadcrumbItem } from "../shared/board-hierarchy";

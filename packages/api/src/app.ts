@@ -68,7 +68,7 @@ export function createApp() {
 
   routes.onError((err, c) => {
     // Framework-raised request errors (e.g. malformed JSON from the request
-    // validator) keep their status and the legacy { error: string } shape.
+    // validator) keep their status and the plain { error: string } shape.
     if (err instanceof HTTPException) {
       return c.json({ error: err.message || "Request error" }, err.status);
     }

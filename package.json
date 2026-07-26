@@ -13,10 +13,10 @@
     "test:integration": "turbo run test:integration --concurrency=1",
     "test:e2e": "playwright test",
     "typecheck": "tsc -b && tsc --project apps/forum/tsconfig.json --noEmit",
-    "db:generate": "turbo run db:generate",
-    "db:migrate": "turbo run db:migrate",
-    "db:push": "turbo run db:push",
-    "db:studio": "turbo run db:studio",
+    "db:generate:dev": "pnpm --filter @forum/db run db:generate:dev",
+    "db:migrate:dev": "pnpm --filter @forum/db run db:migrate:dev",
+    "db:migrate:test": "pnpm --filter @forum/db run db:migrate:test",
+    "db:seed:dev": "pnpm --filter @forum/db run db:seed:dev",
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {

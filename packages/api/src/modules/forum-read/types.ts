@@ -1,6 +1,6 @@
 /*
  * Forum read model contract (refactor plan section 5.2). Page-oriented
- * queries only; reads never mutate state. Implementation arrives in Phase 4.
+ * queries only; reads never mutate state.
  */
 
 import type { Page, PageRequest } from "../shared/pagination";

@@ -1,7 +1,6 @@
 /*
- * Topic discussion contract (refactor plan section 5.1). Implementation
- * arrives in Phase 3; adapters and tests compile against these types now.
- * The external interface never exposes Drizzle rows or transaction objects.
+ * Topic discussion contract (refactor plan section 5.1). The external
+ * interface never exposes Drizzle rows or transaction objects.
  */
 
 export interface CreateTopicInput {

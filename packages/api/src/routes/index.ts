@@ -14,15 +14,12 @@ import { createTopicDiscussion } from "../modules/topic-discussion/commands";
 import { createDrizzleTopicDiscussionStore } from "../modules/topic-discussion/repository";
 import type { AppEnv } from "../types";
 import { authRoutes } from "./auth";
+import { createAdminBoardRoutes } from "./board-management";
+import { createForumReadRoutes } from "./forum-read";
+import { createProfileActivityRoutes } from "./profile-activity";
+import { createProfileEditRoutes } from "./profile-edit";
 import { createReactionRoutes } from "./reactions";
-import { createAdminBoardRoutes } from "./replacement/board-management";
-import { createForumReadRoutes } from "./replacement/forum-read";
-import { createProfileActivityRoutes } from "./replacement/profile-activity";
-import { createProfileEditRoutes } from "./replacement/profile-edit";
-import {
-  createReplacementPostRoutes,
-  createReplacementTopicRoutes,
-} from "./replacement/topic-discussion";
+import { createPostRoutes, createTopicRoutes } from "./topic-discussion";
 import { createVoteRoutes } from "./votes";
 
 /*
@@ -30,8 +27,9 @@ import { createVoteRoutes } from "./votes";
  * reaches the exported AppType — hc<AppType> on the frontend derives its
  * transport types from it (refactor plan section 6.2).
  *
- * Phase 7 state: every route is backed by a domain module. Nothing here
- * reads the legacy categories/subcategories tables, which Phase 8 drops.
+ * Every route is backed by a domain module. Each file here is a pure
+ * adapter: runtime validation, actor extraction, module invocation, HTTP
+ * mapping — and nothing else.
  */
 export function mountRoutes(app: Hono<AppEnv>) {
   const db = getDb();
@@ -53,8 +51,8 @@ export function mountRoutes(app: Hono<AppEnv>) {
       .route("/api/auth", authRoutes)
       .route("/api/admin/boards", createAdminBoardRoutes(boardManagement))
       .route("/api/forum", createForumReadRoutes(forumRead))
-      .route("/api/topics", createReplacementTopicRoutes(topicDiscussion))
-      .route("/api/posts", createReplacementPostRoutes(topicDiscussion))
+      .route("/api/topics", createTopicRoutes(topicDiscussion))
+      .route("/api/posts", createPostRoutes(topicDiscussion))
       // Editing and activity are separate modules sharing one path prefix;
       // they never register the same method and path.
       .route("/api/profile", createProfileEditRoutes(profiles))

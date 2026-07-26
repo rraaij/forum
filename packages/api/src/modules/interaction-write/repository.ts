@@ -7,7 +7,7 @@
  */
 
 import { reactions, votes } from "@forum/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { Database } from "../../db";
 import { acquireForumContentLockShared } from "../shared/locks";
 
@@ -38,12 +38,34 @@ export interface InteractionWriteTx {
 
 export interface InteractionWriteStore {
   transaction<T>(fn: (tx: InteractionWriteTx) => Promise<T>): Promise<T>;
+  /** Reaction totals per emoji for one post. */
+  reactionCounts(postId: string): Promise<{ emoji: string; count: number }[]>;
+  /** Summed vote value for one post; 0 when nothing is recorded. */
+  voteScore(postId: string): Promise<number>;
 }
 
 export function createDrizzleInteractionWriteStore(
   db: Database,
 ): InteractionWriteStore {
   return {
+    async reactionCounts(postId) {
+      return db
+        .select({ emoji: reactions.emoji, count: sql<number>`count(*)::int` })
+        .from(reactions)
+        .where(eq(reactions.postId, postId))
+        .groupBy(reactions.emoji);
+    },
+
+    async voteScore(postId) {
+      const [row] = await db
+        .select({
+          score: sql<number>`coalesce(sum(${votes.value}), 0)::int`,
+        })
+        .from(votes)
+        .where(eq(votes.postId, postId));
+      return row?.score ?? 0;
+    },
+
     transaction(fn) {
       return db.transaction(async (tx) => {
         // Shared: concurrent interaction writes never block each other, but
