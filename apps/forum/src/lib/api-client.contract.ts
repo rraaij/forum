@@ -19,8 +19,19 @@ export type HealthOk = Assert<
 type CreateTopicRequest = InferRequestType<
   typeof apiClient.api.topics.$post
 >["json"];
+type CreateTopicResponse = InferResponseType<
+  typeof apiClient.api.topics.$post,
+  201
+>;
 export type CreateTopicShape = Assert<
   CreateTopicRequest extends { boardId: string; title: string; content: string }
+    ? true
+    : false
+>;
+export type CreateTopicCanonicalRoute = Assert<
+  CreateTopicResponse extends {
+    routeParams: { kind: "rootTopic" | "boardTopic" };
+  }
     ? true
     : false
 >;

@@ -9,6 +9,7 @@ import ForumGrid from "@/components/ForumGrid";
 import PageHeader from "@/components/PageHeader";
 import TopicsList from "@/components/TopicsList";
 import { fetchBoardPage } from "@/features/forum-read/api";
+import { topicLinkProps } from "@/features/forum-read/topic-link";
 import { createPageAccumulator } from "@/features/forum-read/use-page-accumulator";
 
 export const Route = createFileRoute(
@@ -106,14 +107,7 @@ function BoardPage() {
           boardId: board().id,
           onCreated: async (topic) => {
             await router.invalidate();
-            await navigate({
-              to: "/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug",
-              params: {
-                categorySlug: rootSlug(),
-                boardId: board().id,
-                topicSlug: topic.slug,
-              },
-            });
+            await navigate(topicLinkProps(topic.routeParams));
           },
         }}
       />

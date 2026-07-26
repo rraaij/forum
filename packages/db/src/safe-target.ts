@@ -111,8 +111,10 @@ export function assertLoopbackUrl(
 }
 
 export function assertTargetsDiffer(target: DbTarget, other: DbTarget): void {
+  const comparableHost = (host: string) =>
+    LOOPBACK_HOSTS.has(host) ? "loopback" : host;
   if (
-    target.host === other.host &&
+    comparableHost(target.host) === comparableHost(other.host) &&
     target.port === other.port &&
     target.database === other.database
   ) {

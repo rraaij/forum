@@ -13,6 +13,7 @@ import {
   closeTestSql,
   countingDrizzle,
   testDrizzle,
+  testSql,
   truncateAll,
 } from "../helpers/db";
 import { insertBoard, insertUser } from "../helpers/fixtures";
@@ -162,33 +163,39 @@ describe("canonical route params and breadcrumbs", () => {
     ]);
   });
 
-  /*
-   * Phase 8 made topics.board_id NOT NULL, so a boardless topic can no
-   * longer be written. The unlinkable case survives as a RACE: activity
-   * reads posts and boards in two queries, and an admin purge between them
-   * removes the board a just-read topic pointed at. The row belongs to the
-   * author either way, so it is listed unlinked rather than dropped.
-   */
-  it("lists a topic whose board disappeared mid-read, without a link", async () => {
+  it("keeps posts and hierarchy in one snapshot during a concurrent purge", async () => {
     const board = await insertBoard("Alpha");
-    await discussion.createTopic({
+    const created = await discussion.createTopic({
       actorId: authorId,
       boardId: board,
-      title: "Purged mid-read",
+      title: "Consistent snapshot",
       content: "x",
     });
 
-    // Boards are read after posts; this store answers as a purge would.
-    const racing = createProfileActivity({
-      postsByAuthor: (userId) =>
-        createProfileActivityStore(testDrizzle()).postsByAuthor(userId),
-      hierarchyBoards: async () => [],
+    const baseStore = createProfileActivityStore(testDrizzle());
+    const consistent = createProfileActivity({
+      transaction: (run) =>
+        baseStore.transaction((tx) =>
+          run({
+            async postsByAuthor(userId) {
+              const rows = await tx.postsByAuthor(userId);
+              // The board and its content disappear on another connection
+              // before the hierarchy query, but not from this snapshot.
+              await testSql()`DELETE FROM boards WHERE id = ${board}`;
+              return rows;
+            },
+            hierarchyBoards: () => tx.hierarchyBoards(),
+          }),
+        ),
     });
 
-    const [item] = await racing.getAllForUser(authorId);
-    expect(item.routeParams).toBeNull();
-    expect(item.breadcrumbs).toEqual([]);
-    expect(item.topicTitle).toBe("Purged mid-read");
+    const [item] = await consistent.getAllForUser(authorId);
+    expect(item.routeParams).toEqual(created.routeParams);
+    expect(item.breadcrumbs.map((crumb) => crumb.slug)).toEqual(["alpha"]);
+    const [{ count }] = await testSql()`
+      SELECT count(*)::int AS count FROM boards WHERE id = ${board}
+    `;
+    expect(count).toBe(0);
   });
 });
 
@@ -264,8 +271,9 @@ describe("large fixture", () => {
     const durationMs = performance.now() - startedAt;
 
     expect(items).toHaveLength(EXPECTED_ROWS);
-    // Posts + boards. Never one query per topic, board or ancestry level.
-    expect(counter.count).toBe(2);
+    // Transaction setup + posts + boards. Never one query per topic, board,
+    // or ancestry level.
+    expect(counter.count).toBe(3);
     expect(items.every((item) => item.routeParams !== null)).toBe(true);
 
     // Recorded, not asserted as a threshold: timings vary by machine.

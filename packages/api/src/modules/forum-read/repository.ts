@@ -72,7 +72,7 @@ const topicAuthorColumns = {
   authorImage: users.image,
 };
 
-export interface ForumReadStore {
+export interface ForumReadTx {
   allBoards(): Promise<BoardRow[]>;
   /** Direct (non-recursive) topic counts per board, one grouped query. */
   directTopicCounts(): Promise<Map<string, number>>;
@@ -92,7 +92,9 @@ export interface ForumReadStore {
   ): Promise<PostRow[]>;
 }
 
-export function createForumReadStore(db: Database): ForumReadStore {
+type ForumReadExecutor = Pick<Database, "select" | "selectDistinctOn">;
+
+function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
   return {
     async allBoards() {
       return db
@@ -257,6 +259,28 @@ export function createForumReadStore(db: Database): ForumReadStore {
         .where(and(eq(posts.topicId, topicId), eq(posts.kind, "reply"), seek))
         .orderBy(asc(posts.createdAt), asc(posts.id))
         .limit(limitPlusOne);
+    },
+  };
+}
+
+export interface ForumReadStore {
+  transaction<T>(run: (tx: ForumReadTx) => Promise<T>): Promise<T>;
+}
+
+export function createForumReadStore(db: Database): ForumReadStore {
+  return {
+    transaction(run) {
+      /*
+       * A page read spans several statements. REPEATABLE READ gives every
+       * statement one committed snapshot; READ COMMITTED could combine a
+       * hierarchy from before a purge with topics from after it. Read-only
+       * also makes the query module's non-mutating boundary enforceable by
+       * PostgreSQL rather than relying only on convention.
+       */
+      return db.transaction(async (tx) => run(createForumReadTx(tx)), {
+        isolationLevel: "repeatable read",
+        accessMode: "read only",
+      });
     },
   };
 }

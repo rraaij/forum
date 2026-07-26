@@ -10,40 +10,30 @@ import { apiClient } from "@/lib/api-client";
 
 const profileGet = apiClient.api.profile.$get;
 const profilePut = apiClient.api.profile.$put;
+const avatarPut = apiClient.api.profile.avatar.$put;
 
 export type EditableProfile = InferResponseType<typeof profileGet, 200>;
 export type UpdateProfileBody = InferRequestType<typeof profilePut>["json"];
-
-async function ensureOk<T extends { ok: boolean }>(res: T): Promise<T> {
-  if (!res.ok) {
-    throw await toApiError(
-      res as unknown as {
-        status: number;
-        statusText: string;
-        json(): Promise<unknown>;
-      },
-    );
-  }
-  return res;
-}
+type AvatarRequest = InferRequestType<typeof avatarPut>;
 
 export async function fetchProfile(): Promise<EditableProfile> {
-  const res = await ensureOk(await profileGet());
-  return (await res.json()) as EditableProfile;
+  const res = await profileGet();
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function saveProfile(
   body: UpdateProfileBody,
-): Promise<EditableProfile> {
-  const res = await ensureOk(await profilePut({ json: body }));
-  return (await res.json()) as EditableProfile;
+): Promise<InferResponseType<typeof profilePut, 200>> {
+  const res = await profilePut({ json: body });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function saveAvatar(
-  image: string | null,
-): Promise<{ image: string | null }> {
-  const res = await ensureOk(
-    await apiClient.api.profile.avatar.$put({ json: { image } }),
-  );
-  return (await res.json()) as { image: string | null };
+  image: AvatarRequest["json"]["image"],
+): Promise<InferResponseType<typeof avatarPut, 200>> {
+  const res = await avatarPut({ json: { image } });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }

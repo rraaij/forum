@@ -29,7 +29,18 @@ function json(method: string, body: unknown, cookie?: string) {
   };
 }
 
-async function createTopic(): Promise<{ topicId: string; slug: string }> {
+async function createTopic(): Promise<{
+  topicId: string;
+  slug: string;
+  routeParams:
+    | { kind: "rootTopic"; categorySlug: string; topicSlug: string }
+    | {
+        kind: "boardTopic";
+        categorySlug: string;
+        boardId: string;
+        topicSlug: string;
+      };
+}> {
   const res = await app.request(
     "/api/topics",
     json(
@@ -83,6 +94,29 @@ describe("replacement topic routes", () => {
     expect(count).toBe(0);
   });
 
+  it("returns the standard envelope for malformed JSON", async () => {
+    const res = await app.request("/api/topics", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: user.cookie,
+      },
+      body: '{"title":',
+    });
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: {
+        code: "INVALID_INPUT",
+        message: "Malformed JSON in request body",
+      },
+    });
+    const [{ count }] = await testSql()`
+      SELECT count(*)::int AS count FROM topics
+    `;
+    expect(count).toBe(0);
+  });
+
   it("413 envelope for oversized bodies, with no rows created", async () => {
     const res = await app.request(
       "/api/topics",
@@ -101,9 +135,14 @@ describe("replacement topic routes", () => {
   });
 
   it("creates topics (201) and maps slug conflicts to 409", async () => {
-    const { topicId, slug } = await createTopic();
+    const { topicId, slug, routeParams } = await createTopic();
     expect(slug).toBe("contract-topic");
     expect(topicId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(routeParams).toEqual({
+      kind: "rootTopic",
+      categorySlug: "general",
+      topicSlug: "contract-topic",
+    });
 
     const conflict = await app.request(
       "/api/topics",

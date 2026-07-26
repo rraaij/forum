@@ -211,6 +211,10 @@ export function createBoardManagement(
         const board = await tx.findBoard(input.boardId);
         if (!board) throw boardNotFound();
 
+        // Advisory locks exclude participating writers; row locks additionally
+        // protect the exact subtree from direct SQL while impact is recounted.
+        await tx.lockSubtree(board.id);
+
         // Exact, case-sensitive confirmation of the board name.
         if (input.confirmationName !== board.name) throw purgeNameMismatch();
 

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3001",
+    "dev": "bun scripts/dev-safe.ts dev",
     "dev:test": "bun scripts/dev-safe.ts test",
     "dev:dev": "bun scripts/dev-safe.ts dev",
     "build": "vite build",
@@ -24,7 +24,7 @@
     "@forum/config": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.1.1",
-    "daisyui": "^5.7.0",
+    "daisyui": "^5.7.4",
     "tailwindcss": "^4.3.3",
     "vite": "^8.1.5",
     "vite-plugin-solid": "^2.11.13"

@@ -4,77 +4,66 @@
  * are inferred from the Hono AppType.
  */
 
-import type { InferResponseType } from "hono/client";
+import type { InferRequestType, InferResponseType } from "hono/client";
 import { toApiError } from "@/lib/api";
 import { apiClient } from "@/lib/api-client";
 
 const topicsPost = apiClient.api.topics.$post;
+const repliesPost = apiClient.api.topics[":topicId"].replies.$post;
+const postPatch = apiClient.api.posts[":postId"].$patch;
+const postDelete = apiClient.api.posts[":postId"].$delete;
+const viewsPost = apiClient.api.topics[":topicId"].views.$post;
 
 export type CreatedTopic = InferResponseType<typeof topicsPost, 201>;
+type CreateTopicRequest = InferRequestType<typeof topicsPost>;
+type ReplyRequest = InferRequestType<typeof repliesPost>;
+type EditRequest = InferRequestType<typeof postPatch>;
+type DeleteRequest = InferRequestType<typeof postDelete>;
+type ViewRequest = InferRequestType<typeof viewsPost>;
 
-async function ensureOk<T extends { ok: boolean }>(res: T): Promise<T> {
-  if (!res.ok) {
-    throw await toApiError(
-      res as unknown as {
-        status: number;
-        statusText: string;
-        json(): Promise<unknown>;
-      },
-    );
-  }
-  return res;
+export async function createTopic(
+  input: CreateTopicRequest["json"],
+): Promise<CreatedTopic> {
+  const res = await topicsPost({ json: input });
+  if (res.status !== 201) throw await toApiError(res);
+  return res.json();
 }
 
-export async function createTopic(input: {
-  boardId: string;
-  title: string;
-  content: string;
-}): Promise<CreatedTopic> {
-  const res = await ensureOk(await topicsPost({ json: input }));
-  return (await res.json()) as CreatedTopic;
+export async function replyToTopic(
+  input: ReplyRequest["param"] & ReplyRequest["json"],
+): Promise<InferResponseType<typeof repliesPost, 201>> {
+  const res = await repliesPost({
+    param: { topicId: input.topicId },
+    json: { content: input.content, quotedPostId: input.quotedPostId },
+  });
+  if (res.status !== 201) throw await toApiError(res);
+  return res.json();
 }
 
-export async function replyToTopic(input: {
-  topicId: string;
-  content: string;
-  quotedPostId?: string;
-}): Promise<{ postId: string }> {
-  const res = await ensureOk(
-    await apiClient.api.topics[":topicId"].replies.$post({
-      param: { topicId: input.topicId },
-      json: { content: input.content, quotedPostId: input.quotedPostId },
-    }),
-  );
-  return (await res.json()) as { postId: string };
-}
-
-export async function editPost(postId: string, content: string): Promise<void> {
-  await ensureOk(
-    await apiClient.api.posts[":postId"].$patch({
-      param: { postId },
-      json: { content },
-    }),
-  );
+export async function editPost(
+  postId: EditRequest["param"]["postId"],
+  content: EditRequest["json"]["content"],
+): Promise<void> {
+  const res = await postPatch({ param: { postId }, json: { content } });
+  if (res.status !== 204) throw await toApiError(res);
 }
 
 export async function deleteReply(
-  postId: string,
-): Promise<{ alreadyDeleted: boolean }> {
-  const res = await ensureOk(
-    await apiClient.api.posts[":postId"].$delete({ param: { postId } }),
-  );
-  return (await res.json()) as { alreadyDeleted: boolean };
+  postId: DeleteRequest["param"]["postId"],
+): Promise<InferResponseType<typeof postDelete, 200>> {
+  const res = await postDelete({ param: { postId } });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function recordTopicView(
-  topicId: string,
-  browserSessionId: string,
-): Promise<{ counted: boolean }> {
-  const res = await ensureOk(
-    await apiClient.api.topics[":topicId"].views.$post({
-      param: { topicId },
-      json: { browserSessionId },
-    }),
-  );
-  return (await res.json()) as { counted: boolean };
+  topicId: ViewRequest["param"]["topicId"],
+  browserSessionId: ViewRequest["json"]["browserSessionId"],
+): Promise<InferResponseType<typeof viewsPost, 200>> {
+  const res = await viewsPost({
+    param: { topicId },
+    json: { browserSessionId },
+  });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }

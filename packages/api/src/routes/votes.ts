@@ -19,13 +19,21 @@ export function createVoteRoutes(interactions: InteractionWrite) {
   return (
     new Hono<AppEnv>()
       // GET /api/votes?postId=... — get vote score for a post
-      .get("/", async (c) => {
-        const postId = c.req.query("postId");
-        if (!postId) {
-          return c.json({ error: "postId is required" }, 400);
-        }
-        return c.json(await interactions.getVoteScore(postId));
-      })
+      .get(
+        "/",
+        legacyValidator(
+          "query",
+          z.object({
+            postId: z
+              .string({ message: "postId is required" })
+              .pipe(uuid("postId")),
+          }),
+        ),
+        async (c) => {
+          const { postId } = c.req.valid("query");
+          return c.json(await interactions.getVoteScore(postId));
+        },
+      )
       // POST /api/votes — toggle vote (auth required)
       .post(
         "/",

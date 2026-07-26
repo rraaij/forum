@@ -21,13 +21,21 @@ export function createReactionRoutes(interactions: InteractionWrite) {
   return (
     new Hono<AppEnv>()
       // GET /api/reactions?postId=... — get reactions for a post
-      .get("/", async (c) => {
-        const postId = c.req.query("postId");
-        if (!postId) {
-          return c.json({ error: "postId is required" }, 400);
-        }
-        return c.json(await interactions.getReactions(postId));
-      })
+      .get(
+        "/",
+        legacyValidator(
+          "query",
+          z.object({
+            postId: z
+              .string({ message: "postId is required" })
+              .pipe(uuid("postId")),
+          }),
+        ),
+        async (c) => {
+          const { postId } = c.req.valid("query");
+          return c.json(await interactions.getReactions(postId));
+        },
+      )
       // POST /api/reactions — toggle reaction (auth required)
       .post(
         "/",

@@ -21,12 +21,16 @@ export interface ActivityPostRow {
   boardId: string;
 }
 
-export interface ProfileActivityStore {
+export interface ProfileActivityTx {
   postsByAuthor(userId: string): Promise<ActivityPostRow[]>;
   hierarchyBoards(): Promise<HierarchyBoardRow[]>;
 }
 
-export function createProfileActivityStore(db: Database): ProfileActivityStore {
+type ProfileActivityExecutor = Pick<Database, "select">;
+
+function createProfileActivityTx(
+  db: ProfileActivityExecutor,
+): ProfileActivityTx {
   return {
     async postsByAuthor(userId) {
       return (
@@ -60,6 +64,22 @@ export function createProfileActivityStore(db: Database): ProfileActivityStore {
           sortOrder: boards.sortOrder,
         })
         .from(boards);
+    },
+  };
+}
+
+export interface ProfileActivityStore {
+  transaction<T>(run: (tx: ProfileActivityTx) => Promise<T>): Promise<T>;
+}
+
+export function createProfileActivityStore(db: Database): ProfileActivityStore {
+  return {
+    transaction(run) {
+      // Both queries must observe one board/topic snapshot during purges.
+      return db.transaction(async (tx) => run(createProfileActivityTx(tx)), {
+        isolationLevel: "repeatable read",
+        accessMode: "read only",
+      });
     },
   };
 }

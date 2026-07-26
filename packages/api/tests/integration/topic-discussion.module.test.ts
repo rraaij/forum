@@ -44,6 +44,40 @@ function storeFailingAt(method: keyof TopicDiscussionTx): TopicDiscussionStore {
   };
 }
 
+/** Forces two transactions to make the same pre-lock read before proceeding. */
+function storeSynchronizingAt(
+  method: "topicSlugTaken" | "findPost",
+): TopicDiscussionStore {
+  let arrivals = 0;
+  let release: (() => void) | undefined;
+  const bothArrived = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  return {
+    transaction: (fn) =>
+      store.transaction((tx) =>
+        fn(
+          new Proxy(tx, {
+            get(target, prop, receiver) {
+              if (prop !== method) return Reflect.get(target, prop, receiver);
+              return async (value: string) => {
+                const result =
+                  method === "topicSlugTaken"
+                    ? await target.topicSlugTaken(value)
+                    : await target.findPost(value);
+                arrivals += 1;
+                if (arrivals === 2) release?.();
+                await bothArrived;
+                return result;
+              };
+            },
+          }),
+        ),
+      ),
+  };
+}
+
 async function code(promise: Promise<unknown>): Promise<string | undefined> {
   try {
     await promise;
@@ -83,13 +117,18 @@ afterAll(async () => {
 
 describe("createTopic", () => {
   it("commits topic and opening post together with one timestamp", async () => {
-    const { topicId, slug } = await discussion.createTopic({
+    const { topicId, slug, routeParams } = await discussion.createTopic({
       actorId: authorId,
       boardId,
       title: "Hello World!",
       content: "First post",
     });
     expect(slug).toBe("hello-world");
+    expect(routeParams).toEqual({
+      kind: "rootTopic",
+      categorySlug: "general",
+      topicSlug: "hello-world",
+    });
 
     const [post] = await testSql()`
       SELECT kind, content, created_at FROM posts WHERE topic_id = ${topicId}
@@ -101,6 +140,25 @@ describe("createTopic", () => {
     expect(new Date(topic.last_activity_at).getTime()).toBe(
       new Date(post.created_at).getTime(),
     );
+  });
+
+  it("returns canonical route parameters for a deeply nested board", async () => {
+    const childId = await insertBoard("Child", boardId);
+    const nestedId = await insertBoard("Nested", childId);
+
+    const created = await discussion.createTopic({
+      actorId: authorId,
+      boardId: nestedId,
+      title: "Nested topic",
+      content: "First post",
+    });
+
+    expect(created.routeParams).toEqual({
+      kind: "boardTopic",
+      categorySlug: "general",
+      boardId: nestedId,
+      topicSlug: "nested-topic",
+    });
   });
 
   it("rolls back the topic when the opening post insert fails", async () => {
@@ -156,6 +214,39 @@ describe("createTopic", () => {
         }),
       ),
     ).toBe("TOPIC_SLUG_CONFLICT");
+  });
+
+  it("maps the authoritative unique constraint when two slugs race", async () => {
+    const racing = createTopicDiscussion(
+      storeSynchronizingAt("topicSlugTaken"),
+    );
+    const input = {
+      actorId: authorId,
+      boardId,
+      title: "Racing slug",
+      content: "x",
+    };
+
+    const results = await Promise.allSettled([
+      racing.createTopic(input),
+      racing.createTopic(input),
+    ]);
+    const fulfilled = results.filter((result) => result.status === "fulfilled");
+    const rejected = results.filter((result) => result.status === "rejected");
+
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect((rejected[0] as PromiseRejectedResult).reason.code).toBe(
+      "TOPIC_SLUG_CONFLICT",
+    );
+    const [{ topics, posts }] = await testSql()`
+      SELECT
+        (SELECT count(*)::int FROM topics WHERE lower(slug) = 'racing-slug') AS topics,
+        (SELECT count(*)::int FROM posts p
+          JOIN topics t ON t.id = p.topic_id
+          WHERE lower(t.slug) = 'racing-slug') AS posts
+    `;
+    expect({ topics, posts }).toEqual({ topics: 1, posts: 1 });
   });
 
   it("the database permits exactly one opening post per topic", async () => {
@@ -404,6 +495,40 @@ describe("editPost and deleteReply", () => {
     expect(topic.reply_count).toBe(0);
     expect(new Date(topic.last_activity_at).getTime()).toBe(
       new Date(topic.created_at).getTime(),
+    );
+  });
+
+  it("decrements once when two requests delete the same reply concurrently", async () => {
+    const { postId: survivingReply } = await discussion.replyToTopic({
+      actorId: authorId,
+      topicId,
+      content: "survives",
+    });
+    const racing = createTopicDiscussion(storeSynchronizingAt("findPost"));
+    const input = {
+      actor: { id: authorId, role: "user" },
+      postId: replyId,
+    };
+
+    const results = await Promise.all([
+      racing.deleteReply(input),
+      racing.deleteReply(input),
+    ]);
+    expect(results.map((result) => result.alreadyDeleted).sort()).toEqual([
+      false,
+      true,
+    ]);
+
+    const topic = await topicRow(topicId);
+    expect(topic.reply_count).toBe(1);
+    const rows = await testSql()`
+      SELECT id, is_deleted FROM posts
+      WHERE id IN (${replyId}, ${survivingReply})
+      ORDER BY id
+    `;
+    expect(rows.find((row) => row.id === replyId)?.is_deleted).toBe(true);
+    expect(rows.find((row) => row.id === survivingReply)?.is_deleted).toBe(
+      false,
     );
   });
 

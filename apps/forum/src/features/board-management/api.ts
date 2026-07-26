@@ -4,87 +4,73 @@
  * read through the public forum index, so admin has no private read model.
  */
 
-import type { InferResponseType } from "hono/client";
+import type { InferRequestType, InferResponseType } from "hono/client";
 import { toApiError } from "@/lib/api";
 import { apiClient } from "@/lib/api-client";
 
 const purgeImpactGet =
   apiClient.api.admin.boards[":boardId"]["purge-impact"].$get;
+const boardsPost = apiClient.api.admin.boards.$post;
+const boardPatch = apiClient.api.admin.boards[":boardId"].$patch;
+const boardMovePost = apiClient.api.admin.boards[":boardId"].move.$post;
+const boardPurgePost = apiClient.api.admin.boards[":boardId"].purge.$post;
 
 export type PurgeImpact = InferResponseType<typeof purgeImpactGet, 200>;
-export type PurgeImpactCounts = PurgeImpact["counts"];
+export type PurgeImpactCounts = InferResponseType<typeof boardPurgePost, 200>;
+type CreateBoardRequest = InferRequestType<typeof boardsPost>;
+type UpdateBoardRequest = InferRequestType<typeof boardPatch>;
+type MoveBoardRequest = InferRequestType<typeof boardMovePost>;
+type PurgeImpactRequest = InferRequestType<typeof purgeImpactGet>;
+type PurgeBoardRequest = InferRequestType<typeof boardPurgePost>;
 
-async function ensureOk<T extends { ok: boolean }>(res: T): Promise<T> {
-  if (!res.ok) {
-    throw await toApiError(
-      res as unknown as {
-        status: number;
-        statusText: string;
-        json(): Promise<unknown>;
-      },
-    );
-  }
-  return res;
-}
-
-export interface BoardFields {
-  name: string;
-  slug: string;
-  abbreviation: string;
-  description?: string | null;
-  icon?: string | null;
-  sortOrder?: number;
-}
+/** Form fields are a projection of the server-owned creation contract. */
+export type BoardFields = Omit<CreateBoardRequest["json"], "parentId">;
 
 export async function createBoard(
-  input: BoardFields & { parentId: string | null },
-): Promise<{ boardId: string }> {
-  const res = await ensureOk(
-    await apiClient.api.admin.boards.$post({ json: input }),
-  );
-  return (await res.json()) as { boardId: string };
+  input: CreateBoardRequest["json"],
+): Promise<InferResponseType<typeof boardsPost, 201>> {
+  const res = await boardsPost({ json: input });
+  if (res.status !== 201) throw await toApiError(res);
+  return res.json();
 }
 
 export async function updateBoard(
-  boardId: string,
-  input: Partial<BoardFields>,
+  boardId: UpdateBoardRequest["param"]["boardId"],
+  input: UpdateBoardRequest["json"],
 ): Promise<void> {
-  await ensureOk(
-    await apiClient.api.admin.boards[":boardId"].$patch({
-      param: { boardId },
-      json: input,
-    }),
-  );
+  const res = await boardPatch({ param: { boardId }, json: input });
+  if (res.status !== 204) throw await toApiError(res);
 }
 
 export async function moveBoard(
-  boardId: string,
-  newParentId: string | null,
-  sortOrder: number,
+  boardId: MoveBoardRequest["param"]["boardId"],
+  newParentId: MoveBoardRequest["json"]["newParentId"],
+  sortOrder: MoveBoardRequest["json"]["sortOrder"],
 ): Promise<void> {
-  await ensureOk(
-    await apiClient.api.admin.boards[":boardId"].move.$post({
-      param: { boardId },
-      json: { newParentId, sortOrder },
-    }),
-  );
+  const res = await boardMovePost({
+    param: { boardId },
+    json: { newParentId, sortOrder },
+  });
+  if (res.status !== 204) throw await toApiError(res);
 }
 
-export async function fetchPurgeImpact(boardId: string): Promise<PurgeImpact> {
-  const res = await ensureOk(await purgeImpactGet({ param: { boardId } }));
-  return (await res.json()) as PurgeImpact;
+export async function fetchPurgeImpact(
+  boardId: PurgeImpactRequest["param"]["boardId"],
+): Promise<PurgeImpact> {
+  const res = await purgeImpactGet({ param: { boardId } });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function purgeBoard(
-  boardId: string,
-  confirmationName: string,
-  expectedImpact: PurgeImpactCounts,
+  boardId: PurgeBoardRequest["param"]["boardId"],
+  confirmationName: PurgeBoardRequest["json"]["confirmationName"],
+  expectedImpact: PurgeBoardRequest["json"]["expectedImpact"],
 ): Promise<PurgeImpactCounts> {
-  const res = await ensureOk(
-    await apiClient.api.admin.boards[":boardId"].purge.$post({
-      param: { boardId },
-      json: { confirmationName, expectedImpact },
-    }),
-  );
-  return (await res.json()) as PurgeImpactCounts;
+  const res = await boardPurgePost({
+    param: { boardId },
+    json: { confirmationName, expectedImpact },
+  });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }

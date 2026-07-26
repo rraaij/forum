@@ -65,6 +65,15 @@ describe("assertTargetsDiffer", () => {
     );
   });
 
+  it("treats localhost and 127.0.0.1 as the same database host", () => {
+    expect(() =>
+      assertTargetsDiffer(testTarget, {
+        ...testTarget,
+        host: "127.0.0.1",
+      }),
+    ).toThrow(/same host, port, and database/);
+  });
+
   it("accepts a target that differs by port or database", () => {
     expect(() =>
       assertTargetsDiffer(testTarget, { ...testTarget, port: 5433 }),

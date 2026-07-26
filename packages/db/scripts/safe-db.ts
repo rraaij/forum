@@ -1,7 +1,7 @@
 /*
  * Safe wrapper for database commands during the refactor.
  *
- * Usage: bun scripts/safe-db.ts <test|dev> <generate|migrate|seed>
+ * Usage: bun scripts/safe-db.ts <test|dev> <generate|migrate|seed|studio>
  *
  * Reads the repository-root .env.test or .env.dev itself (inherited
  * POSTGRES_* values are ignored on purpose), applies the fail-closed target
@@ -22,7 +22,7 @@ import {
 } from "../src/safe-target";
 
 const MODES: SafeDbMode[] = ["test", "dev"];
-const ACTIONS = ["generate", "migrate", "seed"] as const;
+const ACTIONS = ["generate", "migrate", "seed", "studio"] as const;
 type Action = (typeof ACTIONS)[number];
 
 function fail(message: string): never {
@@ -94,6 +94,7 @@ const commands: Record<Action, string[]> = {
   generate: ["pnpm", "exec", "drizzle-kit", "generate"],
   migrate: ["pnpm", "exec", "drizzle-kit", "migrate"],
   seed: ["bun", "--bun", "scripts/seed.ts"],
+  studio: ["pnpm", "exec", "drizzle-kit", "studio"],
 };
 
 console.log(

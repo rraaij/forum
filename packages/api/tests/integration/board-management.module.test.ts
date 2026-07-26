@@ -5,9 +5,14 @@
  * concurrency, and recursive purge with impact recheck.
  */
 
+import { boards } from "@forum/db/schema";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createBoardManagement } from "../../src/modules/board-management/commands";
-import { createDrizzleBoardManagementStore } from "../../src/modules/board-management/repository";
+import {
+  type BoardManagementStore,
+  createDrizzleBoardManagementStore,
+} from "../../src/modules/board-management/repository";
 import { createInteractionWrite } from "../../src/modules/interaction-write/commands";
 import { createDrizzleInteractionWriteStore } from "../../src/modules/interaction-write/repository";
 import type { DomainError } from "../../src/modules/shared/errors";
@@ -273,6 +278,54 @@ describe("moveBoard", () => {
     ).rejects.toThrow(/own parent|cycle/i);
   });
 
+  it("serializes concurrent direct-SQL moves so they cannot create a cycle", async () => {
+    const alpha = await createRoot("Alpha");
+    const beta = await createRoot("Beta");
+
+    let alphaMove = track(Promise.resolve() as Promise<unknown>);
+    let betaMove = track(Promise.resolve() as Promise<unknown>);
+    await holdingAdvisoryLock(
+      "exclusive",
+      "forum_board_hierarchy",
+      async () => {
+        alphaMove = track(
+          testDrizzle().transaction((tx) =>
+            tx
+              .update(boards)
+              .set({ parentId: beta })
+              .where(eq(boards.id, alpha)),
+          ),
+        );
+        betaMove = track(
+          testDrizzle().transaction((tx) =>
+            tx
+              .update(boards)
+              .set({ parentId: alpha })
+              .where(eq(boards.id, beta)),
+          ),
+        );
+        await sleep(100);
+        // Trigger execution itself must participate in the hierarchy lock;
+        // otherwise both direct updates would settle while it is held.
+        expect(alphaMove.state.settled).toBe(false);
+        expect(betaMove.state.settled).toBe(false);
+      },
+    );
+
+    const results = await Promise.allSettled([alphaMove.done, betaMove.done]);
+
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === "rejected"),
+    ).toHaveLength(1);
+    const rows = await testSql()`
+      SELECT id, parent_id FROM boards WHERE id IN (${alpha}, ${beta})
+    `;
+    expect(rows.filter((row) => row.parent_id !== null)).toHaveLength(1);
+  });
+
   it("rejects a move that would collide with new siblings", async () => {
     const alpha = await createRoot("Alpha");
     const beta = await createRoot("Beta");
@@ -479,6 +532,52 @@ describe("recursive purge", () => {
 
     // Once the writer commits, purge proceeds against a recounted subtree.
     await expect(purge.done).resolves.toEqual(impact.counts);
+  });
+
+  it("an actual reply command blocks behind an actual purge recount", async () => {
+    const { root, topicId } = await seedSubtree();
+    const impact = await boardManagement.previewRecursivePurge(root);
+    const baseStore = createDrizzleBoardManagementStore(testDrizzle());
+    let lockAcquired: (() => void) | undefined;
+    const acquired = new Promise<void>((resolve) => {
+      lockAcquired = resolve;
+    });
+    let continuePurge: (() => void) | undefined;
+    const allowed = new Promise<void>((resolve) => {
+      continuePurge = resolve;
+    });
+    const gatedStore: BoardManagementStore = {
+      transaction: (run) =>
+        baseStore.transaction((tx) =>
+          run({
+            ...tx,
+            async lockForumContentExclusive() {
+              await tx.lockForumContentExclusive();
+              lockAcquired?.();
+              await allowed;
+            },
+          }),
+        ),
+    };
+    const gatedManagement = createBoardManagement(gatedStore);
+    const purge = track(
+      gatedManagement.purgeBoardTree({
+        boardId: root,
+        confirmationName: "Purgeable",
+        expectedImpact: impact.counts,
+      }),
+    );
+    await acquired;
+
+    const reply = track(
+      discussion.replyToTopic({ actorId, topicId, content: "too late" }),
+    );
+    await sleep(100);
+    expect(reply.state.settled).toBe(false);
+
+    continuePurge?.();
+    await expect(purge.done).resolves.toEqual(impact.counts);
+    await expect(reply.done).rejects.toMatchObject({ code: "TOPIC_NOT_FOUND" });
   });
 });
 

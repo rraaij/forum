@@ -122,6 +122,8 @@ describe("legacy bootstrap and migration history", () => {
       FROM pg_proc WHERE proname = 'enforce_board_hierarchy_acyclic'
     `;
     expect(cycleFn?.def).toContain("WITH RECURSIVE");
+    expect(cycleFn?.def).toContain("pg_advisory_xact_lock");
+    expect(cycleFn?.def).toContain("forum_board_hierarchy");
 
     // 0007: the legacy cross-table uniqueness function is gone with its tables.
     const crossTable = await historySql`

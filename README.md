@@ -130,16 +130,17 @@ pnpm db:migrate:dev
 pnpm db:seed:dev
 ```
 
-Run the app against that database — each command reads `.env.dev` through the
-safety guard, in its own terminal:
+Run the complete development stack through Turborepo:
 
 ```bash
-pnpm --filter @forum/api dev:dev
+pnpm dev
 ```
 
-```bash
-pnpm --filter @forum/forum-app dev:dev
-```
+Turborepo starts the API and frontend together. Their package-level `dev`
+scripts both use the fail-closed development wrappers, so they read `.env.dev`
+and never fall back to the deployment-oriented root `.env`. The explicit
+`dev:dev` package scripts remain available when the two processes need to be
+started separately.
 
 The forum is then at <http://localhost:3001> and the API at
 <http://localhost:4000>.

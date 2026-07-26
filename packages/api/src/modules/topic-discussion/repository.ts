@@ -6,11 +6,13 @@
  * commands touch the database.
  */
 
-import { boards, posts, topics, topicViews, users } from "@forum/db/schema";
+import { posts, topics, topicViews, users } from "@forum/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "../../db";
+import type { HierarchyBoardRow } from "../shared/board-hierarchy";
 import { acquireForumContentLockShared } from "../shared/locks";
 import type { QuoteSnapshotV1 } from "../shared/quote-snapshot";
+import { topicSlugConflict } from "./errors";
 
 export interface LockedTopic {
   id: string;
@@ -36,7 +38,8 @@ export interface PostRecord {
 }
 
 export interface TopicDiscussionTx {
-  boardExists(boardId: string): Promise<boolean>;
+  /** Root-first policy is derived from this transaction's ancestry snapshot. */
+  boardAncestry(boardId: string): Promise<HierarchyBoardRow[]>;
   topicSlugTaken(slug: string): Promise<boolean>;
   insertTopic(values: {
     boardId: string;
@@ -64,7 +67,8 @@ export interface TopicDiscussionTx {
   bumpTopicActivity(topicId: string, now: Date): Promise<void>;
   findPost(postId: string): Promise<PostRecord | null>;
   updatePostContent(postId: string, content: string, now: Date): Promise<void>;
-  softDeletePost(postId: string, now: Date): Promise<void>;
+  /** True only for the one active-to-deleted state transition. */
+  softDeletePost(postId: string, now: Date): Promise<boolean>;
   decrementReplyCount(topicId: string): Promise<void>;
   latestActiveReplyAt(topicId: string): Promise<Date | null>;
   setLastActivity(topicId: string, at: Date): Promise<void>;
@@ -82,6 +86,21 @@ export interface TopicDiscussionStore {
   transaction<T>(fn: (tx: TopicDiscussionTx) => Promise<T>): Promise<T>;
 }
 
+function isUniqueConstraint(error: unknown, constraint: string): boolean {
+  let current = error;
+  // Drizzle may wrap the postgres-js error, so inspect the bounded cause
+  // chain while requiring both SQLSTATE and the exact authoritative index.
+  for (let depth = 0; depth < 5 && current; depth += 1) {
+    if (typeof current !== "object") return false;
+    const code = "code" in current ? current.code : undefined;
+    const constraintName =
+      "constraint_name" in current ? current.constraint_name : undefined;
+    if (code === "23505" && constraintName === constraint) return true;
+    current = "cause" in current ? current.cause : undefined;
+  }
+  return false;
+}
+
 export function createDrizzleTopicDiscussionStore(
   db: Database,
 ): TopicDiscussionStore {
@@ -97,13 +116,31 @@ export function createDrizzleTopicDiscussionStore(
         await acquireForumContentLockShared(tx);
 
         const ops: TopicDiscussionTx = {
-          async boardExists(boardId) {
-            const rows = await tx
-              .select({ id: boards.id })
-              .from(boards)
-              .where(eq(boards.id, boardId))
-              .limit(1);
-            return rows.length > 0;
+          async boardAncestry(boardId) {
+            /*
+             * One recursive statement keeps arbitrary-depth ancestry in the
+             * same transaction as Topic creation. Quoted aliases preserve the
+             * persistence-neutral hierarchy contract consumed by commands.
+             */
+            const rows = await tx.execute(sql`
+              WITH RECURSIVE ancestry AS (
+                SELECT id, parent_id, name, slug, sort_order
+                FROM boards
+                WHERE id = ${boardId}
+                UNION ALL
+                SELECT b.id, b.parent_id, b.name, b.slug, b.sort_order
+                FROM boards b
+                JOIN ancestry a ON b.id = a.parent_id
+              )
+              SELECT
+                id,
+                parent_id AS "parentId",
+                name,
+                slug,
+                sort_order AS "sortOrder"
+              FROM ancestry
+            `);
+            return rows as unknown as HierarchyBoardRow[];
           },
 
           async topicSlugTaken(slug) {
@@ -116,19 +153,26 @@ export function createDrizzleTopicDiscussionStore(
           },
 
           async insertTopic({ boardId, authorId, title, slug, now }) {
-            const [row] = await tx
-              .insert(topics)
-              .values({
-                boardId,
-                authorId,
-                title,
-                slug,
-                replyCount: 0,
-                lastActivityAt: now,
-                createdAt: now,
-              })
-              .returning({ id: topics.id });
-            return row.id;
+            try {
+              const [row] = await tx
+                .insert(topics)
+                .values({
+                  boardId,
+                  authorId,
+                  title,
+                  slug,
+                  replyCount: 0,
+                  lastActivityAt: now,
+                  createdAt: now,
+                })
+                .returning({ id: topics.id });
+              return row.id;
+            } catch (error) {
+              if (isUniqueConstraint(error, "topics_slug_unique_idx")) {
+                throw topicSlugConflict(slug);
+              }
+              throw error;
+            }
           },
 
           async insertOpeningPost({ topicId, authorId, content, now }) {
@@ -230,10 +274,12 @@ export function createDrizzleTopicDiscussionStore(
           },
 
           async softDeletePost(postId, now) {
-            await tx
+            const rows = await tx
               .update(posts)
               .set({ isDeleted: true, deletedAt: now })
-              .where(eq(posts.id, postId));
+              .where(and(eq(posts.id, postId), eq(posts.isDeleted, false)))
+              .returning({ id: posts.id });
+            return rows.length > 0;
           },
 
           async decrementReplyCount(topicId) {

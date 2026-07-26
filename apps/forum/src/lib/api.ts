@@ -1,11 +1,3 @@
-// SSR always needs an absolute URL (Vite proxy is dev-only, Node fetch requires absolute URLs).
-// In the browser: use absolute URL if VITE_API_URL is set (production), else fall back to
-// the Vite proxy path /api (development).
-const API_BASE =
-  import.meta.env.SSR || import.meta.env.VITE_API_URL
-    ? `${import.meta.env.VITE_API_URL ?? "http://localhost:4000"}/api`
-    : "/api";
-
 /*
  * Typed client error carrying the HTTP status and, when the API returned the
  * structured envelope { error: { code, message, field? } }, its domain code.
@@ -30,15 +22,10 @@ export class ApiError extends Error {
 
 /*
  * Understands BOTH error shapes during the migration: the structured
- * envelope used by replacement endpoints and the legacy { error: string }
- * from routes that have not been replaced yet (admin, profile,
- * reactions/votes). Remove the legacy branch when those are deleted.
+ * envelope used by replacement endpoints and the intentional legacy
+ * { error: string } contract retained by reactions/votes.
  */
-export async function toApiError(res: {
-  status: number;
-  statusText: string;
-  json(): Promise<unknown>;
-}): Promise<ApiError> {
+export async function toApiError(res: Response): Promise<ApiError> {
   let payload: unknown;
   try {
     payload = await res.json();
@@ -47,41 +34,25 @@ export async function toApiError(res: {
   }
 
   if (payload && typeof payload === "object" && "error" in payload) {
-    const raw = (payload as { error: unknown }).error;
+    const raw = payload.error;
     if (typeof raw === "string") {
       return new ApiError(res.status, raw);
     }
-    if (raw && typeof raw === "object" && "message" in raw) {
-      const envelope = raw as {
-        code?: string;
-        message: string;
-        field?: string;
-      };
-      return new ApiError(res.status, envelope.message, {
-        code: envelope.code,
-        field: envelope.field,
+    if (
+      raw &&
+      typeof raw === "object" &&
+      "message" in raw &&
+      typeof raw.message === "string"
+    ) {
+      const code =
+        "code" in raw && typeof raw.code === "string" ? raw.code : undefined;
+      const field =
+        "field" in raw && typeof raw.field === "string" ? raw.field : undefined;
+      return new ApiError(res.status, raw.message, {
+        code,
+        field,
       });
     }
   }
   return new ApiError(res.status, `${res.status} ${res.statusText}`);
-}
-
-export async function apiFetch<T>(
-  path: string,
-  options?: RequestInit,
-): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-    ...options,
-  });
-
-  if (!res.ok) {
-    throw await toApiError(res);
-  }
-
-  return res.json();
 }

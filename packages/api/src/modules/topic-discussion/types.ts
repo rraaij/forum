@@ -3,6 +3,8 @@
  * interface never exposes Drizzle rows or transaction objects.
  */
 
+import type { TopicRouteParams } from "../shared/route-params";
+
 export interface CreateTopicInput {
   actorId: string;
   boardId: string;
@@ -13,6 +15,8 @@ export interface CreateTopicInput {
 export interface CreateTopicResult {
   topicId: string;
   slug: string;
+  /** Canonical navigation is backend policy; callers must not rebuild it. */
+  routeParams: TopicRouteParams;
 }
 
 export interface ReplyToTopicInput {

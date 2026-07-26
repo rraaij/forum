@@ -8,9 +8,9 @@
 import { expect, test } from "@playwright/test";
 import { fillWhenReady, resetForumTest } from "./helpers";
 
-// Deterministic fixtures: one shared reset, so the table list lives in one
-// place and cannot drift from the schema again.
-test.beforeAll(resetForumTest);
+// Every browser test starts from deterministic fixtures. The reset helper is
+// the single schema-aware list, so per-test isolation does not duplicate it.
+test.beforeEach(resetForumTest);
 
 test("forum renders for a signed-out visitor", async ({ page }) => {
   await page.goto("/");

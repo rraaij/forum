@@ -15,6 +15,6 @@ export type ProfileActivityItem = ProfileActivity[number];
 
 export async function fetchProfileActivity(): Promise<ProfileActivity> {
   const res = await activityGet();
-  if (!res.ok) throw await toApiError(res);
-  return (await res.json()) as ProfileActivity;
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }

@@ -484,6 +484,82 @@ describe("topic page", () => {
     expect(contents[0].count).toBe(4);
   });
 
+  it("normalizes sub-millisecond timestamps before building reply cursors", async () => {
+    const boardId = await insertBoard("PrecisionBoard");
+    const { topicId } = await discussion.createTopic({
+      actorId: authorId,
+      boardId,
+      title: "Precision paging",
+      content: "opening",
+    });
+    await testSql()`
+      INSERT INTO posts (topic_id, author_id, content, kind, created_at)
+      VALUES
+        (${topicId}, ${authorId}, 'micro one', 'reply', '2026-07-25 10:00:00.123100'),
+        (${topicId}, ${authorId}, 'micro two', 'reply', '2026-07-25 10:00:00.123900')
+    `;
+
+    const stored = await testSql()`
+      SELECT id, to_char(created_at, 'US') AS microseconds
+      FROM posts
+      WHERE topic_id = ${topicId} AND kind = 'reply'
+      ORDER BY created_at, id
+    `;
+    expect(stored.map((row) => row.microseconds)).toEqual(["123000", "124000"]);
+
+    const first = await readModel.getTopicPage({
+      topicSlug: "precision-paging",
+      replies: { limit: 1 },
+    });
+    const second = await readModel.getTopicPage({
+      topicSlug: "precision-paging",
+      replies: { limit: 1, cursor: first.replies.nextCursor ?? undefined },
+    });
+    expect([first.replies.items[0]?.id, second.replies.items[0]?.id]).toEqual(
+      stored.map((row) => row.id),
+    );
+  });
+
+  it("normalizes sub-millisecond activity before building topic cursors", async () => {
+    const boardId = await insertBoard("TopicPrecision");
+    const firstTopic = await discussion.createTopic({
+      actorId: authorId,
+      boardId,
+      title: "Precision topic one",
+      content: "opening",
+    });
+    const secondTopic = await discussion.createTopic({
+      actorId: authorId,
+      boardId,
+      title: "Precision topic two",
+      content: "opening",
+    });
+    await testSql()`
+      UPDATE topics
+      SET last_activity_at = CASE id
+        WHEN ${firstTopic.topicId} THEN '2026-07-25 10:00:00.123100'::timestamp
+        ELSE '2026-07-25 10:00:00.123900'::timestamp
+      END
+      WHERE id IN (${firstTopic.topicId}, ${secondTopic.topicId})
+    `;
+    const stored = await testSql()`
+      SELECT id FROM topics WHERE board_id = ${boardId}
+      ORDER BY is_pinned DESC, last_activity_at DESC, id DESC
+    `;
+
+    const first = await readModel.getCategoryPage({
+      categorySlug: "topicprecision",
+      topics: { limit: 1 },
+    });
+    const second = await readModel.getCategoryPage({
+      categorySlug: "topicprecision",
+      topics: { limit: 1, cursor: first.topics.nextCursor ?? undefined },
+    });
+    expect([first.topics.items[0]?.id, second.topics.items[0]?.id]).toEqual(
+      stored.map((row) => row.id),
+    );
+  });
+
   it("rejects a reply cursor that carries a topic-cursor payload", async () => {
     const boardId = await insertBoard("CursorKind");
     await discussion.createTopic({
@@ -519,6 +595,40 @@ describe("topic page", () => {
 });
 
 describe("query budget", () => {
+  it("keeps hierarchy and topics in one snapshot during a concurrent purge", async () => {
+    const boardId = await insertBoard("Snapshot");
+    await discussion.createTopic({
+      actorId: authorId,
+      boardId,
+      title: "Visible together",
+      content: "x",
+    });
+
+    const baseStore = createForumReadStore(testDrizzle());
+    const consistent = createForumReadModel({
+      transaction: (run) =>
+        baseStore.transaction((tx) =>
+          run({
+            ...tx,
+            async allBoards() {
+              const rows = await tx.allBoards();
+              // Commit a cascade on another connection after this
+              // transaction has established its repeatable-read snapshot.
+              await testSql()`DELETE FROM boards WHERE id = ${boardId}`;
+              return rows;
+            },
+          }),
+        ),
+    });
+
+    const index = await consistent.getForumIndex();
+    expect(index.categories[0]?.totalTopicCount).toBe(1);
+    const [{ count }] = await testSql()`
+      SELECT count(*)::int AS count FROM boards WHERE id = ${boardId}
+    `;
+    expect(count).toBe(0);
+  });
+
   it("keeps every page within a fixed query count on a deep tree", async () => {
     const tree = await buildDeepTree();
     const created = await discussion.createTopic({
@@ -535,11 +645,11 @@ describe("query budget", () => {
 
     counter.count = 0;
     await counted.getForumIndex();
-    expect(counter.count).toBeLessThanOrEqual(3);
+    expect(counter.count).toBeLessThanOrEqual(4);
 
     counter.count = 0;
     await counted.getCategoryPage({ categorySlug: "alpha", topics: {} });
-    expect(counter.count).toBeLessThanOrEqual(4);
+    expect(counter.count).toBeLessThanOrEqual(5);
 
     counter.count = 0;
     await counted.getBoardPage({
@@ -547,10 +657,10 @@ describe("query budget", () => {
       boardId: tree.e,
       topics: {},
     });
-    expect(counter.count).toBeLessThanOrEqual(4);
+    expect(counter.count).toBeLessThanOrEqual(5);
 
     counter.count = 0;
     await counted.getTopicPage({ topicSlug: created.slug, replies: {} });
-    expect(counter.count).toBeLessThanOrEqual(6);
+    expect(counter.count).toBeLessThanOrEqual(7);
   });
 });

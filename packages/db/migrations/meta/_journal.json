@@ -57,6 +57,13 @@
       "when": 1785049538242,
       "tag": "0007_sturdy_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785065094981,
+      "tag": "0008_known_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

@@ -5,7 +5,7 @@ import { fetchPurgeImpact, type PurgeImpact } from "./api";
 type PurgeBoardDialogProps = {
   board: BoardTreeNode;
   disabled?: boolean;
-  onPurge: (confirmationName: string, impact: PurgeImpact) => Promise<void>;
+  onPurge: (confirmationName: string, impact: PurgeImpact) => Promise<boolean>;
 };
 
 /*
@@ -22,6 +22,8 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
 
   const loadImpact = async () => {
     setLoading(true);
+    // A failed refresh must never leave an older preview actionable.
+    setImpact(null);
     setPreviewError(null);
     setConfirmation("");
     try {
@@ -100,7 +102,15 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
               disabled={
                 props.disabled || confirmation() !== current().boardName
               }
-              onClick={() => props.onPurge(confirmation(), current())}
+              onClick={async () => {
+                const purged = await props.onPurge(confirmation(), current());
+                if (!purged) {
+                  // Any failed purge, especially PURGE_IMPACT_CHANGED, forces
+                  // the operator to fetch and review a fresh impact.
+                  setImpact(null);
+                  setConfirmation("");
+                }
+              }}
             >
               Permanently delete
             </button>

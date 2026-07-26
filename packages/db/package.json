@@ -14,7 +14,8 @@
     "db:migrate:dev": "bun scripts/safe-db.ts dev migrate",
     "db:seed:dev": "bun scripts/safe-db.ts dev seed",
     "test": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "db:studio": "bun scripts/safe-db.ts dev studio"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -24,6 +25,6 @@
     "@forum/config": "workspace:*",
     "drizzle-kit": "^0.31.10",
     "@types/bun": "^1.3.14",
-    "vitest": "^4.1.6"
+    "vitest": "^4.1.10"
   }
 }

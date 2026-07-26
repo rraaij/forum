@@ -11,6 +11,7 @@
  * - authorization lives here; adapters only supply the authenticated actor
  */
 
+import { buildBoardHierarchy } from "../shared/board-hierarchy";
 import { validationError } from "../shared/errors";
 import type { QuoteSnapshotV1 } from "../shared/quote-snapshot";
 import {
@@ -73,7 +74,11 @@ export function createTopicDiscussion(
       const now = new Date();
 
       return store.transaction(async (tx) => {
-        if (!(await tx.boardExists(input.boardId))) throw boardNotFound();
+        const hierarchy = buildBoardHierarchy(
+          await tx.boardAncestry(input.boardId),
+        );
+        const routeParams = hierarchy.topicRouteParams(input.boardId, slug);
+        if (!routeParams) throw boardNotFound();
         if (await tx.topicSlugTaken(slug)) throw topicSlugConflict(slug);
 
         const topicId = await tx.insertTopic({
@@ -90,7 +95,7 @@ export function createTopicDiscussion(
           now,
         });
 
-        return { topicId, slug };
+        return { topicId, slug, routeParams };
       });
     },
 
@@ -162,7 +167,11 @@ export function createTopicDiscussion(
         const topic = await tx.lockTopic(post.topicId);
         if (!topic) throw topicNotFound();
 
-        await tx.softDeletePost(post.id, now);
+        // The conditional update is the authoritative idempotency decision.
+        // A concurrent request may have read the same active row before this
+        // transaction acquired the Topic lock, but only one can transition it.
+        const deleted = await tx.softDeletePost(post.id, now);
+        if (!deleted) return { alreadyDeleted: true };
         await tx.decrementReplyCount(topic.id);
 
         // Last activity falls back to the newest ACTIVE reply, or the

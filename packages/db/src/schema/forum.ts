@@ -112,8 +112,11 @@ export const topics = pgTable(
     // Active replies only; the opening post is never counted.
     replyCount: integer("reply_count").notNull(),
     // Opening-post time, or the newest active reply time.
-    lastActivityAt: timestamp("last_activity_at").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    // JavaScript Date and opaque cursors preserve milliseconds. Constraining
+    // storage to the same precision prevents seek tuples from losing digits.
+    lastActivityAt: timestamp("last_activity_at", { precision: 3 }).notNull(),
+    // Topic creation is the last-activity fallback, so keep equal precision.
+    createdAt: timestamp("created_at", { precision: 3 }).notNull().defaultNow(),
   },
   (table) => [
     index("topics_author_idx").on(table.authorId),
@@ -146,7 +149,8 @@ export const posts = pgTable(
     content: text("content").notNull(),
     isDeleted: boolean("is_deleted").notNull().default(false),
     editedAt: timestamp("edited_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    // Reply keyset cursors serialize through Date.toISOString() (milliseconds).
+    createdAt: timestamp("created_at", { precision: 3 }).notNull().defaultNow(),
     kind: postKind("kind").notNull(),
     quoteSnapshot: jsonb("quote_snapshot"),
     deletedAt: timestamp("deleted_at"),

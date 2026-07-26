@@ -17,26 +17,26 @@ export function createProfileActivity(
 ): ProfileActivity {
   return {
     async getAllForUser(userId: string): Promise<ProfileActivityItem[]> {
-      // Two fixed queries regardless of how much the author has posted.
-      const [rows, boardRows] = await Promise.all([
-        store.postsByAuthor(userId),
-        store.hierarchyBoards(),
-      ]);
-      const hierarchy = buildBoardHierarchy(boardRows);
+      return store.transaction(async (tx) => {
+        // Two fixed queries, sharing one repeatable-read snapshot regardless
+        // of how much the author posted or whether a purge commits mid-read.
+        const rows = await tx.postsByAuthor(userId);
+        const boardRows = await tx.hierarchyBoards();
+        const hierarchy = buildBoardHierarchy(boardRows);
 
-      return rows.map((row) => ({
-        postId: row.postId,
-        postKind: row.kind,
-        postContent: row.content,
-        postCreatedAt: row.createdAt.toISOString(),
-        isDeleted: row.isDeleted,
-        topicId: row.topicId,
-        topicTitle: row.topicTitle,
-        topicSlug: row.topicSlug,
-        breadcrumbs: hierarchy.breadcrumbs(row.boardId),
-        // Null only if the board was purged between the two reads.
-        routeParams: hierarchy.topicRouteParams(row.boardId, row.topicSlug),
-      }));
+        return rows.map((row) => ({
+          postId: row.postId,
+          postKind: row.kind,
+          postContent: row.content,
+          postCreatedAt: row.createdAt.toISOString(),
+          isDeleted: row.isDeleted,
+          topicId: row.topicId,
+          topicTitle: row.topicTitle,
+          topicSlug: row.topicSlug,
+          breadcrumbs: hierarchy.breadcrumbs(row.boardId),
+          routeParams: hierarchy.topicRouteParams(row.boardId, row.topicSlug),
+        }));
+      });
     },
   };
 }

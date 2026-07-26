@@ -76,14 +76,16 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
 
   const handlePurge = async (confirmationName: string, impact: PurgeImpact) => {
     const board = selected();
-    if (!board) return;
+    if (!board) return false;
     const purged = await manager.run(
       "purge",
       () => purgeBoard(board.id, confirmationName, impact.counts),
       (counts) =>
         `Deleted ${counts.boards} board(s), ${counts.topics} topic(s), ${counts.posts} post(s)`,
     );
-    if (purged) setSelectedId(null);
+    if (!purged) return false;
+    setSelectedId(null);
+    return true;
   };
 
   return (

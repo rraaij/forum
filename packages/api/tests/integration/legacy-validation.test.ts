@@ -78,5 +78,8 @@ describe("legacy write validation", () => {
       body: "not json {",
     });
     expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: "Malformed JSON in request body",
+    });
   });
 });

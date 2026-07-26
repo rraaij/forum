@@ -1400,16 +1400,36 @@ docker build -f Dockerfile -t forum-app:refactor-test .
 
 Use separate reviews at these points:
 
-- [ ] Test isolation, environment validation, and reset safety before any
+- [x] Test isolation, environment validation, and reset safety before any
   destructive migration exists.
-- [ ] Target schema, pagination cursors/indexes, and constraints before generating
+- [x] Target schema, pagination cursors/indexes, and constraints before generating
   the reset migration.
-- [ ] Topic transaction behavior before frontend migration.
-- [ ] Read-model response shapes and Hono-derived transport types before deleting
+- [x] Topic transaction behavior before frontend migration.
+- [x] Read-model response shapes and Hono-derived transport types before deleting
   old endpoints.
-- [ ] Recursive purge UX and impact contract before enabling the delete command.
-- [ ] Final architecture review using the deletion test: removing a new module
+- [x] Recursive purge UX and impact contract before enabling the delete command.
+- [x] Final architecture review using the deletion test: removing a new module
   should force its rules back into multiple adapters.
+
+Review record (2026-07-26):
+
+- Test isolation passed after existing-server reuse was disabled, loopback aliases
+  were treated as one target, and every browser test received a fresh fixture.
+- Schema/pagination passed after the cycle trigger joined the hierarchy advisory
+  lock protocol, keyset timestamps were constrained to JavaScript's millisecond
+  precision, and cursor decoding became strict and canonical.
+- Topic transactions passed with focused concurrent delete and slug-collision
+  tests in addition to the existing lifecycle matrix.
+- Read models and transport typing passed after multi-query reads moved into
+  read-only repeatable-read transactions and frontend feature APIs derived both
+  request and response types from `AppType`.
+- Recursive purge passed after subtree row locking, stale-preview recovery, actual
+  purge/write concurrency coverage, and failed-preview browser coverage were added.
+- The final deletion test passed for Topic Discussion, Forum Read, Board
+  Management, Profile Edit, and Interaction Write. Profile Activity is the
+  documented shallow exception required by sections 5.5 and 7.2: its one method
+  still owns repeatable-read orchestration, projection, breadcrumbs, and canonical
+  links; adding a fictitious second adapter solely for fan-out would add no seam.
 
 Do not combine unrelated visual redesign, moderation features, reaction/vote
 redesign, Profile image storage migration, activity pagination, or production
@@ -1449,3 +1469,37 @@ deployment with these reviews.
 - Production environment/deployment hardening beyond separately tracked urgent
   credential rotation.
 - A shared isomorphic domain package; server rules remain in `packages/api`.
+
+## 13. Steps to Take from Reviewing Refactor Changes
+
+Check an item only after the fix and its focused tests are complete.
+
+### Architecture and project standards
+
+- [x] Make root `pnpm dev` start both the API and frontend through the safe
+  `.env.dev` wrappers. It must never start a local server with the deployment
+  settings from the root `.env`.
+- [x] After creating a Topic, navigate with the canonical route parameters
+  returned by the backend. Do not rebuild the URL from the board or slugs already
+  held by the frontend.
+- [x] Replace the remaining manually written or cast frontend API types with
+  types inferred from the exported Hono `AppType`.
+- [x] Create and inject transaction-scoped stores for requests that need multiple
+  related database queries, so every query sees one consistent snapshot.
+- [x] Stop exporting repository factories and Drizzle-derived types from the
+  public module entry points. Keep database details behind each module boundary.
+
+### Correctness and plan requirements
+
+- [x] Make reply deletion safe when two requests delete the same reply at the
+  same time. The reply counter must be decremented only once, and a concurrency
+  test must prove it.
+- [x] Convert database unique-constraint errors during Topic creation into the
+  typed `TOPIC_SLUG_CONFLICT` response, including when two requests race to use
+  the same slug.
+- [x] Return the standard error envelope when replacement endpoints receive
+  malformed JSON.
+- [x] Validate the `postId` query parameter as a UUID on the reaction and vote
+  read endpoints before calling the module.
+- [x] Perform and record all six reviews listed in Section 10, then check their
+  review-boundary boxes.

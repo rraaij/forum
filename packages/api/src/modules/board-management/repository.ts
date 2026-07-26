@@ -62,6 +62,8 @@ export interface BoardManagementTx {
     sortOrder: number,
     now: Date,
   ): Promise<void>;
+  /** Locks every Board row in the purge subtree before its impact recount. */
+  lockSubtree(boardId: string): Promise<void>;
   countSubtree(boardId: string): Promise<BoardPurgeImpactCounts>;
   deleteBoardTree(boardId: string): Promise<void>;
   /** Purge only: excludes every content write for the rest of the tx. */
@@ -178,6 +180,20 @@ export function createDrizzleBoardManagementStore(
               .update(boards)
               .set({ parentId: newParentId, sortOrder, updatedAt: now })
               .where(eq(boards.id, boardId));
+          },
+
+          async lockSubtree(boardId) {
+            await tx.execute(sql`
+              WITH RECURSIVE subtree AS (
+                SELECT id FROM boards WHERE id = ${boardId}
+                UNION ALL
+                SELECT b.id FROM boards b JOIN subtree s ON b.parent_id = s.id
+              )
+              SELECT b.id
+              FROM boards b
+              JOIN subtree s ON s.id = b.id
+              FOR UPDATE OF b
+            `);
           },
 
           async countSubtree(boardId) {

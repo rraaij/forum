@@ -5,7 +5,7 @@
  * subsequent pages with the returned cursor.
  */
 
-import type { InferResponseType } from "hono/client";
+import type { InferRequestType, InferResponseType } from "hono/client";
 import { toApiError } from "@/lib/api";
 import { apiClient } from "@/lib/api-client";
 
@@ -26,60 +26,49 @@ export type PostView = TopicPage["openingPost"];
 export type TopicRouteParams = TopicListItem["routeParams"];
 export type Breadcrumb = TopicPage["breadcrumbs"][number];
 
-async function ensureOk<T extends { ok: boolean }>(res: T): Promise<T> {
-  if (!res.ok) {
-    throw await toApiError(
-      res as unknown as {
-        status: number;
-        statusText: string;
-        json(): Promise<unknown>;
-      },
-    );
-  }
-  return res;
-}
+type CategoryRequest = InferRequestType<typeof categoryGet>;
+type BoardRequest = InferRequestType<typeof boardGet>;
+type TopicRequest = InferRequestType<typeof topicGet>;
 
 export async function fetchForumIndex(): Promise<ForumIndex> {
-  const res = await ensureOk(await forumIndexGet());
-  return (await res.json()) as ForumIndex;
+  const res = await forumIndexGet();
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function fetchCategoryPage(
-  categorySlug: string,
-  topicCursor?: string,
+  categorySlug: CategoryRequest["param"]["categorySlug"],
+  topicCursor?: CategoryRequest["query"]["topicCursor"],
 ): Promise<CategoryPage> {
-  const res = await ensureOk(
-    await categoryGet({
-      param: { categorySlug },
-      query: topicCursor ? { topicCursor } : {},
-    }),
-  );
-  return (await res.json()) as CategoryPage;
+  const res = await categoryGet({
+    param: { categorySlug },
+    query: topicCursor ? { topicCursor } : {},
+  });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function fetchBoardPage(
-  categorySlug: string,
-  boardId: string,
-  topicCursor?: string,
+  categorySlug: BoardRequest["param"]["categorySlug"],
+  boardId: BoardRequest["param"]["boardId"],
+  topicCursor?: BoardRequest["query"]["topicCursor"],
 ): Promise<BoardPage> {
-  const res = await ensureOk(
-    await boardGet({
-      param: { categorySlug, boardId },
-      query: topicCursor ? { topicCursor } : {},
-    }),
-  );
-  return (await res.json()) as BoardPage;
+  const res = await boardGet({
+    param: { categorySlug, boardId },
+    query: topicCursor ? { topicCursor } : {},
+  });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function fetchTopicPage(
-  topicSlug: string,
-  replyCursor?: string,
+  topicSlug: TopicRequest["param"]["topicSlug"],
+  replyCursor?: TopicRequest["query"]["replyCursor"],
 ): Promise<TopicPage> {
-  const res = await ensureOk(
-    await topicGet({
-      param: { topicSlug },
-      query: replyCursor ? { replyCursor } : {},
-    }),
-  );
-  return (await res.json()) as TopicPage;
+  const res = await topicGet({
+    param: { topicSlug },
+    query: replyCursor ? { replyCursor } : {},
+  });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }

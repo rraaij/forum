@@ -33,6 +33,7 @@ import type {
   BoardActivityRow,
   BoardRow,
   ForumReadStore,
+  ForumReadTx,
   PostRow,
   TopicPageRow,
 } from "./repository";
@@ -172,25 +173,23 @@ function postView(row: PostRow): PostView {
   };
 }
 
-async function loadContext(store: ForumReadStore): Promise<BoardsContext> {
+async function loadContext(tx: ForumReadTx): Promise<BoardsContext> {
   // Three fixed queries regardless of hierarchy size or depth.
-  const [rows, counts, latest] = await Promise.all([
-    store.allBoards(),
-    store.directTopicCounts(),
-    store.latestActivityByBoard(),
-  ]);
+  const rows = await tx.allBoards();
+  const counts = await tx.directTopicCounts();
+  const latest = await tx.latestActivityByBoard();
   return buildContext(rows, counts, latest);
 }
 
 async function topicPageFor(
-  store: ForumReadStore,
+  tx: ForumReadTx,
   ctx: BoardsContext,
   board: BoardRow,
   request: PageRequest,
 ): Promise<Page<TopicListItem>> {
   const limit = normalizePageLimit(request.limit ?? DEFAULT_PAGE_LIMIT);
   const cursor = request.cursor ? decodeTopicCursor(request.cursor) : null;
-  const rows = await store.topicPage(board.id, cursor, limit + 1);
+  const rows = await tx.topicPage(board.id, cursor, limit + 1);
   const pageRows = rows.slice(0, limit);
   const last = pageRows.at(-1);
   return {
@@ -214,103 +213,111 @@ async function topicPageFor(
 export function createForumReadModel(store: ForumReadStore): ForumReadModel {
   return {
     async getForumIndex(): Promise<ForumIndexReadModel> {
-      const ctx = await loadContext(store);
-      return {
-        categories: ctx.hierarchy.roots.map((root) => boardTree(ctx, root)),
-      };
+      return store.transaction(async (tx) => {
+        const ctx = await loadContext(tx);
+        return {
+          categories: ctx.hierarchy.roots.map((root) => boardTree(ctx, root)),
+        };
+      });
     },
 
     async getCategoryPage(input): Promise<CategoryPageReadModel> {
-      const ctx = await loadContext(store);
-      const category = ctx.hierarchy.roots.find(
-        (row) => row.slug.toLowerCase() === input.categorySlug.toLowerCase(),
-      );
-      if (!category) throw categoryNotFound();
-      return {
-        category: boardSummary(ctx, category),
-        breadcrumbs: ctx.hierarchy.breadcrumbs(category.id),
-        childBoards: (ctx.hierarchy.childrenOf.get(category.id) ?? []).map(
-          (child) => boardSummary(ctx, child),
-        ),
-        topics: await topicPageFor(store, ctx, category, input.topics),
-      };
+      return store.transaction(async (tx) => {
+        const ctx = await loadContext(tx);
+        const category = ctx.hierarchy.roots.find(
+          (row) => row.slug.toLowerCase() === input.categorySlug.toLowerCase(),
+        );
+        if (!category) throw categoryNotFound();
+        return {
+          category: boardSummary(ctx, category),
+          breadcrumbs: ctx.hierarchy.breadcrumbs(category.id),
+          childBoards: (ctx.hierarchy.childrenOf.get(category.id) ?? []).map(
+            (child) => boardSummary(ctx, child),
+          ),
+          topics: await topicPageFor(tx, ctx, category, input.topics),
+        };
+      });
     },
 
     async getBoardPage(input): Promise<BoardPageReadModel> {
-      const ctx = await loadContext(store);
-      const board = ctx.hierarchy.byId.get(input.boardId);
-      const root = board ? ctx.hierarchy.rootOf(board.id) : undefined;
-      // A root board is addressed by the category path, never this one; a
-      // board whose root slug differs from the URL is presented as absent.
-      if (
-        !board ||
-        board.parentId === null ||
-        !root ||
-        root.slug.toLowerCase() !== input.categorySlug.toLowerCase()
-      ) {
-        throw boardAncestryMismatch();
-      }
-      return {
-        board: boardSummary(ctx, board),
-        breadcrumbs: ctx.hierarchy.breadcrumbs(board.id),
-        childBoards: (ctx.hierarchy.childrenOf.get(board.id) ?? []).map(
-          (child) => boardSummary(ctx, child),
-        ),
-        topics: await topicPageFor(store, ctx, board, input.topics),
-      };
+      return store.transaction(async (tx) => {
+        const ctx = await loadContext(tx);
+        const board = ctx.hierarchy.byId.get(input.boardId);
+        const root = board ? ctx.hierarchy.rootOf(board.id) : undefined;
+        // A root board is addressed by the category path, never this one; a
+        // board whose root slug differs from the URL is presented as absent.
+        if (
+          !board ||
+          board.parentId === null ||
+          !root ||
+          root.slug.toLowerCase() !== input.categorySlug.toLowerCase()
+        ) {
+          throw boardAncestryMismatch();
+        }
+        return {
+          board: boardSummary(ctx, board),
+          breadcrumbs: ctx.hierarchy.breadcrumbs(board.id),
+          childBoards: (ctx.hierarchy.childrenOf.get(board.id) ?? []).map(
+            (child) => boardSummary(ctx, child),
+          ),
+          topics: await topicPageFor(tx, ctx, board, input.topics),
+        };
+      });
     },
 
     async getTopicPage(input): Promise<TopicPageReadModel> {
-      const header = await store.topicHeaderBySlug(input.topicSlug);
-      if (!header) throw forumTopicNotFound();
+      return store.transaction(async (tx) => {
+        const header = await tx.topicHeaderBySlug(input.topicSlug);
+        if (!header) throw forumTopicNotFound();
 
-      const ctx = await loadContext(store);
-      const routeParams = ctx.hierarchy.topicRouteParams(
-        header.boardId,
-        header.slug,
-      );
-      if (!routeParams) throw forumTopicNotFound();
+        const ctx = await loadContext(tx);
+        const routeParams = ctx.hierarchy.topicRouteParams(
+          header.boardId,
+          header.slug,
+        );
+        if (!routeParams) throw forumTopicNotFound();
 
-      const opening = await store.openingPost(header.id);
-      if (!opening) throw forumTopicNotFound();
+        const opening = await tx.openingPost(header.id);
+        if (!opening) throw forumTopicNotFound();
 
-      const limit = normalizePageLimit(
-        input.replies.limit ?? DEFAULT_PAGE_LIMIT,
-      );
-      const cursor = input.replies.cursor
-        ? decodeReplyCursor(input.replies.cursor)
-        : null;
-      const rows = await store.replyPage(header.id, cursor, limit + 1);
-      const pageRows = rows.slice(0, limit);
-      const last = pageRows.at(-1);
+        const limit = normalizePageLimit(
+          input.replies.limit ?? DEFAULT_PAGE_LIMIT,
+        );
+        const cursor = input.replies.cursor
+          ? decodeReplyCursor(input.replies.cursor)
+          : null;
+        const rows = await tx.replyPage(header.id, cursor, limit + 1);
+        const pageRows = rows.slice(0, limit);
+        const last = pageRows.at(-1);
 
-      return {
-        topic: {
-          id: header.id,
-          slug: header.slug,
-          title: header.title,
-          isPinned: header.isPinned,
-          isLocked: header.isLocked,
-          replyCount: header.replyCount ?? 0,
-          viewCount: header.viewCount,
-          createdAt: header.createdAt.toISOString(),
-          lastActivityAt: header.lastActivityAt.toISOString(),
-          author: author(header),
-        },
-        routeParams,
-        breadcrumbs: ctx.hierarchy.breadcrumbs(header.boardId),
-        openingPost: postView(opening),
-        replies: {
-          items: pageRows.map(postView),
-          nextCursor:
-            rows.length > limit && last
-              ? encodeReplyCursor({
-                  createdAt: last.createdAt.toISOString(),
-                  id: last.id,
-                })
-              : null,
-        },
-      };
+        return {
+          topic: {
+            id: header.id,
+            slug: header.slug,
+            title: header.title,
+            isPinned: header.isPinned,
+            isLocked: header.isLocked,
+            replyCount: header.replyCount ?? 0,
+            viewCount: header.viewCount,
+            createdAt: header.createdAt.toISOString(),
+            lastActivityAt: header.lastActivityAt.toISOString(),
+            author: author(header),
+          },
+          routeParams,
+          breadcrumbs: ctx.hierarchy.breadcrumbs(header.boardId),
+          openingPost: postView(opening),
+          replies: {
+            items: pageRows.map(postView),
+            nextCursor:
+              rows.length > limit && last
+                ? encodeReplyCursor({
+                    createdAt: last.createdAt.toISOString(),
+                    id: last.id,
+                  })
+                : null,
+          },
+        };
+      });
     },
   };
 }

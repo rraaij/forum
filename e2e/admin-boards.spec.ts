@@ -26,6 +26,15 @@ async function promoteToAdmin(name: string): Promise<void> {
   }
 }
 
+async function deleteBoardDirectly(boardId: string): Promise<void> {
+  const sql = connect(loadTestTarget());
+  try {
+    await sql`DELETE FROM boards WHERE id = ${boardId}`;
+  } finally {
+    await sql.end();
+  }
+}
+
 /*
  * Create and edit forms can be on screen at the same time, so every field
  * lookup is scoped to its own form by heading text.
@@ -148,6 +157,74 @@ test("admin creates, edits, moves, previews, and purges a subtree", async ({
   // Gaming survives; Consoles is gone from the tree.
   await expect(page.getByRole("button", { name: /Gaming/ })).toBeVisible();
   await expect(page.getByRole("button", { name: /Consoles/ })).toHaveCount(0);
+});
+
+test("a stale purge preview is cleared and must be reviewed again", async ({
+  page,
+}) => {
+  const ids = await seedBoards([{ name: "Stale", slug: "stale" }]);
+  await signUp(page, "stale-admin");
+  await promoteToAdmin("stale-admin");
+  await page.reload();
+  await page.goto("/admin/boards");
+
+  await page.getByRole("button", { name: /Stale/ }).first().click();
+  await page.getByRole("button", { name: "Preview impact" }).click();
+  await expect(page.getByText(/Boards:/)).toBeVisible();
+
+  // Change the server-owned impact after preview without refreshing the UI.
+  const status = await page.evaluate(async (boardId) => {
+    const response = await fetch("/api/topics", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        boardId,
+        title: "Late topic",
+        content: "invalidates the preview",
+      }),
+    });
+    return response.status;
+  }, ids.Stale);
+  expect(status).toBe(201);
+
+  await fillWhenReady(page.getByLabel("Confirm board name"), "Stale");
+  await page.getByRole("button", { name: "Permanently delete" }).click();
+  await expect(
+    page.getByText(/contents changed since the purge preview/i),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Permanently delete" }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("Confirm board name")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Preview impact" }),
+  ).toBeVisible();
+});
+
+test("a failed impact refresh clears the previous preview", async ({
+  page,
+}) => {
+  const ids = await seedBoards([{ name: "Vanishing", slug: "vanishing" }]);
+  await signUp(page, "refresh-admin");
+  await promoteToAdmin("refresh-admin");
+  await page.reload();
+  await page.goto("/admin/boards");
+
+  await page
+    .getByRole("button", { name: /Vanishing/ })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Preview impact" }).click();
+  await expect(page.getByText(/Boards:/)).toBeVisible();
+  await deleteBoardDirectly(ids.Vanishing);
+
+  await page.getByRole("button", { name: "Preview impact" }).click();
+  await expect(page.getByText("Board not found")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Permanently delete" }),
+  ).toHaveCount(0);
+  await expect(page.getByLabel("Confirm board name")).toHaveCount(0);
 });
 
 test("a cycle-producing move is rejected with a clear message", async ({

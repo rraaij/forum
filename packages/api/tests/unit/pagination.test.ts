@@ -60,6 +60,10 @@ describe("topic cursors", () => {
       Buffer.from(
         JSON.stringify({ version: 1, ...payload, isPinned: "yes" }),
       ).toString("base64url"),
+      `${encodeTopicCursor(payload)}A`,
+      Buffer.from(
+        JSON.stringify({ version: 1, ...payload, extra: true }),
+      ).toString("base64url"),
     ];
     for (const input of badInputs) {
       let caught: unknown;

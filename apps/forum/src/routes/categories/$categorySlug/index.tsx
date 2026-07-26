@@ -9,6 +9,7 @@ import ForumGrid from "@/components/ForumGrid";
 import PageHeader from "@/components/PageHeader";
 import TopicsList from "@/components/TopicsList";
 import { fetchCategoryPage } from "@/features/forum-read/api";
+import { topicLinkProps } from "@/features/forum-read/topic-link";
 import { createPageAccumulator } from "@/features/forum-read/use-page-accumulator";
 
 export const Route = createFileRoute("/categories/$categorySlug/")({
@@ -87,16 +88,10 @@ function CategoryPage() {
         createTopic={{
           boardId: category().id,
           onCreated: async (topic) => {
-            // Refresh the table first, then open the new direct category
-            // topic through its canonical root-topic path.
+            // The backend owns canonical hierarchy policy, including whether
+            // this Topic uses the root or nested route shape.
             await router.invalidate();
-            await navigate({
-              to: "/categories/$categorySlug/topics/$topicSlug",
-              params: {
-                categorySlug: category().slug,
-                topicSlug: topic.slug,
-              },
-            });
+            await navigate(topicLinkProps(topic.routeParams));
           },
         }}
       />

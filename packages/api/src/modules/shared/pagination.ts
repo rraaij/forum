@@ -39,18 +39,22 @@ export function normalizePageLimit(limit: number | undefined): number {
   return limit;
 }
 
-const topicCursorSchema = z.object({
-  version: z.literal(1),
-  isPinned: z.boolean(),
-  lastActivityAt: z.iso.datetime(),
-  id: z.uuid(),
-});
+const topicCursorSchema = z
+  .object({
+    version: z.literal(1),
+    isPinned: z.boolean(),
+    lastActivityAt: z.iso.datetime(),
+    id: z.uuid(),
+  })
+  .strict();
 
-const replyCursorSchema = z.object({
-  version: z.literal(1),
-  createdAt: z.iso.datetime(),
-  id: z.uuid(),
-});
+const replyCursorSchema = z
+  .object({
+    version: z.literal(1),
+    createdAt: z.iso.datetime(),
+    id: z.uuid(),
+  })
+  .strict();
 
 export type TopicCursor = z.infer<typeof topicCursorSchema>;
 export type ReplyCursor = z.infer<typeof replyCursorSchema>;
@@ -62,7 +66,12 @@ function encodeCursor(payload: TopicCursor | ReplyCursor): string {
 function decodeCursor<T>(raw: string, schema: z.ZodType<T>, label: string): T {
   let parsedJson: unknown;
   try {
-    parsedJson = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
+    if (!raw || !/^[A-Za-z0-9_-]+$/.test(raw)) throw new Error("invalid");
+    const decoded = Buffer.from(raw, "base64url");
+    // Node's decoder is intentionally permissive. Re-encoding rejects extra
+    // ignored characters and every other non-canonical representation.
+    if (decoded.toString("base64url") !== raw) throw new Error("invalid");
+    parsedJson = JSON.parse(decoded.toString("utf8"));
   } catch {
     throw validationError(
       "INVALID_CURSOR",

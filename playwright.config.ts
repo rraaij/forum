@@ -30,13 +30,15 @@ export default defineConfig({
     {
       command: "pnpm --filter @forum/api dev:test",
       url: `${apiUrl}/health`,
-      reuseExistingServer: !process.env.CI,
+      // Never trust an arbitrary process already bound to the test port: only
+      // dev:test proves the API target is loopback and ends in _test.
+      reuseExistingServer: false,
       timeout: 120_000,
     },
     {
       command: "pnpm --filter @forum/forum-app dev:test",
       url: appUrl,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
       timeout: 180_000,
     },
   ],

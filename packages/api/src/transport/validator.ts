@@ -7,6 +7,7 @@
 import { zValidator } from "@hono/zod-validator";
 import type { Context, Next } from "hono";
 import { bodyLimit } from "hono/body-limit";
+import { HTTPException } from "hono/http-exception";
 import type { z } from "zod";
 import type { AppEnv } from "../types";
 import type { ErrorResponse } from "./error-envelope";
@@ -34,7 +35,7 @@ export function transportValidator<
   T extends z.ZodType,
   Target extends ValidationTarget,
 >(target: Target, schema: T) {
-  return zValidator(target, schema, (result, c: Context) => {
+  const validator = zValidator(target, schema, (result, c: Context) => {
     if (!result.success) {
       const issue = result.error.issues[0];
       const field = issue?.path.join(".") || undefined;
@@ -44,6 +45,33 @@ export function transportValidator<
       );
     }
   });
+
+  if (target !== "json") return validator;
+
+  /*
+   * Hono parses JSON before invoking zValidator's result callback and throws
+   * for malformed syntax. Wrap only this replacement-validator path so its
+   * parse failures use the standard envelope without changing the deliberate
+   * legacy reaction/vote error contract in the global error handler.
+   */
+  const jsonValidator: typeof validator = async (c, next) => {
+    try {
+      return await validator(c, next);
+    } catch (error) {
+      if (
+        error instanceof HTTPException &&
+        error.status === 400 &&
+        error.message === "Malformed JSON in request body"
+      ) {
+        return c.json(
+          envelope("INVALID_INPUT", "Malformed JSON in request body"),
+          400,
+        );
+      }
+      throw error;
+    }
+  };
+  return jsonValidator;
 }
 
 export function transportBodyLimit(maxSize = TRANSPORT_JSON_LIMIT) {
