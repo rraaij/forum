@@ -18,10 +18,10 @@ import {
 import { users } from "./auth";
 
 /*
- * ── Redesigned forum schema (refactor plan section 4) ─────────────────────
- * Added ADDITIVELY beside the legacy categories/subcategories model during
- * the expand phase. New topic/post columns stay nullable until the Phase 8
- * contract/reset migration; legacy tables and columns are untouched here.
+ * ── Forum schema (refactor plan section 4) ────────────────────────────────
+ * Contracted in Phase 8: the legacy categories/subcategories tables and the
+ * legacy topic columns are gone, and the redesign columns are required. One
+ * arbitrary-depth board hierarchy is now the only forum structure.
  */
 
 export const postKind = pgEnum("post_kind", ["opening", "reply"]);
@@ -94,67 +94,13 @@ export const topicViews = pgTable(
   (table) => [primaryKey({ columns: [table.topicId, table.browserSessionId] })],
 );
 
-export const categories = pgTable(
-  "categories",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    // Five characters are enough for the compact forum code shown in headers.
-    abbreviation: varchar("abbreviation", { length: 5 }).notNull(),
-    description: text("description"),
-    icon: text("icon"),
-    sortOrder: integer("sort_order").notNull().default(0),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [
-    // Expression indexes enforce uniqueness regardless of letter casing.
-    uniqueIndex("categories_name_unique_idx").on(sql`lower(${table.name})`),
-    uniqueIndex("categories_slug_unique_idx").on(sql`lower(${table.slug})`),
-    uniqueIndex("categories_abbreviation_unique_idx").on(
-      sql`lower(${table.abbreviation})`,
-    ),
-  ],
-);
-
-export const subcategories = pgTable(
-  "subcategories",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    categoryId: uuid("category_id")
-      .notNull()
-      .references(() => categories.id, { onDelete: "cascade" }),
-    parentSubcategoryId: uuid("parent_subcategory_id").references(
-      (): AnyPgColumn => subcategories.id,
-      { onDelete: "cascade" },
-    ),
-    name: text("name").notNull(),
-    slug: text("slug").notNull(),
-    // Subforums use the same compact five-character code as top-level boards.
-    abbreviation: varchar("abbreviation", { length: 5 }).notNull(),
-    description: text("description"),
-    sortOrder: integer("sort_order").notNull().default(0),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [
-    uniqueIndex("subcategories_name_unique_idx").on(sql`lower(${table.name})`),
-    uniqueIndex("subcategories_slug_unique_idx").on(sql`lower(${table.slug})`),
-    uniqueIndex("subcategories_abbreviation_unique_idx").on(
-      sql`lower(${table.abbreviation})`,
-    ),
-  ],
-);
-
 export const topics = pgTable(
   "topics",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    categoryId: uuid("category_id").references(() => categories.id, {
-      onDelete: "cascade",
-    }),
-    subcategoryId: uuid("subcategory_id").references(() => subcategories.id, {
-      onDelete: "cascade",
-    }),
+    boardId: uuid("board_id")
+      .notNull()
+      .references(() => boards.id, { onDelete: "cascade" }),
     authorId: text("author_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -163,19 +109,13 @@ export const topics = pgTable(
     isPinned: boolean("is_pinned").notNull().default(false),
     isLocked: boolean("is_locked").notNull().default(false),
     viewCount: integer("view_count").notNull().default(0),
-    postCount: integer("post_count").notNull().default(0),
-    lastPostAt: timestamp("last_post_at"),
+    // Active replies only; the opening post is never counted.
+    replyCount: integer("reply_count").notNull(),
+    // Opening-post time, or the newest active reply time.
+    lastActivityAt: timestamp("last_activity_at").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    // Redesign columns (nullable until the Phase 8 contract migration).
-    boardId: uuid("board_id").references(() => boards.id, {
-      onDelete: "cascade",
-    }),
-    replyCount: integer("reply_count"),
-    lastActivityAt: timestamp("last_activity_at"),
   },
   (table) => [
-    index("topics_subcategory_idx").on(table.subcategoryId),
-    index("topics_category_idx").on(table.categoryId),
     index("topics_author_idx").on(table.authorId),
     index("topics_board_idx").on(table.boardId),
     // Keyset traversal order for board topic lists (plan section 4.2).
@@ -185,7 +125,10 @@ export const topics = pgTable(
       table.lastActivityAt.desc(),
       table.id.desc(),
     ),
-    // Null-compatible: legacy rows keep reply_count NULL until Phase 8.
+    // Slugs address a topic globally, so uniqueness is global and
+    // case-insensitive; the module reports a typed TOPIC_SLUG_CONFLICT and
+    // this index is the authority behind it.
+    uniqueIndex("topics_slug_unique_idx").on(sql`lower(${table.slug})`),
     check("topics_reply_count_check", sql`${table.replyCount} >= 0`),
   ],
 );
@@ -204,8 +147,7 @@ export const posts = pgTable(
     isDeleted: boolean("is_deleted").notNull().default(false),
     editedAt: timestamp("edited_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    // Redesign columns (nullable until the Phase 8 contract migration).
-    kind: postKind("kind"),
+    kind: postKind("kind").notNull(),
     quoteSnapshot: jsonb("quote_snapshot"),
     deletedAt: timestamp("deleted_at"),
   },
@@ -226,11 +168,12 @@ export const posts = pgTable(
       "posts_quote_reply_only_check",
       sql`${table.quoteSnapshot} IS NULL OR ${table.kind} = 'reply'`,
     ),
-    // Null-compatible until Phase 8: deleted_at may only be set on deleted
-    // posts; legacy soft-deleted rows may still have a NULL deleted_at.
+    // Deletion state is one fact recorded in two columns; they may never
+    // disagree (plan section 4.3).
     check(
       "posts_deleted_at_consistency_check",
-      sql`${table.deletedAt} IS NULL OR ${table.isDeleted}`,
+      sql`(${table.isDeleted} = false AND ${table.deletedAt} IS NULL)
+          OR (${table.isDeleted} = true AND ${table.deletedAt} IS NOT NULL)`,
     ),
   ],
 );

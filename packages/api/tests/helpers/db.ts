@@ -80,7 +80,7 @@ export async function closeTestSql(): Promise<void> {
 export async function truncateAll(): Promise<void> {
   await testSql().unsafe(
     `TRUNCATE TABLE votes, reactions, topic_views, posts, topics, boards,
-     subcategories, categories, sessions, accounts, users
+     sessions, accounts, users
      RESTART IDENTITY CASCADE`,
   );
 }

@@ -6,21 +6,11 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { connect, loadTestTarget } from "../packages/db/tests/helpers/test-db";
-import { fillWhenReady } from "./helpers";
+import { fillWhenReady, resetForumTest } from "./helpers";
 
-test.beforeAll(async () => {
-  // Deterministic fixtures: wipe forum + auth content in forum_test.
-  const sql = connect(loadTestTarget());
-  try {
-    await sql.unsafe(
-      `TRUNCATE TABLE votes, reactions, posts, topics, subcategories,
-       categories, sessions, accounts, users RESTART IDENTITY CASCADE`,
-    );
-  } finally {
-    await sql.end();
-  }
-});
+// Deterministic fixtures: one shared reset, so the table list lives in one
+// place and cannot drift from the schema again.
+test.beforeAll(resetForumTest);
 
 test("forum renders for a signed-out visitor", async ({ page }) => {
   await page.goto("/");

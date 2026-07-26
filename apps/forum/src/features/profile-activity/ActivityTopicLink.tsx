@@ -48,9 +48,9 @@ export function ActivityTopicLink(props: { activity: ProfileActivityItem }) {
         when={props.activity.routeParams}
         fallback={
           /*
-           * A topic without a board cannot be addressed. The row stays in
-           * the author's record, presented without a link. Phase 8 makes
-           * topics.board_id NOT NULL and retires this branch.
+           * The backend could not resolve the topic's board (it was purged
+           * while activity was being read), so there is no canonical URL.
+           * The row stays in the author's record, presented without a link.
            */
           <button type="button" class="font-semibold" {...previewHandlers()}>
             {props.activity.topicTitle}

@@ -13,7 +13,6 @@ import {
   closeTestSql,
   countingDrizzle,
   testDrizzle,
-  testSql,
   truncateAll,
 } from "../helpers/db";
 import { insertBoard, insertUser } from "../helpers/fixtures";
@@ -164,23 +163,32 @@ describe("canonical route params and breadcrumbs", () => {
   });
 
   /*
-   * Until Phase 8 makes topics.board_id NOT NULL a topic can exist without a
-   * board. The author's own record must still list it, unlinked.
+   * Phase 8 made topics.board_id NOT NULL, so a boardless topic can no
+   * longer be written. The unlinkable case survives as a RACE: activity
+   * reads posts and boards in two queries, and an admin purge between them
+   * removes the board a just-read topic pointed at. The row belongs to the
+   * author either way, so it is listed unlinked rather than dropped.
    */
-  it("returns a boardless topic without route params instead of hiding it", async () => {
+  it("lists a topic whose board disappeared mid-read, without a link", async () => {
     const board = await insertBoard("Alpha");
-    const { topicId } = await discussion.createTopic({
+    await discussion.createTopic({
       actorId: authorId,
       boardId: board,
-      title: "Orphan",
+      title: "Purged mid-read",
       content: "x",
     });
-    await testSql()`UPDATE topics SET board_id = NULL WHERE id = ${topicId}`;
 
-    const [item] = await activity.getAllForUser(authorId);
+    // Boards are read after posts; this store answers as a purge would.
+    const racing = createProfileActivity({
+      postsByAuthor: (userId) =>
+        createProfileActivityStore(testDrizzle()).postsByAuthor(userId),
+      hierarchyBoards: async () => [],
+    });
+
+    const [item] = await racing.getAllForUser(authorId);
     expect(item.routeParams).toBeNull();
     expect(item.breadcrumbs).toEqual([]);
-    expect(item.topicTitle).toBe("Orphan");
+    expect(item.topicTitle).toBe("Purged mid-read");
   });
 });
 

@@ -23,7 +23,7 @@ export async function resetForumTest(): Promise<void> {
   try {
     await sql.unsafe(
       `TRUNCATE TABLE votes, reactions, topic_views, posts, topics, boards,
-       subcategories, categories, sessions, accounts, users
+       sessions, accounts, users
        RESTART IDENTITY CASCADE`,
     );
   } finally {

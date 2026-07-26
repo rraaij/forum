@@ -26,19 +26,16 @@ export function createProfileActivity(
 
       return rows.map((row) => ({
         postId: row.postId,
-        // Rows written before the expansion migration default to replies;
-        // the opening post is the one the schema marks as such.
-        postKind: row.kind === "opening" ? "opening" : "reply",
+        postKind: row.kind,
         postContent: row.content,
         postCreatedAt: row.createdAt.toISOString(),
         isDeleted: row.isDeleted,
         topicId: row.topicId,
         topicTitle: row.topicTitle,
         topicSlug: row.topicSlug,
-        breadcrumbs: row.boardId ? hierarchy.breadcrumbs(row.boardId) : [],
-        routeParams: row.boardId
-          ? hierarchy.topicRouteParams(row.boardId, row.topicSlug)
-          : null,
+        breadcrumbs: hierarchy.breadcrumbs(row.boardId),
+        // Null only if the board was purged between the two reads.
+        routeParams: hierarchy.topicRouteParams(row.boardId, row.topicSlug),
       }));
     },
   };

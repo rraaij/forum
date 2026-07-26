@@ -21,10 +21,11 @@ export interface ProfileActivityItem {
   /** Root-first ancestry; empty when the topic has no reachable board. */
   breadcrumbs: BreadcrumbItem[];
   /*
-   * Null when the topic predates the board hierarchy and cannot be linked.
-   * Every row is still returned — activity is the author's record, so an
-   * unlinkable topic is presented without a link rather than hidden. Phase 8
-   * makes topics.board_id NOT NULL and retires the case.
+   * Null when the topic's board cannot be resolved. Since Phase 8 made
+   * topics.board_id NOT NULL this means the board was purged between the
+   * posts read and the boards read. Every row is still returned — activity
+   * is the author's own record, so an unlinkable topic is presented without
+   * a link rather than hidden.
    */
   routeParams: TopicRouteParams | null;
 }

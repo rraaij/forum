@@ -11,16 +11,14 @@ import type { HierarchyBoardRow } from "../shared/board-hierarchy";
 
 export interface ActivityPostRow {
   postId: string;
-  /** Null only for rows predating the expansion migration. */
-  kind: "opening" | "reply" | null;
+  kind: "opening" | "reply";
   content: string;
   createdAt: Date;
   isDeleted: boolean;
   topicId: string;
   topicTitle: string;
   topicSlug: string;
-  /** Null until Phase 8 makes the column NOT NULL. */
-  boardId: string | null;
+  boardId: string;
 }
 
 export interface ProfileActivityStore {

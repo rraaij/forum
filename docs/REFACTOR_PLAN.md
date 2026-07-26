@@ -303,14 +303,16 @@ The additive expansion migration must:
 After every caller has moved, generate one clearly named destructive contract/reset
 migration. It must:
 
-- [ ] Delete dependent Forum content in this order: votes, reactions, Topic views,
+- [x] Delete dependent Forum content in this order: votes, reactions, Topic views,
   Posts, Topics, Subcategories, Categories, and temporary Board seed rows.
-- [ ] Drop obsolete Forum tables, Topic parent/counter columns, cross-table
+  Subcategories and Categories are removed by dropping the tables, which deletes
+  their rows; the surviving tables are emptied by explicit ordered `DELETE`s.
+- [x] Drop obsolete Forum tables, Topic parent/counter columns, cross-table
   uniqueness triggers, and the persisted
   `enforce_forum_identifier_cross_table_uniqueness()` function.
-- [ ] Make the redesigned Topic/Post columns required and add all final checks,
+- [x] Make the redesigned Topic/Post columns required and add all final checks,
   indexes, and constraints.
-- [ ] Preserve `users`, `sessions`, `accounts`, and every Profile column/value in
+- [x] Preserve `users`, `sessions`, `accounts`, and every Profile column/value in
   `users`.
 
 Migration safety belongs in an executable wrapper, not in SQL. Add explicit
@@ -1290,25 +1292,31 @@ pnpm build
 
 Steps:
 
-- [ ] Prove by source search and HTTP contract tests that no runtime caller uses
-  Categories, Subcategories, or legacy Topic/Post fields.
-- [ ] Generate the contract/reset migration described in section 4.5.
-- [ ] Inspect every `DROP`, `DELETE`, and `ALTER`; verify no auth/Profile table or
-  column appears.
-- [ ] Apply from an empty test database through legacy bootstrap, all historical
+- [x] Prove by source search and HTTP contract tests that no runtime caller uses
+  Categories, Subcategories, or legacy Topic/Post fields. The only remaining
+  matches were the schema definitions themselves and the `/categories/...` URL
+  segment, which names root Boards, not the dropped table.
+- [x] Generate the contract/reset migration described in section 4.5.
+- [x] Inspect every `DROP`, `DELETE`, and `ALTER`; verify no auth/Profile table or
+  column appears. Generated SQL was hand-finished: drizzle emitted the
+  `SET NOT NULL` statements with no preceding content deletion, which would have
+  failed on every legacy row, and did not drop the trigger function.
+- [x] Apply from an empty test database through legacy bootstrap, all historical
   migrations, expansion, and contract/reset.
-- [ ] Snapshot auth/Profile fixture rows before migration and compare every value
-  afterward.
-- [ ] Apply to `forum_dev` only through `db:migrate:dev` after a local backup.
-- [ ] Run Board-only development seed, then create Topics through the application or
+- [x] Snapshot auth/Profile fixture rows before migration and compare every value
+  afterward (`packages/db/tests/integration/contract-migration.test.ts`, whole-row
+  equality for `users`, `sessions`, and `accounts`).
+- [x] Apply to `forum_dev` only through `db:migrate:dev` after a local backup
+  (`~/forum-db-backups/forum_dev-pre-contract-*.sql`).
+- [x] Run Board-only development seed, then create Topics through the application or
   the optional validated-user content seed.
-- [ ] Confirm the target schema has no legacy Forum tables/columns/functions and all
+- [x] Confirm the target schema has no legacy Forum tables/columns/functions and all
   final constraints pass.
-- [ ] Confirm authentication/Profile data is byte-for-byte unchanged.
+- [x] Confirm authentication/Profile data is byte-for-byte unchanged.
 
 Gate:
 
-- [ ] Run the complete Phase 8 gate:
+- [x] Run the complete Phase 8 gate:
 
 ```bash
 pnpm test

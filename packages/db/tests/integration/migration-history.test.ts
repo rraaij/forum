@@ -98,54 +98,39 @@ describe("legacy bootstrap and migration history", () => {
     expect(abbrev).toHaveLength(0);
   });
 
+  /*
+   * The history now ends at the Phase 8 contract/reset migration, so what
+   * matters here is the state it LEAVES: the legacy hierarchy erased and the
+   * redesigned forum in place. The intermediate category/subcategory
+   * assertions this test used to make describe objects 0007 removes; the
+   * migration itself is verified in isolation by contract-migration.test.ts.
+   */
   it("runs the complete committed migration history on top", async () => {
     const db = drizzle(historySql);
     await migrate(db, { migrationsFolder });
 
-    // 0000/0001: abbreviation columns exist and are NOT NULL.
-    const abbrev = await historySql`
-      SELECT table_name, is_nullable FROM information_schema.columns
-      WHERE table_schema = 'public' AND column_name = 'abbreviation'
-      ORDER BY table_name
-    `;
-    // boards (added in 0006) also carries an abbreviation column.
-    expect(abbrev.map((r) => [r.table_name, r.is_nullable])).toEqual([
-      ["boards", "NO"],
-      ["categories", "NO"],
-      ["subcategories", "NO"],
-    ]);
-
-    // 0002: named constraint/index dropped, lower() unique indexes added.
-    const dropped = await historySql`
-      SELECT 1 FROM pg_constraint WHERE conname = 'categories_slug_unique'
-    `;
-    expect(dropped).toHaveLength(0);
-    const indexNames = (
-      await historySql`
-        SELECT indexname FROM pg_indexes WHERE schemaname = 'public'
-      `
-    ).map((r) => r.indexname as string);
-    expect(indexNames).not.toContain("subcategories_category_slug_idx");
-    expect(indexNames).toEqual(
-      expect.arrayContaining([
-        "categories_name_unique_idx",
-        "categories_slug_unique_idx",
-        "categories_abbreviation_unique_idx",
-        "subcategories_name_unique_idx",
-        "subcategories_slug_unique_idx",
-        "subcategories_abbreviation_unique_idx",
-      ]),
+    const tables = await tableNames(historySql);
+    expect(tables).not.toContain("categories");
+    expect(tables).not.toContain("subcategories");
+    expect(tables).toEqual(
+      expect.arrayContaining(["boards", "topics", "posts", "topic_views"]),
     );
 
-    // 0003/0004: cross-table trigger function exists and takes the lock.
-    const [fn] = await historySql`
+    // 0006: the board hierarchy's authoritative cycle trigger survives.
+    const [cycleFn] = await historySql`
       SELECT pg_get_functiondef(oid) AS def
-      FROM pg_proc
+      FROM pg_proc WHERE proname = 'enforce_board_hierarchy_acyclic'
+    `;
+    expect(cycleFn?.def).toContain("WITH RECURSIVE");
+
+    // 0007: the legacy cross-table uniqueness function is gone with its tables.
+    const crossTable = await historySql`
+      SELECT 1 FROM pg_proc
       WHERE proname = 'enforce_forum_identifier_cross_table_uniqueness'
     `;
-    expect(fn?.def).toContain("pg_advisory_xact_lock");
+    expect(crossTable).toHaveLength(0);
 
-    // 0005: profile columns on users.
+    // 0005 profile columns survive the reset untouched.
     const userColumns = (
       await historySql`
         SELECT column_name FROM information_schema.columns
