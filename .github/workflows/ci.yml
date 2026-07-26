@@ -1,0 +1,71 @@
+# Deterministic PR gate (refactor plan section 8.1). Uses only _test
+# configuration: a workflow-local PostgreSQL service and .env.test copied
+# from the committed example. No QNAP credentials exist or are used here.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: forum
+          POSTGRES_PASSWORD: forum
+          POSTGRES_DB: forum_test
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U forum -d forum_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create test environment file
+        run: cp .env.test.example .env.test
+
+      - name: Migrate forum_test (legacy bootstrap + full history)
+        run: pnpm --filter @forum/db db:migrate:test
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Integration tests
+        run: pnpm test:integration
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser tests
+        run: pnpm test:e2e
+
+      - name: Type checks
+        run: pnpm typecheck
+
+      - name: Biome (read-only)
+        run: pnpm exec biome check .
+
+      - name: Build
+        run: pnpm build

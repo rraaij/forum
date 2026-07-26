@@ -1,5 +1,5 @@
 {
-  "extends": "@forum/config/tsconfig/solidjs",
+  "extends": "../config/tsconfig.solidjs.json",
   "compilerOptions": {
     "composite": true,
     "noEmit": false,

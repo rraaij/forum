@@ -1,0 +1,21 @@
+# Isolated PostgreSQL for automated tests only (forum_test).
+# Data lives on tmpfs on purpose: the test database is disposable and every
+# test run migrates it from scratch. Never point this file at the QNAP NAS.
+name: forum-test
+
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    ports:
+      - "127.0.0.1:55432:5432"
+    environment:
+      POSTGRES_USER: forum
+      POSTGRES_PASSWORD: forum
+      POSTGRES_DB: forum_test
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U forum -d forum_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30

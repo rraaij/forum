@@ -11,11 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as CategoryIndexRouteImport } from './routes/$category/index'
+import { Route as AdminBoardsRouteImport } from './routes/admin/boards'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthSignUpRouteImport } from './routes/auth/sign-up'
-import { Route as CategorySubIndexRouteImport } from './routes/$category/$sub/index'
-import { Route as CategorySubTopicIndexRouteImport } from './routes/$category/$sub/$topic/index'
+import { Route as CategoriesCategorySlugIndexRouteImport } from './routes/categories/$categorySlug/index'
+import { Route as CategoriesCategorySlugSubcategoriesBoardIdIndexRouteImport } from './routes/categories/$categorySlug/subcategories/$boardId/index'
+import { Route as CategoriesCategorySlugTopicsTopicSlugIndexRouteImport } from './routes/categories/$categorySlug/topics/$topicSlug/index'
+import { Route as CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRouteImport } from './routes/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -27,9 +29,9 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoryIndexRoute = CategoryIndexRouteImport.update({
-  id: '/$category/',
-  path: '/$category/',
+const AdminBoardsRoute = AdminBoardsRouteImport.update({
+  id: '/admin/boards',
+  path: '/admin/boards',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
@@ -42,83 +44,113 @@ const AuthSignUpRoute = AuthSignUpRouteImport.update({
   path: '/auth/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategorySubIndexRoute = CategorySubIndexRouteImport.update({
-  id: '/$category/$sub/',
-  path: '/$category/$sub/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CategorySubTopicIndexRoute = CategorySubTopicIndexRouteImport.update({
-  id: '/$category/$sub/$topic/',
-  path: '/$category/$sub/$topic/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const CategoriesCategorySlugIndexRoute =
+  CategoriesCategorySlugIndexRouteImport.update({
+    id: '/categories/$categorySlug/',
+    path: '/categories/$categorySlug/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CategoriesCategorySlugSubcategoriesBoardIdIndexRoute =
+  CategoriesCategorySlugSubcategoriesBoardIdIndexRouteImport.update({
+    id: '/categories/$categorySlug/subcategories/$boardId/',
+    path: '/categories/$categorySlug/subcategories/$boardId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CategoriesCategorySlugTopicsTopicSlugIndexRoute =
+  CategoriesCategorySlugTopicsTopicSlugIndexRouteImport.update({
+    id: '/categories/$categorySlug/topics/$topicSlug/',
+    path: '/categories/$categorySlug/topics/$topicSlug/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute =
+  CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRouteImport.update(
+    {
+      id: '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/',
+      path: '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/',
+      getParentRoute: () => rootRouteImport,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/$category/': typeof CategoryIndexRoute
-  '/$category/$sub/': typeof CategorySubIndexRoute
-  '/$category/$sub/$topic/': typeof CategorySubTopicIndexRoute
+  '/categories/$categorySlug/': typeof CategoriesCategorySlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId/': typeof CategoriesCategorySlugSubcategoriesBoardIdIndexRoute
+  '/categories/$categorySlug/topics/$topicSlug/': typeof CategoriesCategorySlugTopicsTopicSlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/': typeof CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/$category': typeof CategoryIndexRoute
-  '/$category/$sub': typeof CategorySubIndexRoute
-  '/$category/$sub/$topic': typeof CategorySubTopicIndexRoute
+  '/categories/$categorySlug': typeof CategoriesCategorySlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId': typeof CategoriesCategorySlugSubcategoriesBoardIdIndexRoute
+  '/categories/$categorySlug/topics/$topicSlug': typeof CategoriesCategorySlugTopicsTopicSlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug': typeof CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/profile': typeof ProfileRoute
+  '/admin/boards': typeof AdminBoardsRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/auth/sign-up': typeof AuthSignUpRoute
-  '/$category/': typeof CategoryIndexRoute
-  '/$category/$sub/': typeof CategorySubIndexRoute
-  '/$category/$sub/$topic/': typeof CategorySubTopicIndexRoute
+  '/categories/$categorySlug/': typeof CategoriesCategorySlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId/': typeof CategoriesCategorySlugSubcategoriesBoardIdIndexRoute
+  '/categories/$categorySlug/topics/$topicSlug/': typeof CategoriesCategorySlugTopicsTopicSlugIndexRoute
+  '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/': typeof CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/$category/'
-    | '/$category/$sub/'
-    | '/$category/$sub/$topic/'
+    | '/categories/$categorySlug/'
+    | '/categories/$categorySlug/subcategories/$boardId/'
+    | '/categories/$categorySlug/topics/$topicSlug/'
+    | '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/$category'
-    | '/$category/$sub'
-    | '/$category/$sub/$topic'
+    | '/categories/$categorySlug'
+    | '/categories/$categorySlug/subcategories/$boardId'
+    | '/categories/$categorySlug/topics/$topicSlug'
+    | '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug'
   id:
     | '__root__'
     | '/'
     | '/profile'
+    | '/admin/boards'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/$category/'
-    | '/$category/$sub/'
-    | '/$category/$sub/$topic/'
+    | '/categories/$categorySlug/'
+    | '/categories/$categorySlug/subcategories/$boardId/'
+    | '/categories/$categorySlug/topics/$topicSlug/'
+    | '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProfileRoute: typeof ProfileRoute
+  AdminBoardsRoute: typeof AdminBoardsRoute
   AuthSignInRoute: typeof AuthSignInRoute
   AuthSignUpRoute: typeof AuthSignUpRoute
-  CategoryIndexRoute: typeof CategoryIndexRoute
-  CategorySubIndexRoute: typeof CategorySubIndexRoute
-  CategorySubTopicIndexRoute: typeof CategorySubTopicIndexRoute
+  CategoriesCategorySlugIndexRoute: typeof CategoriesCategorySlugIndexRoute
+  CategoriesCategorySlugSubcategoriesBoardIdIndexRoute: typeof CategoriesCategorySlugSubcategoriesBoardIdIndexRoute
+  CategoriesCategorySlugTopicsTopicSlugIndexRoute: typeof CategoriesCategorySlugTopicsTopicSlugIndexRoute
+  CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute: typeof CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -137,11 +169,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$category/': {
-      id: '/$category/'
-      path: '/$category'
-      fullPath: '/$category/'
-      preLoaderRoute: typeof CategoryIndexRouteImport
+    '/admin/boards': {
+      id: '/admin/boards'
+      path: '/admin/boards'
+      fullPath: '/admin/boards'
+      preLoaderRoute: typeof AdminBoardsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/sign-in': {
@@ -158,18 +190,32 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AuthSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$category/$sub/': {
-      id: '/$category/$sub/'
-      path: '/$category/$sub'
-      fullPath: '/$category/$sub/'
-      preLoaderRoute: typeof CategorySubIndexRouteImport
+    '/categories/$categorySlug/': {
+      id: '/categories/$categorySlug/'
+      path: '/categories/$categorySlug'
+      fullPath: '/categories/$categorySlug/'
+      preLoaderRoute: typeof CategoriesCategorySlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$category/$sub/$topic/': {
-      id: '/$category/$sub/$topic/'
-      path: '/$category/$sub/$topic'
-      fullPath: '/$category/$sub/$topic/'
-      preLoaderRoute: typeof CategorySubTopicIndexRouteImport
+    '/categories/$categorySlug/subcategories/$boardId/': {
+      id: '/categories/$categorySlug/subcategories/$boardId/'
+      path: '/categories/$categorySlug/subcategories/$boardId'
+      fullPath: '/categories/$categorySlug/subcategories/$boardId/'
+      preLoaderRoute: typeof CategoriesCategorySlugSubcategoriesBoardIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/$categorySlug/topics/$topicSlug/': {
+      id: '/categories/$categorySlug/topics/$topicSlug/'
+      path: '/categories/$categorySlug/topics/$topicSlug'
+      fullPath: '/categories/$categorySlug/topics/$topicSlug/'
+      preLoaderRoute: typeof CategoriesCategorySlugTopicsTopicSlugIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/': {
+      id: '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/'
+      path: '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug'
+      fullPath: '/categories/$categorySlug/subcategories/$boardId/topics/$topicSlug/'
+      preLoaderRoute: typeof CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -178,11 +224,16 @@ declare module '@tanstack/solid-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProfileRoute: ProfileRoute,
+  AdminBoardsRoute: AdminBoardsRoute,
   AuthSignInRoute: AuthSignInRoute,
   AuthSignUpRoute: AuthSignUpRoute,
-  CategoryIndexRoute: CategoryIndexRoute,
-  CategorySubIndexRoute: CategorySubIndexRoute,
-  CategorySubTopicIndexRoute: CategorySubTopicIndexRoute,
+  CategoriesCategorySlugIndexRoute: CategoriesCategorySlugIndexRoute,
+  CategoriesCategorySlugSubcategoriesBoardIdIndexRoute:
+    CategoriesCategorySlugSubcategoriesBoardIdIndexRoute,
+  CategoriesCategorySlugTopicsTopicSlugIndexRoute:
+    CategoriesCategorySlugTopicsTopicSlugIndexRoute,
+  CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute:
+    CategoriesCategorySlugSubcategoriesBoardIdTopicsTopicSlugIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,22 +1,28 @@
 {
   "name": "forum",
   "private": true,
-  "packageManager": "pnpm@11.15.1",
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "format": "biome format --write .",
     "lint": "biome lint --write .",
     "check": "tsc -b && biome check --write .",
-    "db:generate": "turbo run db:generate",
-    "db:migrate": "turbo run db:migrate",
-    "db:push": "turbo run db:push",
-    "db:studio": "turbo run db:studio",
+    "test": "turbo run test",
+    "test:integration": "turbo run test:integration --concurrency=1",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc -b && tsc --project apps/forum/tsconfig.json --noEmit",
+    "db:generate:dev": "pnpm --filter @forum/db run db:generate:dev",
+    "db:migrate:dev": "pnpm --filter @forum/db run db:migrate:dev",
+    "db:migrate:test": "pnpm --filter @forum/db run db:migrate:test",
+    "db:seed:dev": "pnpm --filter @forum/db run db:seed:dev",
     "deploy": "bash scripts/deploy.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
-    "turbo": "^2.10.5",
+    "@playwright/test": "^1.62.0",
+    "turbo": "^2.10.7",
     "typescript": "^7.0.2"
   },
   "workspaces": [

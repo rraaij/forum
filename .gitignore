@@ -6,6 +6,8 @@ dist-ssr
 .env
 .env.api
 .env.forum
+.env.test
+.env.dev
 .vite
 .vinxi
 .vscode
@@ -17,4 +19,6 @@ dist-ssr
 **/.turbo/
 **/tsconfig.tsbuildinfo
 .playwright-mcp/**/*
+test-results/
+playwright-report/
 .vite-hooks/**/*

@@ -22,7 +22,6 @@ import {
 } from "solid-js";
 import { HydrationScript } from "solid-js/web";
 import "../styles.css";
-import { CategoryManagerDialog } from "@/components/CategoryManagerDialog";
 import type { SessionUser } from "@/lib/auth-client";
 import { signOut, useSession } from "@/lib/auth-client";
 import { profileAvatarPreview } from "@/lib/profile-avatar";
@@ -96,7 +95,6 @@ function RootDocument({ children }: { children: JSX.Element }) {
 }
 
 function RootComponent() {
-  const [adminOpen, setAdminOpen] = createSignal(false);
   const session = useSession();
   const user = () => session().data?.user as SessionUser | undefined;
   const location = useLocation();
@@ -203,13 +201,13 @@ function RootComponent() {
               </label>
 
               <Show when={user()?.role === "admin"}>
-                <button
+                <Link
+                  to="/admin/boards"
                   class="btn btn-ghost btn-sm"
-                  onClick={() => setAdminOpen(true)}
-                  title="Manage categories"
+                  title="Manage boards"
                 >
                   ⚙️ Manage
-                </button>
+                </Link>
               </Show>
 
               <Show
@@ -270,11 +268,6 @@ function RootComponent() {
           <Outlet />
         </Suspense>
       </main>
-
-      <CategoryManagerDialog
-        open={adminOpen()}
-        onClose={() => setAdminOpen(false)}
-      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { accounts, sessions, users } from "@forum/db/schema";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { getDb } from "./db";
+import { getEnv } from "./env";
 
 export const auth = betterAuth({
   database: drizzleAdapter(getDb(), {
@@ -30,10 +31,11 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
   },
-  secret:
-    process.env.AUTH_SECRET || "development-secret-min-32-characters-long",
-  baseURL: process.env.API_URL || "http://localhost:4000",
-  trustedOrigins: [process.env.APP_URL || "http://localhost:3001"],
+  // No fallbacks: the startup env schema guarantees these exist and that
+  // AUTH_SECRET is at least 32 characters (refactor plan section 8.1).
+  secret: getEnv().AUTH_SECRET,
+  baseURL: getEnv().API_URL,
+  trustedOrigins: [getEnv().APP_URL],
 });
 
 export type Session = typeof auth.$Infer.Session;

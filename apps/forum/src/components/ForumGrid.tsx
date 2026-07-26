@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/solid-router";
 import { For } from "solid-js";
-import type { Category } from "@/types/forum";
+import type { BoardSummary } from "@/features/forum-read/api";
 
 const GRID_BADGE_STYLES = [
   "badge-error",
@@ -13,7 +13,8 @@ const GRID_BADGE_STYLES = [
 ];
 
 type ForumGridProps = {
-  category: Category;
+  categorySlug: string;
+  boards: BoardSummary[];
 };
 
 export default function ForumGrid(props: ForumGridProps) {
@@ -23,22 +24,25 @@ export default function ForumGrid(props: ForumGridProps) {
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-bold uppercase tracking-wide">Forumgrid</h2>
           <span class="text-xs font-semibold uppercase text-base-content/60">
-            {props.category.subcategories.length} subforums
+            {props.boards.length} subforums
           </span>
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <For each={props.category.subcategories}>
-            {(sub, index) => (
+          <For each={props.boards}>
+            {(board, index) => (
               <Link
-                to="/$category/$sub"
-                params={{ category: props.category.slug, sub: sub.slug }}
+                to="/categories/$categorySlug/subcategories/$boardId"
+                params={{
+                  categorySlug: props.categorySlug,
+                  boardId: board.id,
+                }}
                 class={`badge h-8 min-w-12 border-none text-[11px] font-black tracking-wide text-white ${
                   GRID_BADGE_STYLES[index() % GRID_BADGE_STYLES.length]
                 }`}
-                title={sub.name}
+                title={board.name}
               >
-                {sub.abbreviation}
+                {board.abbreviation}
               </Link>
             )}
           </For>

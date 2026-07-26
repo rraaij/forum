@@ -6,16 +6,16 @@ Scope: development only; production and QNAP rollout are not part of this plan
 
 ## Progress Tracker
 
-- [ ] Phase 0: Baseline and safety harness
-- [ ] Phase 1: Pure contracts and domain errors
-- [ ] Phase 2: Additive Forum schema expansion
-- [ ] Phase 3: Topic discussion module
-- [ ] Phase 4: Forum read model and canonical routes
-- [ ] Phase 5: Board management module and Admin UI
-- [ ] Phase 6: Profile edit module and UI
-- [ ] Phase 7: Profile activity module and UI
-- [ ] Phase 8: Destructive contract/reset migration
-- [ ] Phase 9: Cleanup and final verification
+- [x] Phase 0: Baseline and safety harness
+- [x] Phase 1: Pure contracts and domain errors
+- [x] Phase 2: Additive Forum schema expansion
+- [x] Phase 3: Topic discussion module
+- [x] Phase 4: Forum read model and canonical routes
+- [x] Phase 5: Board management module and Admin UI
+- [x] Phase 6: Profile edit module and UI
+- [x] Phase 7: Profile activity module and UI
+- [x] Phase 8: Destructive contract/reset migration
+- [x] Phase 9: Cleanup and final verification
 
 Check a phase only after every phase item, required test, review boundary, and gate
 is checked. Check an individual item only after its implementation and relevant
@@ -35,25 +35,25 @@ be deleted by the reset.
 
 The work is complete when every item below is checked:
 
-- [ ] Topic creation, reply creation, Post editing, Post deletion, and Topic counters
+- [x] Topic creation, reply creation, Post editing, Post deletion, and Topic counters
   are transactional and tested through one Topic discussion interface.
-- [ ] Categories and Subcategories are represented by one arbitrary-depth `boards`
+- [x] Categories and Subcategories are represented by one arbitrary-depth `boards`
   hierarchy.
-- [ ] Forum pages each load one page-oriented read model instead of rebuilding the
+- [x] Forum pages each load one page-oriented read model instead of rebuilding the
   hierarchy through multiple HTTP calls.
-- [ ] Board Topic lists and Topic replies use deterministic keyset pagination with
+- [x] Board Topic lists and Topic replies use deterministic keyset pagination with
   documented live-feed consistency.
-- [ ] Admin Board commands own hierarchy rules, normalization, conflict handling, and
+- [x] Admin Board commands own hierarchy rules, normalization, conflict handling, and
   recursive purge behavior.
-- [ ] Board management is hosted at `/admin/boards` with client and server guards.
-- [ ] Profile editing and Profile activity are separate backend and frontend modules.
-- [ ] Existing route modules and UI pages are adapters; they do not implement domain
+- [x] Board management is hosted at `/admin/boards` with client and server guards.
+- [x] Profile editing and Profile activity are separate backend and frontend modules.
+- [x] Existing route modules and UI pages are adapters; they do not implement domain
   rules or database queries.
-- [ ] Every transport input is runtime-validated before module invocation.
-- [ ] Frontend HTTP types are derived from Hono instead of maintained manually.
-- [ ] Unit, PostgreSQL integration, HTTP contract, and critical browser tests run from
+- [x] Every transport input is runtime-validated before module invocation.
+- [x] Frontend HTTP types are derived from Hono instead of maintained manually.
+- [x] Unit, PostgreSQL integration, HTTP contract, and critical browser tests run from
   documented workspace scripts.
-- [ ] Pull requests run deterministic type, format, test, and build gates in CI.
+- [x] Pull requests run deterministic type, format, test, and build gates in CI.
 
 ## 2. Decisions Fixed by This Plan
 
@@ -90,18 +90,18 @@ Changing one of these decisions requires updating this document before implement
 
 The following `docs/ROADMAP.md` recommendations are included in this refactor:
 
-- [ ] Add runtime validation to currently exposed writes first, then every new
+- [x] Add runtime validation to currently exposed writes first, then every new
   adapter.
-- [ ] Enforce locked-Topic reply rejection transactionally on the server.
-- [ ] Add keyset pagination and matching indexes for Board Topics and Topic replies.
-- [ ] Replace hand-maintained frontend transport types with Hono RPC derivation.
-- [ ] Add Vitest, PostgreSQL integration tests, Playwright smoke flows, and CI.
-- [ ] Debounce Topic views per browser session through an explicit command.
-- [ ] Update reply counters and activity timestamps transactionally.
-- [ ] Eliminate Category/Board loader N+1 requests with page-oriented reads.
-- [ ] Validate required environment variables at API startup and remove the
+- [x] Enforce locked-Topic reply rejection transactionally on the server.
+- [x] Add keyset pagination and matching indexes for Board Topics and Topic replies.
+- [x] Replace hand-maintained frontend transport types with Hono RPC derivation.
+- [x] Add Vitest, PostgreSQL integration tests, Playwright smoke flows, and CI.
+- [x] Debounce Topic views per browser session through an explicit command.
+- [x] Update reply counters and activity timestamps transactionally.
+- [x] Eliminate Category/Board loader N+1 requests with page-oriented reads.
+- [x] Validate required environment variables at API startup and remove the
   hardcoded Better Auth secret fallback.
-- [ ] Rewrite the relevant README setup, architecture, testing, and reset sections
+- [x] Rewrite the relevant README setup, architecture, testing, and reset sections
   after implementation.
 
 Resolved differences from the roadmap:
@@ -294,23 +294,25 @@ though production compatibility is not required.
 
 The additive expansion migration must:
 
-- [ ] Create `boards`, `topic_views`, the Post-kind enum, indexes, and cycle trigger.
-- [ ] Add the new Topic/Post columns as nullable while legacy routes still compile.
-- [ ] Leave Categories, Subcategories, and legacy Topic columns in place temporarily.
-- [ ] Make no seed-data changes; migrations must produce an empty Forum when
+- [x] Create `boards`, `topic_views`, the Post-kind enum, indexes, and cycle trigger.
+- [x] Add the new Topic/Post columns as nullable while legacy routes still compile.
+- [x] Leave Categories, Subcategories, and legacy Topic columns in place temporarily.
+- [x] Make no seed-data changes; migrations must produce an empty Forum when
   starting from an empty database.
 
 After every caller has moved, generate one clearly named destructive contract/reset
 migration. It must:
 
-- [ ] Delete dependent Forum content in this order: votes, reactions, Topic views,
+- [x] Delete dependent Forum content in this order: votes, reactions, Topic views,
   Posts, Topics, Subcategories, Categories, and temporary Board seed rows.
-- [ ] Drop obsolete Forum tables, Topic parent/counter columns, cross-table
+  Subcategories and Categories are removed by dropping the tables, which deletes
+  their rows; the surviving tables are emptied by explicit ordered `DELETE`s.
+- [x] Drop obsolete Forum tables, Topic parent/counter columns, cross-table
   uniqueness triggers, and the persisted
   `enforce_forum_identifier_cross_table_uniqueness()` function.
-- [ ] Make the redesigned Topic/Post columns required and add all final checks,
+- [x] Make the redesigned Topic/Post columns required and add all final checks,
   indexes, and constraints.
-- [ ] Preserve `users`, `sessions`, `accounts`, and every Profile column/value in
+- [x] Preserve `users`, `sessions`, `accounts`, and every Profile column/value in
   `users`.
 
 Migration safety belongs in an executable wrapper, not in SQL. Add explicit
@@ -561,6 +563,11 @@ interface ProfileEdit {
 }
 ```
 
+Implemented in Phase 6: `PATCH /api/profile` became `PUT` (the contract table
+in section 6 already specified `PUT`), and failures use the standard error
+envelope. Accepted values are unchanged, proven by the Phase 0
+characterization tests still passing.
+
 Keep current HTTP(S), data-URL MIME type, decoded two-megabyte image limit,
 twelve-photo gallery limit, text lengths, date validation, and immutable username
 behavior unless a characterization test proves current behavior is accidental.
@@ -610,7 +617,16 @@ Expose `toggleReaction` and `applyVote` with the current route behavior. This is
 a reaction/vote redesign. Its purpose is to move direct database writes out of
 route adapters and ensure each mutation acquires the shared Forum-content advisory
 lock in the same transaction as its insert/update/delete. Existing reaction and
-vote HTTP contracts stay unchanged.
+vote HTTP contracts stay unchanged, with one agreed exception recorded during
+Phase 5: the success body is now exactly `{ action }`, matching the module
+interface above, instead of also echoing the inserted row. No caller read that
+row. Status codes, toggle semantics, and the legacy `{ error }` failure shape are
+unchanged.
+
+A minimal reaction/vote UI was added in Phase 5 (agreed during implementation) so
+these endpoints are reachable from the browser and the Phase 5 browser test can
+exercise them. It surfaces the existing behavior only; the redesign remains a
+non-goal.
 
 ## 6. HTTP Contracts
 
@@ -853,9 +869,11 @@ The test bootstrap must abort unless all are true:
 
 The committed migration history starts from a previously schema-pushed database:
 `0000_romantic_blackheart.sql` alters `categories` rather than creating the initial
-tables. Add an idempotent test-only legacy bootstrap SQL file that reconstructs the
+tables. Add an idempotent legacy bootstrap SQL file that reconstructs the
 exact pre-`0000` schema expected by the historical migrations. It may run only
-against an empty, safety-checked `_test` database. Then run every committed
+against an empty, safety-checked `_test` or `_dev` database (the `_dev` case is
+required because `db:migrate:dev` must work from an empty `forum_dev`; the same
+fail-closed loopback/suffix guard applies). Then run every committed
 migration, including expansion and contract/reset migrations. A migration smoke
 test must prove empty database -> legacy bootstrap -> complete history -> target
 schema.
@@ -875,93 +893,93 @@ worker.
 
 Topic discussion integration tests:
 
-- [ ] Topic plus opening Post commit together and roll back together.
-- [ ] Exactly one opening Post exists.
-- [ ] Empty title/content and missing Board are rejected.
-- [ ] Global case-insensitive Topic slug conflict returns the typed conflict.
-- [ ] Reply to locked Topic is rejected while holding the Topic lock.
-- [ ] Reply insertion updates `replyCount` and `lastActivityAt` atomically.
-- [ ] Quote snapshot is copied from the source Post and ignores forged client fields.
-- [ ] Deleted source Posts cannot be quoted.
-- [ ] Opening Posts cannot be deleted.
-- [ ] Reply deletion decrements once and recomputes last activity.
-- [ ] Deleted Posts cannot be edited.
-- [ ] View command counts once per Topic/session pair.
-- [ ] Missing, malformed, and oversized Topic/Post bodies fail transport validation
+- [x] Topic plus opening Post commit together and roll back together.
+- [x] Exactly one opening Post exists.
+- [x] Empty title/content and missing Board are rejected.
+- [x] Global case-insensitive Topic slug conflict returns the typed conflict.
+- [x] Reply to locked Topic is rejected while holding the Topic lock.
+- [x] Reply insertion updates `replyCount` and `lastActivityAt` atomically.
+- [x] Quote snapshot is copied from the source Post and ignores forged client fields.
+- [x] Deleted source Posts cannot be quoted.
+- [x] Opening Posts cannot be deleted.
+- [x] Reply deletion decrements once and recomputes last activity.
+- [x] Deleted Posts cannot be edited.
+- [x] View command counts once per Topic/session pair.
+- [x] Missing, malformed, and oversized Topic/Post bodies fail transport validation
   before a transaction starts.
 
 Forum read integration tests:
 
-- [ ] Empty Forum, root-only, and at least five-level Board trees.
-- [ ] Sibling ordering and sibling-scoped slug reuse under different parents.
-- [ ] Recursive direct/aggregate Topic counts.
-- [ ] Root Category lookup by case-insensitive slug.
-- [ ] Board/category ancestry mismatch returns not found.
-- [ ] Topic lookup by globally unique slug.
-- [ ] Explicit opening Post and ordered replies.
-- [ ] Stable ordering for equal activity timestamps.
-- [ ] Query-count assertion prevents reintroducing one query per Board.
-- [ ] Topic and reply pages have no duplicate IDs across adjacent pages.
-- [ ] Equal timestamps use IDs as stable cursor tie-breakers.
-- [ ] Cursor tampering, malformed tuples, unsupported versions, and over-limit requests
+- [x] Empty Forum, root-only, and at least five-level Board trees.
+- [x] Sibling ordering and sibling-scoped slug reuse under different parents.
+- [x] Recursive direct/aggregate Topic counts.
+- [x] Root Category lookup by case-insensitive slug.
+- [x] Board/category ancestry mismatch returns not found.
+- [x] Topic lookup by globally unique slug.
+- [x] Explicit opening Post and ordered replies.
+- [x] Stable ordering for equal activity timestamps.
+- [x] Query-count assertion prevents reintroducing one query per Board.
+- [x] Topic and reply pages have no duplicate IDs across adjacent pages.
+- [x] Equal timestamps use IDs as stable cursor tie-breakers.
+- [x] Cursor tampering, malformed tuples, unsupported versions, and over-limit requests
   return validation errors.
-- [ ] Newer Topic activity does not duplicate accumulated IDs; refreshing restarts
+- [x] Newer Topic activity does not duplicate accumulated IDs; refreshing restarts
   traversal and surfaces the current ordering.
-- [ ] Deleting a latest reply can move a previously rendered Topic behind the active
+- [x] Deleting a latest reply can move a previously rendered Topic behind the active
   cursor; the frontend drops the repeated Topic ID instead of rendering a duplicate.
-- [ ] Reply pagination does not duplicate or skip replies inserted after the current
+- [x] Reply pagination does not duplicate or skip replies inserted after the current
   cursor.
 
 Board management integration tests:
 
-- [ ] Root and child creation normalization.
-- [ ] Negative `sortOrder` fails at both module and database seams.
-- [ ] Sibling name/slug/abbreviation conflicts.
-- [ ] Same child slug under different parents succeeds.
-- [ ] Move to self or descendant fails in both module and trigger.
-- [ ] Concurrent conflicting moves/writes resolve deterministically.
-- [ ] Purge preview counts the complete subtree and content.
-- [ ] Purge rejects wrong name and stale expected impact.
-- [ ] Confirmed purge removes the complete subtree atomically.
-- [ ] Concurrent Board/Topic/Post/reaction/vote/view writes block behind purge and do
+- [x] Root and child creation normalization.
+- [x] Negative `sortOrder` fails at both module and database seams.
+- [x] Sibling name/slug/abbreviation conflicts.
+- [x] Same child slug under different parents succeeds.
+- [x] Move to self or descendant fails in both module and trigger.
+- [x] Concurrent conflicting moves/writes resolve deterministically.
+- [x] Purge preview counts the complete subtree and content.
+- [x] Purge rejects wrong name and stale expected impact.
+- [x] Confirmed purge removes the complete subtree atomically.
+- [x] Concurrent Board/Topic/Post/reaction/vote/view writes block behind purge and do
   not make the confirmed impact stale after its in-transaction recount.
-- [ ] Concurrent move and purge commands complete without deadlock and always acquire
+- [x] Concurrent move and purge commands complete without deadlock and always acquire
   hierarchy then Forum-content advisory locks.
-- [ ] Non-admin HTTP requests cannot invoke any command.
+- [x] Non-admin HTTP requests cannot invoke any command.
 
 Interaction-write regression tests:
 
-- [ ] Reaction add/remove toggle semantics remain unchanged.
-- [ ] Vote add/remove/switch semantics remain unchanged.
-- [ ] Reaction and vote writes acquire the shared Forum-content advisory lock in the
+- [x] Reaction add/remove toggle semantics remain unchanged.
+- [x] Vote add/remove/switch semantics remain unchanged.
+- [x] Reaction and vote writes acquire the shared Forum-content advisory lock in the
   same transaction as their mutation.
 
 Profile tests:
 
-- [ ] Existing text, URL, date, image MIME/size, and gallery limits.
-- [ ] Profile replacement semantics and independently updated avatar.
-- [ ] Password command remains delegated to Better Auth.
-- [ ] Activity returns opening/reply kind, deletion state, breadcrumbs, and canonical
+- [x] Existing text, URL, date, image MIME/size, and gallery limits.
+- [x] Profile replacement semantics and independently updated avatar.
+- [x] Password command remains delegated to Better Auth.
+- [x] Activity returns opening/reply kind, deletion state, breadcrumbs, and canonical
   route params for root and deeply nested Boards.
-- [ ] Activity deliberately returns all fixture rows.
+- [x] Activity deliberately returns all fixture rows.
 
 Browser tests:
 
-- [ ] Browse arbitrary-depth Boards and open root/nested Topics using canonical URLs.
-- [ ] Create Topic, create reply, quote reply, edit reply, and soft-delete reply.
-- [ ] Locked Topic rejects reply without corrupting UI state.
-- [ ] Reloading/invalidation does not increase views; a new browser session does.
-- [ ] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
-- [ ] Profile avatar/gallery edit and activity links work after route redesign.
-- [ ] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
-- [ ] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
+- [x] Browse arbitrary-depth Boards and open root/nested Topics using canonical URLs.
+- [x] Create Topic, create reply, quote reply, edit reply, and soft-delete reply.
+- [x] Locked Topic rejects reply without corrupting UI state.
+- [x] Reloading/invalidation does not increase views; a new browser session does.
+- [x] Admin creates, moves, edits, previews, and recursively purges a Board subtree.
+- [x] Profile avatar/gallery edit and activity links work after route redesign.
+- [x] Topic and reply “Load more” controls preserve ordering and do not duplicate rows.
+- [x] A signed-in user can react, remove a reaction, upvote, switch to downvote, and
   remove a vote after the interaction module migration.
 
 Transport/type tests:
 
-- [ ] Every exposed path/query/body schema rejects malformed UUIDs and invalid bounds.
-- [ ] Legacy write endpoints are runtime-validated until they are removed.
-- [ ] The Hono `AppType` client compiles against all frontend feature API calls without
+- [x] Every exposed path/query/body schema rejects malformed UUIDs and invalid bounds.
+- [x] Legacy write endpoints are runtime-validated until they are removed.
+- [x] The Hono `AppType` client compiles against all frontend feature API calls without
   hand-authored response types.
 
 ## 9. Implementation Phases
@@ -974,37 +992,37 @@ the final contract/reset migration is not generated or applied earlier.
 
 Files:
 
-- [ ] Root `package.json`, `turbo.json`, and lockfile.
-- [ ] Package manifests for API and frontend tests.
-- [ ] `vitest.config.ts`, `playwright.config.ts`, `docker-compose.test.yml`,
+- [x] Root `package.json`, `turbo.json`, and lockfile.
+- [x] Package manifests for API and frontend tests.
+- [x] `vitest.config.ts`, `playwright.config.ts`, `docker-compose.test.yml`,
   `docker-compose.dev.yml`, `.env.test.example`, and `.env.dev.example`.
-- [ ] Test database bootstrap/cleanup helpers.
-- [ ] `.github/workflows/ci.yml`.
+- [x] Test database bootstrap/cleanup helpers.
+- [x] `.github/workflows/ci.yml`.
 
 Steps:
 
-- [ ] Add scripts and dependencies without changing runtime code.
-- [ ] Implement the fail-closed database target wrapper and explicit safe
+- [x] Add scripts and dependencies without changing runtime code.
+- [x] Implement the fail-closed database target wrapper and explicit safe
   generation/migration scripts before running any database command.
-- [ ] Create ignored `.env.test` and `.env.dev` from their examples with
+- [x] Create ignored `.env.test` and `.env.dev` from their examples with
   loopback-only Docker targets. Document this one-time setup; no QNAP values may be
   copied.
-- [ ] Add fail-closed API/frontend `dev:test` and `dev:dev` scripts and configure
+- [x] Add fail-closed API/frontend `dev:test` and `dev:dev` scripts and configure
   Playwright `webServer` to use the test variants.
-- [ ] Add the pre-history bootstrap SQL and prove that an empty test database can
+- [x] Add the pre-history bootstrap SQL and prove that an empty test database can
   run the full existing migration history.
-- [ ] Add a Hono `createApp().request()` smoke test.
-- [ ] Add characterization tests for current Profile validation and authorization
+- [x] Add a Hono `createApp().request()` smoke test.
+- [x] Add characterization tests for current Profile validation and authorization
   status codes that this redesign intends to retain.
-- [ ] Add runtime Zod validation to every currently exposed legacy write endpoint,
+- [x] Add runtime Zod validation to every currently exposed legacy write endpoint,
   including Topic/Post, reaction/vote, Admin, and Profile mutations.
-- [ ] Add the startup environment schema and remove the Better Auth fallback secret.
-- [ ] Add one browser smoke test for Forum startup and authentication fixture setup.
-- [ ] Add CI after all Phase 0 commands are deterministic and locally green.
+- [x] Add the startup environment schema and remove the Better Auth fallback secret.
+- [x] Add one browser smoke test for Forum startup and authentication fixture setup.
+- [x] Add CI after all Phase 0 commands are deterministic and locally green.
 
 Gate:
 
-- [ ] Run the complete Phase 0 gate:
+- [x] Run the complete Phase 0 gate:
 
 ```bash
 docker compose -f docker-compose.test.yml up -d --wait
@@ -1016,30 +1034,30 @@ pnpm exec biome check .
 pnpm build
 ```
 
-- [ ] Confirm no test or CI command can connect to `192.168.0.178` or the normal
+- [x] Confirm no test or CI command can connect to `192.168.0.178` or the normal
   `.env` database. Stop immediately if this check fails.
 
 ### Phase 1: Pure contracts and domain errors
 
 Steps:
 
-- [ ] Define the module input/result/error types described in sections 5 and 6.
-- [ ] Define `PageRequest`, `Page<T>`, versioned Topic/reply cursors, default limit
+- [x] Define the module input/result/error types described in sections 5 and 6.
+- [x] Define `PageRequest`, `Page<T>`, versioned Topic/reply cursors, default limit
   `25`, and hard maximum `100`.
-- [ ] Extract and test normalization functions for Board and Topic fields.
-- [ ] Define `QuoteSnapshotV1` and pure validation.
-- [ ] Define canonical frontend route-param result types without importing TanStack
+- [x] Extract and test normalization functions for Board and Topic fields.
+- [x] Define `QuoteSnapshotV1` and pure validation.
+- [x] Define canonical frontend route-param result types without importing TanStack
   Router into backend modules.
-- [ ] Define Zod transport schemas for all replacement path, query, and JSON inputs.
-- [ ] Add one route-level error mapper from typed domain errors to the standard HTTP
+- [x] Define Zod transport schemas for all replacement path, query, and JSON inputs.
+- [x] Add one route-level error mapper from typed domain errors to the standard HTTP
   envelope.
-- [ ] Export the Hono `AppType`, create the typed frontend `hc<AppType>` composition
+- [x] Export the Hono `AppType`, create the typed frontend `hc<AppType>` composition
   seam, and add a compile-only contract test.
-- [ ] Confirm no endpoint or database behavior changed in this phase.
+- [x] Confirm no endpoint or database behavior changed in this phase.
 
 Gate:
 
-- [ ] Run the complete Phase 1 gate:
+- [x] Run the complete Phase 1 gate:
 
 ```bash
 pnpm test
@@ -1051,24 +1069,24 @@ pnpm exec biome check .
 
 Steps:
 
-- [ ] Add `boards` beside Categories/Subcategories.
-- [ ] Add nullable `boardId`, `replyCount`, `lastActivityAt`, Post kind/snapshot/
+- [x] Add `boards` beside Categories/Subcategories.
+- [x] Add nullable `boardId`, `replyCount`, `lastActivityAt`, Post kind/snapshot/
   deletion fields, and `topic_views` beside legacy fields.
-- [ ] Add null-compatible checks, cycle trigger, Board Topic keyset index, and reply
+- [x] Add null-compatible checks, cycle trigger, Board Topic keyset index, and reply
   keyset index; defer final `NOT NULL` and obsolete-column removal.
-- [ ] Verify the safe generation/migration wrappers against rejected QNAP, wrong
+- [x] Verify the safe generation/migration wrappers against rejected QNAP, wrong
   suffix, and accepted loopback targets. Do not route them through normal `.env`.
-- [ ] Generate and manually inspect the additive migration.
-- [ ] Update the development seed to create an arbitrary-depth Board hierarchy only.
-- [ ] Apply through `db:migrate:test` and run DB tests without seed data.
-- [ ] Start `docker-compose.dev.yml` with readiness waiting, apply through
+- [x] Generate and manually inspect the additive migration.
+- [x] Update the development seed to create an arbitrary-depth Board hierarchy only.
+- [x] Apply through `db:migrate:test` and run DB tests without seed data.
+- [x] Start `docker-compose.dev.yml` with readiness waiting, apply through
   `db:migrate:dev`, then run a separately safety-checked `db:seed:dev` command for
   the Board-only development seed.
-- [ ] Verify authentication/Profile rows are unchanged.
+- [x] Verify authentication/Profile rows are unchanged.
 
 Gate:
 
-- [ ] Run the complete Phase 2 gate:
+- [x] Run the complete Phase 2 gate:
 
 ```bash
 pnpm --filter @forum/db db:generate:dev
@@ -1082,31 +1100,31 @@ pnpm typecheck
 pnpm exec biome check .
 ```
 
-- [ ] Confirm the migration does not touch authentication tables or drop a legacy
+- [x] Confirm the migration does not touch authentication tables or drop a legacy
   field/table. Stop if this or any cycle/index/constraint migration test fails.
 
 ### Phase 3: Topic discussion module
 
 Steps:
 
-- [ ] Implement the transaction-aware repository and inject it into commands.
-- [ ] Implement `createTopic`, `replyToTopic`, `editPost`, `deleteReply`, and
+- [x] Implement the transaction-aware repository and inject it into commands.
+- [x] Implement `createTopic`, `replyToTopic`, `editPost`, `deleteReply`, and
   `recordTopicView` in that order.
-- [ ] Enforce the locked-Topic rule while holding the Topic row lock.
-- [ ] Add transaction rollback and concurrency integration tests before adapting
+- [x] Enforce the locked-Topic rule while holding the Topic row lock.
+- [x] Add transaction rollback and concurrency integration tests before adapting
   HTTP.
-- [ ] Implement runtime-validated replacement Topic/Post Hono adapters and test them
+- [x] Implement runtime-validated replacement Topic/Post Hono adapters and test them
   directly without mounting them in `packages/api/src/routes/index.ts`.
-- [ ] Leave legacy write handlers mounted so the existing frontend remains
+- [x] Leave legacy write handlers mounted so the existing frontend remains
   operational.
-- [ ] Run all Topic discussion unit, PostgreSQL integration, and Hono contract tests.
-- [ ] Inject a failure between each related write and confirm no partial data remains.
-- [ ] Confirm frontend writes remain on legacy handlers until Phase 4 provides the
+- [x] Run all Topic discussion unit, PostgreSQL integration, and Hono contract tests.
+- [x] Inject a failure between each related write and confirm no partial data remains.
+- [x] Confirm frontend writes remain on legacy handlers until Phase 4 provides the
   new Topic read model and canonical route.
 
 Gate:
 
-- [ ] Run the complete Phase 3 gate:
+- [x] Run the complete Phase 3 gate:
 
 ```bash
 pnpm test
@@ -1119,42 +1137,42 @@ pnpm exec biome check .
 
 Steps:
 
-- [ ] Implement recursive Board reads and fixed-query aggregate loading.
-- [ ] Implement versioned cursor encoding/decoding and seek predicates matching the
+- [x] Implement recursive Board reads and fixed-query aggregate loading.
+- [x] Implement versioned cursor encoding/decoding and seek predicates matching the
   Topic/reply indexes.
-- [ ] Implement the four page-oriented queries with paginated direct Topics/replies.
-- [ ] Add runtime-validated Hono read adapters and response contract tests.
-- [ ] Add the canonical TanStack route files listed in section 7.1.
-- [ ] Migrate the home loader, then Category loader, then Board loader, then Topic
+- [x] Implement the four page-oriented queries with paginated direct Topics/replies.
+- [x] Add runtime-validated Hono read adapters and response contract tests.
+- [x] Add the canonical TanStack route files listed in section 7.1.
+- [x] Migrate the home loader, then Category loader, then Board loader, then Topic
   loader. After each migration, remove its old N+1 composition code.
-- [ ] Add “Load more” behavior for Board Topics and Topic replies with ID
+- [x] Add “Load more” behavior for Board Topics and Topic replies with ID
   deduplication.
-- [ ] Atomically replace route registration and frontend callers in one commit: first
+- [x] Atomically replace route registration and frontend callers in one commit: first
   update the UI calls, then swap `routes/index.ts` from legacy to replacement
   adapters before committing. Never register old and new handlers for the same
   method/path simultaneously.
-- [ ] Run mounted HTTP/browser contract tests against the replacement routes, then
+- [x] Run mounted HTTP/browser contract tests against the replacement routes, then
   delete the now-unmounted legacy handler files and their duplicated validation,
   slug, authorization, and counter logic.
-- [ ] Replace quote text serialization with `quotedPostId` input and immutable
+- [x] Replace quote text serialization with `quotedPostId` input and immutable
   snapshot output.
-- [ ] Add browser-session view recording after successful client render.
-- [ ] Replace every migrated Forum Topic link with typed canonical `to` and `params`,
+- [x] Add browser-session view recording after successful client render.
+- [x] Replace every migrated Forum Topic link with typed canonical `to` and `params`,
   including `TopicsList`, Category pages, and Topic pages. Profile activity moves
   in Phase 7.
-- [ ] Migrate feature API calls to `hc<AppType>` inferred transport types.
-- [ ] Remove the `DIRECT_CATEGORY_SEGMENT` constant and old compact route files.
-- [ ] Run Vite route generation/build and inspect `routeTree.gen.ts` changes.
-- [ ] Remove obsolete read endpoints and manual response types only after no caller
+- [x] Migrate feature API calls to `hc<AppType>` inferred transport types.
+- [x] Remove the `DIRECT_CATEGORY_SEGMENT` constant and old compact route files.
+- [x] Run Vite route generation/build and inspect `routeTree.gen.ts` changes.
+- [x] Remove obsolete read endpoints and manual response types only after no caller
   remains.
-- [ ] Confirm each page makes one initial page-read request and additional requests
+- [x] Confirm each page makes one initial page-read request and additional requests
   only when “Load more” is invoked.
-- [ ] Confirm deep Board navigation and the complete Topic browser flow pass.
-- [ ] Confirm no source reference to the reserved-segment convention remains.
+- [x] Confirm deep Board navigation and the complete Topic browser flow pass.
+- [x] Confirm no source reference to the reserved-segment convention remains.
 
 Gate:
 
-- [ ] Run the complete Phase 4 gate:
+- [x] Run the complete Phase 4 gate:
 
 ```bash
 pnpm test
@@ -1169,29 +1187,29 @@ pnpm build
 
 Steps:
 
-- [ ] Implement create/update/move commands and cycle-safe hierarchy policy.
-- [ ] Implement purge preview and confirmed purge with impact recheck.
-- [ ] Add the shared/exclusive Forum-content advisory-lock protocol to Board, Topic,
+- [x] Implement create/update/move commands and cycle-safe hierarchy policy.
+- [x] Implement purge preview and confirmed purge with impact recheck.
+- [x] Add the shared/exclusive Forum-content advisory-lock protocol to Board, Topic,
   Post, reaction, vote, and view write repositories.
-- [ ] Implement the narrow `interaction-write` module and move reaction/vote writes
+- [x] Implement the narrow `interaction-write` module and move reaction/vote writes
   behind it without changing their HTTP behavior.
-- [ ] Replace `admin.ts` Category/Subcategory handlers with runtime-validated Board
+- [x] Replace `admin.ts` Category/Subcategory handlers with runtime-validated Board
   adapters.
-- [ ] Preserve `adminGuard` on the complete `/api/admin/boards` route group.
-- [ ] Add `/admin/boards` with a role-aware `beforeLoad` guard.
-- [ ] Build the frontend management controller around explicit mutation states.
-- [ ] Split page, tree, forms, move, and purge confirmation into focused UI modules.
-- [ ] Replace full-page reload with route invalidation after successful mutation.
-- [ ] Delete `CategoryManagerDialog.tsx` only after `/admin/boards` covers all
+- [x] Preserve `adminGuard` on the complete `/api/admin/boards` route group.
+- [x] Add `/admin/boards` with a role-aware `beforeLoad` guard.
+- [x] Build the frontend management controller around explicit mutation states.
+- [x] Split page, tree, forms, move, and purge confirmation into focused UI modules.
+- [x] Replace full-page reload with route invalidation after successful mutation.
+- [x] Delete `CategoryManagerDialog.tsx` only after `/admin/boards` covers all
   commands.
-- [ ] Confirm arbitrary-depth create/move works, cycles fail, and purge impact is
+- [x] Confirm arbitrary-depth create/move works, cycles fail, and purge impact is
   race-checked.
-- [ ] Confirm every non-admin HTTP contract test returns `403` and direct navigation
+- [x] Confirm every non-admin HTTP contract test returns `403` and direct navigation
   to `/admin/boards` is blocked in the UI.
 
 Gate:
 
-- [ ] Run the complete Phase 5 gate:
+- [x] Run the complete Phase 5 gate:
 
 ```bash
 pnpm test
@@ -1206,23 +1224,23 @@ pnpm build
 
 Steps:
 
-- [ ] Move server Profile validation and mapping behind `ProfileEdit` without
+- [x] Move server Profile validation and mapping behind `ProfileEdit` without
   changing accepted values.
-- [ ] Change the Hono route to a runtime-validated adapter and make replacement
+- [x] Change the Hono route to a runtime-validated adapter and make replacement
   semantics explicit in its method/name and tests.
-- [ ] Migrate Profile feature API calls to Hono-derived transport types.
-- [ ] Extract browser image-file validation, controller state, form, gallery, and
+- [x] Migrate Profile feature API calls to Hono-derived transport types.
+- [x] Extract browser image-file validation, controller state, form, gallery, and
   password dialog.
-- [ ] Keep the header avatar preview integration, but expose it through the Profile
+- [x] Keep the header avatar preview integration, but expose it through the Profile
   controller rather than route-local mutation details.
-- [ ] Replace broad global invalidation with Profile/session invalidation required
+- [x] Replace broad global invalidation with Profile/session invalidation required
   by the changed avatar/name.
-- [ ] Run Profile characterization and browser tests.
-- [ ] Confirm the server remains authoritative for image security checks.
+- [x] Run Profile characterization and browser tests.
+- [x] Confirm the server remains authoritative for image security checks.
 
 Gate:
 
-- [ ] Run the complete Phase 6 gate:
+- [x] Run the complete Phase 6 gate:
 
 ```bash
 pnpm test
@@ -1237,20 +1255,29 @@ pnpm build
 
 Steps:
 
-- [ ] Replace the route-local SQL with `ProfileActivity.getAllForUser`.
-- [ ] Query explicit Post kind and Board ancestry from the redesigned schema.
-- [ ] Return canonical route params from one mapper shared conceptually with Forum
-  reads; do not duplicate route policy in SQL or UI.
-- [ ] Extract `ActivityTopicLink` and activity presentation from `profile.tsx`.
-- [ ] Migrate Profile activity transport calls to Hono-derived types.
-- [ ] Verify all rows are returned, including documented deleted-Post presentation.
-- [ ] Delete old window-function opening-Post inference and legacy URL construction.
-- [ ] Confirm root and deeply nested Topic links navigate correctly.
-- [ ] Record query duration and row count in the large-fixture integration test.
+- [x] Replace the route-local SQL with `ProfileActivity.getAllForUser`.
+- [x] Query explicit Post kind and Board ancestry from the redesigned schema.
+- [x] Return canonical route params from one mapper shared conceptually with Forum
+  reads; do not duplicate route policy in SQL or UI. The mapper is now literal,
+  not conceptual: `modules/shared/board-hierarchy.ts` on the backend (used by both
+  Forum reads and activity) and `features/forum-read/topic-link.ts` in the UI.
+- [x] Extract `ActivityTopicLink` and activity presentation from `profile.tsx`.
+- [x] Migrate Profile activity transport calls to Hono-derived types.
+- [x] Verify all rows are returned, including documented deleted-Post presentation.
+  Deleted replies are returned with `isDeleted`; masking stays a UI decision, as
+  in the Topic read model.
+- [x] Delete old window-function opening-Post inference and legacy URL construction.
+- [x] Confirm root and deeply nested Topic links navigate correctly.
+- [x] Record query duration and row count in the large-fixture integration test.
+  240 rows over a 5-level hierarchy resolve in ~3ms using 2 queries.
+
+Contract note: `routeParams` is nullable. A Topic whose `board_id` is still null
+cannot be addressed, and the author's own record shows it unlinked rather than
+hiding the row. Phase 8's NOT NULL constraint retires the case.
 
 Gate:
 
-- [ ] Run the complete Phase 7 gate:
+- [x] Run the complete Phase 7 gate:
 
 ```bash
 pnpm test
@@ -1265,25 +1292,31 @@ pnpm build
 
 Steps:
 
-- [ ] Prove by source search and HTTP contract tests that no runtime caller uses
-  Categories, Subcategories, or legacy Topic/Post fields.
-- [ ] Generate the contract/reset migration described in section 4.5.
-- [ ] Inspect every `DROP`, `DELETE`, and `ALTER`; verify no auth/Profile table or
-  column appears.
-- [ ] Apply from an empty test database through legacy bootstrap, all historical
+- [x] Prove by source search and HTTP contract tests that no runtime caller uses
+  Categories, Subcategories, or legacy Topic/Post fields. The only remaining
+  matches were the schema definitions themselves and the `/categories/...` URL
+  segment, which names root Boards, not the dropped table.
+- [x] Generate the contract/reset migration described in section 4.5.
+- [x] Inspect every `DROP`, `DELETE`, and `ALTER`; verify no auth/Profile table or
+  column appears. Generated SQL was hand-finished: drizzle emitted the
+  `SET NOT NULL` statements with no preceding content deletion, which would have
+  failed on every legacy row, and did not drop the trigger function.
+- [x] Apply from an empty test database through legacy bootstrap, all historical
   migrations, expansion, and contract/reset.
-- [ ] Snapshot auth/Profile fixture rows before migration and compare every value
-  afterward.
-- [ ] Apply to `forum_dev` only through `db:migrate:dev` after a local backup.
-- [ ] Run Board-only development seed, then create Topics through the application or
+- [x] Snapshot auth/Profile fixture rows before migration and compare every value
+  afterward (`packages/db/tests/integration/contract-migration.test.ts`, whole-row
+  equality for `users`, `sessions`, and `accounts`).
+- [x] Apply to `forum_dev` only through `db:migrate:dev` after a local backup
+  (`~/forum-db-backups/forum_dev-pre-contract-*.sql`).
+- [x] Run Board-only development seed, then create Topics through the application or
   the optional validated-user content seed.
-- [ ] Confirm the target schema has no legacy Forum tables/columns/functions and all
+- [x] Confirm the target schema has no legacy Forum tables/columns/functions and all
   final constraints pass.
-- [ ] Confirm authentication/Profile data is byte-for-byte unchanged.
+- [x] Confirm authentication/Profile data is byte-for-byte unchanged.
 
 Gate:
 
-- [ ] Run the complete Phase 8 gate:
+- [x] Run the complete Phase 8 gate:
 
 ```bash
 pnpm test
@@ -1297,19 +1330,34 @@ pnpm build
 
 Steps:
 
-- [ ] Search for obsolete schema names, endpoint paths, counters, quote codec
-  markers, and reserved segments.
-- [ ] Remove dead exports, hand-maintained transport response types, and superseded
-  comments.
-- [ ] Confirm route adapters contain only runtime validation, actor extraction,
-  module invocation, and HTTP mapping.
-- [ ] Confirm modules accept dependencies and expose no Drizzle/Hono/Solid types.
-- [ ] Confirm all frontend transport calls derive from the exported Hono `AppType`.
-- [ ] Confirm CI runs migration safety, unit/integration/E2E tests, type checks,
+- [x] Search for obsolete schema names, endpoint paths, counters, quote codec
+  markers, and reserved segments. All searches below return no runtime matches.
+- [x] Remove dead exports, hand-maintained transport response types, and superseded
+  comments. `apps/forum/src/types/forum.ts` was deleted in Phase 7; Phase 9
+  removed the unguarded root database scripts, `dedupe-forum-identifiers.ts`
+  (which queried the dropped tables), and the `routes/replacement/` directory —
+  nothing is being replaced any more, so its adapters moved up into `routes/`.
+- [x] Confirm route adapters contain only runtime validation, actor extraction,
+  module invocation, and HTTP mapping. This check FAILED on first pass: the
+  reaction and vote adapters still ran inline Drizzle queries for their `GET`
+  reads. Those moved behind `InteractionWrite.getReactions/getVoteScore`,
+  preserving the HTTP contract. No adapter now imports the schema or `getDb()`.
+- [x] Confirm modules accept dependencies and expose no Drizzle/Hono/Solid types.
+  `profile-edit/mapper.ts` took a Drizzle row type and now declares the columns
+  it reads structurally.
+- [x] Confirm all frontend transport calls derive from the exported Hono `AppType`.
+- [x] Confirm CI runs migration safety, unit/integration/E2E tests, type checks,
   read-only Biome, and builds using only `_test` configuration.
-- [ ] Update README development, environment, database reset, pagination, testing,
-  Hono client, canonical URL, and CI documentation.
-- [ ] Render and manually inspect the Forum on desktop and mobile.
+- [x] Update README development, environment, database reset, pagination, testing,
+  Hono client, canonical URL, and CI documentation. Rewritten; the pre-refactor
+  TODO list and pasted implementation plan are gone.
+- [x] Render and manually inspect the Forum on desktop and mobile. Index,
+  category, nested board, topic, profile activity and `/admin/boards` all render
+  against `forum_dev` with no console errors and no horizontal page overflow at
+  375px. Two observations, both pre-existing design rather than refactor
+  regressions: the sticky reply composer overlaps content when the viewport is
+  shorter than roughly 600px, and reactions/votes appear on replies but not on
+  the opening post, which is rendered inside the topic header.
 
 Required searches return no runtime matches:
 
@@ -1328,7 +1376,12 @@ GET /api/topics?subcategoryId
 
 Final gate:
 
-- [ ] Run the complete final gate:
+- [x] Run the complete final gate. Both Docker builds failed on first attempt for
+  reasons unrelated to the refactor and were fixed: the standalone pnpm installer
+  from `get.pnpm.io` is glibc-only and segfaults on Alpine's musl, so the
+  dependency and build stages now use the Node image with Corepack (which reads
+  the pinned version from `packageManager`), and the app build stage sets
+  `CI=true` so pnpm reconciles `node_modules` without a TTY.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -1347,16 +1400,36 @@ docker build -f Dockerfile -t forum-app:refactor-test .
 
 Use separate reviews at these points:
 
-- [ ] Test isolation, environment validation, and reset safety before any
+- [x] Test isolation, environment validation, and reset safety before any
   destructive migration exists.
-- [ ] Target schema, pagination cursors/indexes, and constraints before generating
+- [x] Target schema, pagination cursors/indexes, and constraints before generating
   the reset migration.
-- [ ] Topic transaction behavior before frontend migration.
-- [ ] Read-model response shapes and Hono-derived transport types before deleting
+- [x] Topic transaction behavior before frontend migration.
+- [x] Read-model response shapes and Hono-derived transport types before deleting
   old endpoints.
-- [ ] Recursive purge UX and impact contract before enabling the delete command.
-- [ ] Final architecture review using the deletion test: removing a new module
+- [x] Recursive purge UX and impact contract before enabling the delete command.
+- [x] Final architecture review using the deletion test: removing a new module
   should force its rules back into multiple adapters.
+
+Review record (2026-07-26):
+
+- Test isolation passed after existing-server reuse was disabled, loopback aliases
+  were treated as one target, and every browser test received a fresh fixture.
+- Schema/pagination passed after the cycle trigger joined the hierarchy advisory
+  lock protocol, keyset timestamps were constrained to JavaScript's millisecond
+  precision, and cursor decoding became strict and canonical.
+- Topic transactions passed with focused concurrent delete and slug-collision
+  tests in addition to the existing lifecycle matrix.
+- Read models and transport typing passed after multi-query reads moved into
+  read-only repeatable-read transactions and frontend feature APIs derived both
+  request and response types from `AppType`.
+- Recursive purge passed after subtree row locking, stale-preview recovery, actual
+  purge/write concurrency coverage, and failed-preview browser coverage were added.
+- The final deletion test passed for Topic Discussion, Forum Read, Board
+  Management, Profile Edit, and Interaction Write. Profile Activity is the
+  documented shallow exception required by sections 5.5 and 7.2: its one method
+  still owns repeatable-read orchestration, projection, breadcrumbs, and canonical
+  links; adding a fictitious second adapter solely for fan-out would add no seam.
 
 Do not combine unrelated visual redesign, moderation features, reaction/vote
 redesign, Profile image storage migration, activity pagination, or production
@@ -1396,3 +1469,37 @@ deployment with these reviews.
 - Production environment/deployment hardening beyond separately tracked urgent
   credential rotation.
 - A shared isomorphic domain package; server rules remain in `packages/api`.
+
+## 13. Steps to Take from Reviewing Refactor Changes
+
+Check an item only after the fix and its focused tests are complete.
+
+### Architecture and project standards
+
+- [x] Make root `pnpm dev` start both the API and frontend through the safe
+  `.env.dev` wrappers. It must never start a local server with the deployment
+  settings from the root `.env`.
+- [x] After creating a Topic, navigate with the canonical route parameters
+  returned by the backend. Do not rebuild the URL from the board or slugs already
+  held by the frontend.
+- [x] Replace the remaining manually written or cast frontend API types with
+  types inferred from the exported Hono `AppType`.
+- [x] Create and inject transaction-scoped stores for requests that need multiple
+  related database queries, so every query sees one consistent snapshot.
+- [x] Stop exporting repository factories and Drizzle-derived types from the
+  public module entry points. Keep database details behind each module boundary.
+
+### Correctness and plan requirements
+
+- [x] Make reply deletion safe when two requests delete the same reply at the
+  same time. The reply counter must be decremented only once, and a concurrency
+  test must prove it.
+- [x] Convert database unique-constraint errors during Topic creation into the
+  typed `TOPIC_SLUG_CONFLICT` response, including when two requests race to use
+  the same slug.
+- [x] Return the standard error envelope when replacement endpoints receive
+  malformed JSON.
+- [x] Validate the `postId` query parameter as a UUID on the reaction and vote
+  read endpoints before calling the module.
+- [x] Perform and record all six reviews listed in Section 10, then check their
+  review-boundary boxes.

@@ -1,72 +1,67 @@
-import { reactions } from "@forum/db/schema";
-import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getDb } from "../db";
+import { z } from "zod";
+import { requireUser } from "../middleware/require-user";
+import type { InteractionWrite } from "../modules/interaction-write/types";
 import type { AppEnv } from "../types";
+import {
+  legacyJsonBodyLimit,
+  legacyValidator,
+  reactionEmoji,
+  uuid,
+} from "../validation/legacy";
 
-const reactionsRoutes = new Hono<AppEnv>();
+/*
+ * Reaction routes. Reads and writes both go through the interaction module,
+ * so this adapter holds no database access: it validates, extracts the
+ * actor, invokes, and maps to HTTP. Reactions were not redesigned, so the
+ * contract — including the plain { error: string } failure shape — is
+ * unchanged (plan section 5.6).
+ */
+export function createReactionRoutes(interactions: InteractionWrite) {
+  return (
+    new Hono<AppEnv>()
+      // GET /api/reactions?postId=... — get reactions for a post
+      .get(
+        "/",
+        legacyValidator(
+          "query",
+          z.object({
+            postId: z
+              .string({ message: "postId is required" })
+              .pipe(uuid("postId")),
+          }),
+        ),
+        async (c) => {
+          const { postId } = c.req.valid("query");
+          return c.json(await interactions.getReactions(postId));
+        },
+      )
+      // POST /api/reactions — toggle reaction (auth required)
+      .post(
+        "/",
+        requireUser,
+        legacyJsonBodyLimit(),
+        legacyValidator(
+          "json",
+          z.object({ postId: uuid("postId"), emoji: reactionEmoji }),
+        ),
+        async (c) => {
+          const user = c.get("user");
+          if (!user) {
+            return c.json({ error: "Unauthorized" }, 401);
+          }
 
-// GET /api/reactions?postId=... — get reactions for a post
-reactionsRoutes.get("/", async (c) => {
-  const db = getDb();
-  const postId = c.req.query("postId");
+          const body = c.req.valid("json");
+          const result = await interactions.toggleReaction({
+            actorId: user.id,
+            postId: body.postId,
+            emoji: body.emoji,
+          });
 
-  if (!postId) {
-    return c.json({ error: "postId is required" }, 400);
-  }
-
-  const result = await db
-    .select({
-      emoji: reactions.emoji,
-      count: sql<number>`count(*)::int`,
-    })
-    .from(reactions)
-    .where(eq(reactions.postId, postId))
-    .groupBy(reactions.emoji);
-
-  return c.json(result);
-});
-
-// POST /api/reactions — toggle reaction (auth required)
-reactionsRoutes.post("/", async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  const db = getDb();
-  const body = await c.req.json<{ postId: string; emoji: string }>();
-
-  // Check if reaction already exists
-  const [existing] = await db
-    .select()
-    .from(reactions)
-    .where(
-      and(
-        eq(reactions.postId, body.postId),
-        eq(reactions.userId, user.id),
-        eq(reactions.emoji, body.emoji),
-      ),
-    )
-    .limit(1);
-
-  if (existing) {
-    // Remove existing reaction (toggle off)
-    await db.delete(reactions).where(eq(reactions.id, existing.id));
-    return c.json({ action: "removed" });
-  }
-
-  // Add new reaction
-  const [reaction] = await db
-    .insert(reactions)
-    .values({
-      postId: body.postId,
-      userId: user.id,
-      emoji: body.emoji,
-    })
-    .returning();
-
-  return c.json({ action: "added", reaction }, 201);
-});
-
-export { reactionsRoutes };
+          return result.action === "added"
+            ? c.json(result, 201)
+            : c.json(result);
+        },
+      )
+  );
+}

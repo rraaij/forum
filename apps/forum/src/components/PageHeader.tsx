@@ -1,7 +1,7 @@
 import { Avatar } from "@forum/ui";
 import { For, Show } from "solid-js";
-import { CreateTopicPanel } from "@/components/CreateTopicPanel";
-import type { CreatedTopic, TopicParent } from "@/types/forum";
+import type { CreatedTopic } from "@/features/topic-discussion/api";
+import { CreateTopicPanel } from "@/features/topic-discussion/CreateTopicPanel";
 
 type HeaderStat = {
   label: string;
@@ -20,7 +20,7 @@ type ForumPageHeaderProps = {
   stats?: HeaderStat[];
   tags?: string[];
   createTopic?: {
-    parent: TopicParent;
+    boardId: string;
     onCreated: (topic: CreatedTopic) => void | Promise<void>;
   };
 };
@@ -92,7 +92,7 @@ export default function PageHeader(props: ForumPageHeaderProps) {
               // The creation action sits at the bottom of the board header so
               // its destination remains visually tied to the current board.
               <CreateTopicPanel
-                parent={createTopic().parent}
+                boardId={createTopic().boardId}
                 onCreated={createTopic().onCreated}
                 class="border-t border-white/20 pt-4 text-base-content"
               />

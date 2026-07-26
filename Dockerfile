@@ -1,8 +1,11 @@
 # Stage 1: Install dependencies
-FROM oven/bun:1-alpine AS deps
-RUN apk add --no-cache curl && \
-    curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=10.29.3 sh - && \
-    ln -s /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
+#
+# pnpm is a Node tool, so the dependency and build stages use the Node image
+# and Corepack, which reads the exact version from the root package.json
+# "packageManager" field. The standalone installer from get.pnpm.io is
+# glibc-only and segfaults on Alpine's musl. The runtime stage is still Bun.
+FROM node:22-alpine AS deps
+RUN corepack enable
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/forum/package.json ./apps/forum/
@@ -13,10 +16,11 @@ COPY packages/ui/package.json ./packages/ui/
 RUN pnpm install --frozen-lockfile
 
 # Stage 2: Build the forum app
-FROM oven/bun:1-alpine AS build
-RUN apk add --no-cache curl && \
-    curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=10.29.3 sh - && \
-    ln -s /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm
+FROM node:22-alpine AS build
+RUN corepack enable
+# Non-interactive: pnpm otherwise refuses to reconcile node_modules without a
+# TTY (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY).
+ENV CI=true
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/forum/node_modules ./apps/forum/node_modules

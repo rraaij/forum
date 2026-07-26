@@ -1,76 +1,73 @@
-import { votes } from "@forum/db/schema";
-import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getDb } from "../db";
+import { z } from "zod";
+import { requireUser } from "../middleware/require-user";
+import type { InteractionWrite } from "../modules/interaction-write/types";
 import type { AppEnv } from "../types";
+import {
+  legacyJsonBodyLimit,
+  legacyValidator,
+  uuid,
+} from "../validation/legacy";
 
-const votesRoutes = new Hono<AppEnv>();
+/*
+ * Vote routes. Reads and writes both go through the interaction module, so
+ * this adapter holds no database access. Votes were not redesigned:
+ * add/switch/remove semantics and the plain error shape are unchanged
+ * (plan section 5.6).
+ */
+export function createVoteRoutes(interactions: InteractionWrite) {
+  return (
+    new Hono<AppEnv>()
+      // GET /api/votes?postId=... — get vote score for a post
+      .get(
+        "/",
+        legacyValidator(
+          "query",
+          z.object({
+            postId: z
+              .string({ message: "postId is required" })
+              .pipe(uuid("postId")),
+          }),
+        ),
+        async (c) => {
+          const { postId } = c.req.valid("query");
+          return c.json(await interactions.getVoteScore(postId));
+        },
+      )
+      // POST /api/votes — toggle vote (auth required)
+      .post(
+        "/",
+        requireUser,
+        legacyJsonBodyLimit(),
+        legacyValidator(
+          "json",
+          z.object({
+            postId: uuid("postId"),
+            value: z
+              .number({ message: "value must be 1 or -1" })
+              .refine(
+                (value) => value === 1 || value === -1,
+                "value must be 1 or -1",
+              ),
+          }),
+        ),
+        async (c) => {
+          const user = c.get("user");
+          if (!user) {
+            return c.json({ error: "Unauthorized" }, 401);
+          }
 
-// GET /api/votes?postId=... — get vote score for a post
-votesRoutes.get("/", async (c) => {
-  const db = getDb();
-  const postId = c.req.query("postId");
+          const body = c.req.valid("json");
+          const result = await interactions.applyVote({
+            actorId: user.id,
+            postId: body.postId,
+            value: body.value as 1 | -1,
+          });
 
-  if (!postId) {
-    return c.json({ error: "postId is required" }, 400);
-  }
-
-  const [result] = await db
-    .select({
-      score: sql<number>`coalesce(sum(${votes.value}), 0)::int`,
-    })
-    .from(votes)
-    .where(eq(votes.postId, postId));
-
-  return c.json({ score: result?.score ?? 0 });
-});
-
-// POST /api/votes — toggle vote (auth required)
-votesRoutes.post("/", async (c) => {
-  const user = c.get("user");
-  if (!user) {
-    return c.json({ error: "Unauthorized" }, 401);
-  }
-
-  const db = getDb();
-  const body = await c.req.json<{ postId: string; value: number }>();
-
-  if (body.value !== 1 && body.value !== -1) {
-    return c.json({ error: "value must be 1 or -1" }, 400);
-  }
-
-  // Check existing vote
-  const [existing] = await db
-    .select()
-    .from(votes)
-    .where(and(eq(votes.postId, body.postId), eq(votes.userId, user.id)))
-    .limit(1);
-
-  if (existing) {
-    if (existing.value === body.value) {
-      // Same vote → remove (un-vote)
-      await db.delete(votes).where(eq(votes.id, existing.id));
-      return c.json({ action: "removed" });
-    }
-    // Different vote → switch
-    await db
-      .update(votes)
-      .set({ value: body.value })
-      .where(eq(votes.id, existing.id));
-    return c.json({ action: "switched" });
-  }
-
-  // New vote
-  const [vote] = await db
-    .insert(votes)
-    .values({
-      postId: body.postId,
-      userId: user.id,
-      value: body.value,
-    })
-    .returning();
-
-  return c.json({ action: "added", vote }, 201);
-});
-
-export { votesRoutes };
+          return result.action === "added"
+            ? c.json(result, 201)
+            : c.json(result);
+        },
+      )
+  );
+}

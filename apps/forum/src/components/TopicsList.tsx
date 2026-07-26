@@ -1,20 +1,21 @@
 import { Avatar } from "@forum/ui";
 import { Link } from "@tanstack/solid-router";
 import { createMemo, createSignal, For, Show } from "solid-js";
-import type { TopicSummary } from "@/types/forum";
+import type { TopicListItem } from "@/features/forum-read/api";
+import { topicLinkProps } from "@/features/forum-read/topic-link";
 
-type OpenTopicsProps = {
-  topics: TopicSummary[];
-  categorySlug: string;
-  subcategorySlug?: string;
+type TopicsListProps = {
+  topics: TopicListItem[];
+  nextCursor: string | null;
+  loadingMore: boolean;
+  onLoadMore: () => Promise<void>;
 };
 
 type TopicSort = "default" | "newest" | "replies" | "views";
 
 /*
- * Keep timestamp formatting beside the table that displays it. Both category
- * and subcategory pages now use this component, so neither route needs to
- * maintain its own date-label implementation.
+ * Keep timestamp formatting beside the table that displays it. Every board
+ * page uses this component, so no route maintains its own date labels.
  */
 const formatDateTime = (value: string | null | undefined) =>
   value
@@ -27,29 +28,19 @@ const formatDateTime = (value: string | null | undefined) =>
       })
     : "No activity yet";
 
-export default function TopicsList(props: OpenTopicsProps) {
+export default function TopicsList(props: TopicsListProps) {
   /*
-   * Sorting belongs to this component rather than the route. This keeps a
-   * user's table choice from changing any sibling data or page-level state.
+   * Sorting belongs to this component rather than the route. It only
+   * rearranges the currently accumulated page items.
    */
   const [sort, setSort] = createSignal<TopicSort>("default");
 
-  /*
-   * Sticky topics remain visually separate, but they now live in the same
-   * table as open topics. Their server-defined order is preserved so pinned
-   * announcements do not unexpectedly move when open-topic sorting changes.
-   */
   const pinnedTopics = createMemo(() =>
     props.topics.filter((topic) => topic.isPinned),
   );
 
   const openTopics = createMemo(() => {
     const topics = props.topics.filter((topic) => !topic.isPinned);
-
-    /*
-     * Copy before sorting because route loader data is shared and should be
-     * treated as immutable. Each option therefore affects only this table.
-     */
     return [...topics].sort((left, right) => {
       switch (sort()) {
         case "newest":
@@ -58,7 +49,7 @@ export default function TopicsList(props: OpenTopicsProps) {
             new Date(left.createdAt).getTime()
           );
         case "replies":
-          return right.postCount - left.postCount;
+          return right.replyCount - left.replyCount;
         case "views":
           return right.viewCount - left.viewCount;
         default:
@@ -67,18 +58,14 @@ export default function TopicsList(props: OpenTopicsProps) {
     });
   });
 
-  const topicLink = (topic: TopicSummary, pinned = false) => (
+  const topicLink = (topic: TopicListItem, pinned = false) => (
     /*
-     * The single dynamic topic route accepts either a real subforum slug or
-     * the reserved `topics` segment for topics directly under a category.
+     * The backend read model supplies canonical route params: direct root-
+     * board topics use the category path, nested-board topics the UUID
+     * subcategory path. Links never reproduce hierarchy rules.
      */
     <Link
-      to="/$category/$sub/$topic"
-      params={{
-        category: props.categorySlug,
-        sub: props.subcategorySlug ?? "topics",
-        topic: topic.slug,
-      }}
+      {...topicLinkProps(topic.routeParams)}
       class={
         pinned
           ? "font-bold text-info hover:underline"
@@ -95,24 +82,26 @@ export default function TopicsList(props: OpenTopicsProps) {
     </Link>
   );
 
-  const topicRow = (topic: TopicSummary, pinned = false) => (
+  const topicRow = (topic: TopicListItem, pinned = false) => (
     <tr>
       <td>{topicLink(topic, pinned)}</td>
       <td>
         <div class="flex items-center gap-2">
           <Avatar
-            src={topic.authorImage}
-            name={topic.authorName}
+            src={topic.author.image}
+            name={topic.author.displayName ?? topic.author.name}
             size="xs"
             class="shrink-0 rounded-full ring-1 ring-base-content/10"
           />
-          <span>{topic.authorName ?? "Unknown"}</span>
+          <span>
+            {topic.author.displayName ?? topic.author.name ?? "Unknown"}
+          </span>
         </div>
       </td>
-      <td class="text-right">{Math.max(0, topic.postCount - 1)}</td>
+      <td class="text-right">{topic.replyCount}</td>
       <td class="text-right">{topic.viewCount}</td>
       <td class="text-sm text-base-content/70">
-        {formatDateTime(topic.lastPostAt ?? topic.createdAt)}
+        {formatDateTime(topic.lastActivityAt)}
       </td>
     </tr>
   );
@@ -121,11 +110,6 @@ export default function TopicsList(props: OpenTopicsProps) {
     <section class="card overflow-hidden border border-base-content/10 bg-base-100 shadow-md">
       <div class="overflow-x-auto">
         <table class="table table-zebra">
-          {/*
-           * A caption makes the controls structurally part of this table. Their
-           * state is also local to OpenTopics, so no choice leaks into sibling
-           * sections or route-level data.
-           */}
           <caption class="caption-top border-b border-base-content/10 bg-base-100 px-4 py-3 text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2">
@@ -201,6 +185,23 @@ export default function TopicsList(props: OpenTopicsProps) {
           </tbody>
         </table>
       </div>
+
+      <Show when={props.nextCursor}>
+        <div class="flex justify-center border-t border-base-content/10 py-3">
+          <button
+            type="button"
+            class="btn btn-outline btn-sm"
+            onClick={() => void props.onLoadMore()}
+            disabled={props.loadingMore}
+          >
+            {props.loadingMore ? (
+              <span class="loading loading-spinner loading-xs" />
+            ) : (
+              "Load more topics"
+            )}
+          </button>
+        </div>
+      </Show>
     </section>
   );
 }
