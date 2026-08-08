@@ -1,48 +1,60 @@
-import { Show } from "solid-js";
+import type { JSX } from "solid-js";
+import { Show, splitProps } from "solid-js";
 
-interface AvatarProps {
+export type AvatarSize = "xs" | "shell" | "sm" | "md" | "lg" | "xl";
+
+export interface AvatarProps extends JSX.HTMLAttributes<HTMLDivElement> {
   src?: string | null;
   name?: string | null;
-  size?: "xs" | "sm" | "md" | "lg";
-  class?: string;
+  alt?: string;
+  size?: AvatarSize;
 }
 
-export function Avatar(props: AvatarProps) {
-  const sizeClass = () => {
-    switch (props.size) {
-      case "xs":
-        return "w-6";
-      case "sm":
-        return "w-8";
-      case "lg":
-        return "w-16";
-      default:
-        return "w-10";
-    }
-  };
+const sizeClasses: Record<AvatarSize, string> = {
+  xs: "size-6",
+  shell: "size-[30px]",
+  sm: "size-8",
+  md: "size-10",
+  lg: "size-16",
+  xl: "size-[88px]",
+};
 
-  const initials = () => {
-    if (!props.name) return "?";
-    return props.name
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
+export function Avatar(props: AvatarProps) {
+  const [local, rest] = splitProps(props, [
+    "src",
+    "name",
+    "alt",
+    "size",
+    "class",
+  ]);
+
+  const sizeClass = () => sizeClasses[local.size ?? "md"];
+
+  const initial = () => {
+    const name = local.name?.trim();
+    return name ? name.charAt(0).toUpperCase() : "?";
   };
 
   return (
-    <div class={`avatar ${props.class ?? ""}`}>
-      <div class={`${sizeClass()} rounded-full`}>
+    <div {...rest} class={`avatar shrink-0 ${local.class ?? ""}`}>
+      <div class={`${sizeClass()} overflow-hidden rounded-none`}>
         <Show
-          when={props.src}
+          when={local.src}
           fallback={
-            <div class="bg-neutral text-neutral-content flex items-center justify-center w-full h-full rounded-full">
-              <span class="text-xs">{initials()}</span>
+            <div class="flex size-full items-center justify-center rounded-none bg-accent font-extrabold text-base-200">
+              <span class="text-xs" aria-hidden="true">
+                {initial()}
+              </span>
             </div>
           }
         >
-          {(src) => <img src={src()} alt={props.name ?? "Avatar"} />}
+          {(src) => (
+            <img
+              class="size-full rounded-none object-cover"
+              src={src()}
+              alt={local.alt ?? local.name ?? "Avatar"}
+            />
+          )}
         </Show>
       </div>
     </div>

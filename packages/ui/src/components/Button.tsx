@@ -1,21 +1,43 @@
 import type { JSX, ParentProps } from "solid-js";
 import { splitProps } from "solid-js";
 
-type ButtonVariant =
+export type ButtonVariant =
   | "primary"
   | "secondary"
   | "accent"
   | "ghost"
   | "link"
-  | "error";
-type ButtonSize = "xs" | "sm" | "md" | "lg";
+  | "error"
+  | "surface";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
-interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   outline?: boolean;
 }
+
+const variantClasses: Record<ButtonVariant, string> = {
+  primary: "btn-primary",
+  // Secondary is intentionally reserved for the few orange actions named in
+  // the handoff, notably retrying a failed request.
+  secondary: "btn-secondary",
+  accent: "btn-accent",
+  ghost: "btn-ghost",
+  link: "btn-link",
+  error: "btn-error",
+  surface:
+    "border-brand-300 bg-base-300 text-base-content hover:border-primary hover:bg-primary hover:text-primary-content",
+};
+
+const sizeClasses: Record<ButtonSize, string> = {
+  xs: "btn-xs",
+  sm: "btn-sm",
+  md: "btn-md",
+  lg: "btn-lg",
+};
 
 export function Button(props: ParentProps<ButtonProps>) {
   const [local, rest] = splitProps(props, [
@@ -25,20 +47,27 @@ export function Button(props: ParentProps<ButtonProps>) {
     "outline",
     "class",
     "children",
+    "disabled",
+    "type",
   ]);
 
   const classes = () => {
-    const parts = ["btn"];
-    if (local.variant) parts.push(`btn-${local.variant}`);
-    if (local.size) parts.push(`btn-${local.size}`);
+    const parts = ["btn rounded-none font-bold shadow-none transition-colors"];
+    if (local.variant) parts.push(variantClasses[local.variant]);
+    if (local.size) parts.push(sizeClasses[local.size]);
     if (local.outline) parts.push("btn-outline");
-    if (local.loading) parts.push("loading");
     if (local.class) parts.push(local.class);
     return parts.join(" ");
   };
 
   return (
-    <button class={classes()} disabled={local.loading} {...rest}>
+    <button
+      {...rest}
+      type={local.type ?? "button"}
+      class={classes()}
+      disabled={Boolean(local.disabled || local.loading)}
+      aria-busy={local.loading || undefined}
+    >
       {local.children}
     </button>
   );

@@ -1,6 +1,7 @@
-import type { ParentProps } from "solid-js";
+import type { JSX, ParentProps } from "solid-js";
+import { splitProps } from "solid-js";
 
-type BadgeVariant =
+export type BadgeVariant =
   | "primary"
   | "secondary"
   | "accent"
@@ -10,22 +11,51 @@ type BadgeVariant =
   | "warning"
   | "error";
 
-interface BadgeProps {
+export interface BadgeProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
   outline?: boolean;
   size?: "xs" | "sm" | "md" | "lg";
-  class?: string;
 }
 
+const variantClasses: Record<BadgeVariant, string> = {
+  primary: "badge-primary",
+  secondary: "badge-secondary",
+  accent: "badge-accent",
+  ghost: "badge-ghost",
+  info: "badge-info",
+  success: "badge-success",
+  warning: "badge-warning",
+  error: "badge-error",
+};
+
+const sizeClasses = {
+  xs: "badge-xs",
+  sm: "badge-sm",
+  md: "badge-md",
+  lg: "badge-lg",
+} as const;
+
 export function Badge(props: ParentProps<BadgeProps>) {
+  const [local, rest] = splitProps(props, [
+    "variant",
+    "outline",
+    "size",
+    "class",
+    "children",
+  ]);
+
   const classes = () => {
-    const parts = ["badge"];
-    if (props.variant) parts.push(`badge-${props.variant}`);
-    if (props.outline) parts.push("badge-outline");
-    if (props.size) parts.push(`badge-${props.size}`);
-    if (props.class) parts.push(props.class);
+    const parts = ["badge rounded-none font-extrabold"];
+    if (local.variant) parts.push(variantClasses[local.variant]);
+    if (local.outline) parts.push("badge-outline");
+    if (local.size) parts.push(sizeClasses[local.size]);
+    if (local.class) parts.push(local.class);
     return parts.join(" ");
   };
 
-  return <span class={classes()}>{props.children}</span>;
+  return (
+    <span {...rest} class={classes()}>
+      {local.children}
+    </span>
+  );
 }
