@@ -3,9 +3,9 @@
 The refactor workflow (see `docs/REFACTOR_PLAN.md`) never touches the QNAP
 database. It uses two throwaway local PostgreSQL containers:
 
-| Purpose     | Compose file             | Host port | Database     | Env file    |
-|-------------|--------------------------|-----------|--------------|-------------|
-| Automated tests | `docker-compose.test.yml` | 127.0.0.1:55432 | `forum_test` | `.env.test` |
+| Purpose           | Compose file              | Host port       | Database     | Env file    |
+|-------------------|---------------------------|-----------------|--------------|-------------|
+| Automated tests   | `docker-compose.test.yml` | 127.0.0.1:55432 | `forum_test` | `.env.test` |
 | Local development | `docker-compose.dev.yml`  | 127.0.0.1:55433 | `forum_dev`  | `.env.dev`  |
 
 The legacy `docker-compose.yml` (port 5433) and the normal `.env` (QNAP) are

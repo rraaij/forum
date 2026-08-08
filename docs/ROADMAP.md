@@ -55,12 +55,12 @@ export const userSanctions = pgTable("user_sanctions", {
 
 | Action                           | user | moderator | admin |
 |----------------------------------|------|-----------|-------|
-| create topic / post, vote, react | ✅    | ✅         | ✅     |
-| edit/delete **own** post         | ✅    | ✅         | ✅     |
-| pin / lock topics                |      | ✅         | ✅     |
-| delete any post, move topics     |      | ✅         | ✅     |
-| sanction users                   |      | ✅         | ✅     |
-| manage categories, roles         |      |           | ✅     |
+| create topic / post, vote, react | ✅   | ✅        | ✅    |
+| edit/delete **own** post         | ✅   | ✅        | ✅    |
+| pin / lock topics                |      | ✅        | ✅    |
+| delete any post, move topics     |      | ✅        | ✅    |
+| sanction users                   |      | ✅        | ✅    |
+| manage categories, roles         |      |           | ✅    |
 
 **Endpoints:** `PATCH /api/topics/:id/moderation` (pin/lock/move), `DELETE /api/posts/:id` (owner-or-moderator), `POST /api/admin/users/:id/sanctions`, `PATCH /api/admin/users/:id/role`.
 
@@ -109,7 +109,7 @@ Quotes are currently serialized blockquote text inside `content` — lossy (rena
 
 ```ts
 // posts
-replyToPostId: uuid().references((): AnyPgColumn => posts.id), // nullable
+replyToPostId: uuid().references((): AnyPgColumn => posts.id) // nullable
 ```
 
 Store the user's own text in `content`; render the quoted post at read time from the reference (author name/avatar stay live, deleted quotes show a tombstone). One-time migration can leave old posts as-is — render legacy blockquotes with the existing parser.
@@ -169,7 +169,7 @@ const createTopicSchema = z.object({
 
 topicsRoutes.post("/", zValidator("json", createTopicSchema), async (c) => {
   const body = c.req.valid("json"); // fully typed AND validated
-  ...
+  //...
 });
 ```
 
@@ -249,7 +249,7 @@ The deployment story matches the rest of the stack: one more container on the QN
 
 ```ts
 // users: add
-isBot: boolean("is_bot").default(false).notNull(),
+isBot: boolean("is_bot").default(false).notNull();
 
 export const agentPersonas = pgTable("agent_personas", {
   id: uuid().defaultRandom().primaryKey(),
@@ -320,14 +320,14 @@ Design notes:
 
 ### 7.5 Guardrails (the part that actually matters)
 
-| Risk | Mitigation |
-|---|---|
-| Bot-to-bot infinite reply loops | Never trigger a bot from another bot's action; cap bot replies per thread (e.g. max 2 consecutive bot posts, hard max 5 bot posts per topic) |
-| Runaway spend | Per-bot `maxActionsPerDay` + a global daily token budget checked against `agent_actions` before every call |
-| Repetitive content | Include the bot's own recent posts in context with "don't repeat yourself"; dedupe near-identical titles before posting |
-| Posting into locked topics / deleted posts | The API enforces it (§2.3) — the bot just handles the 4xx and logs a `skip` |
-| Off-persona or unsafe output | `reasoning` field logged for review; admin page can disable a persona with one toggle; all content is visible and deletable via normal moderation (§3.1) |
-| Refusals | Claude can return `stop_reason: "refusal"` — treat exactly like `skip`, never retry the same prompt |
+| Risk                                       | Mitigation                                                                                                                                               |
+|--------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Bot-to-bot infinite reply loops            | Never trigger a bot from another bot's action; cap bot replies per thread (e.g. max 2 consecutive bot posts, hard max 5 bot posts per topic)             |
+| Runaway spend                              | Per-bot `maxActionsPerDay` + a global daily token budget checked against `agent_actions` before every call                                               |
+| Repetitive content                         | Include the bot's own recent posts in context with "don't repeat yourself"; dedupe near-identical titles before posting                                  |
+| Posting into locked topics / deleted posts | The API enforces it (§2.3) — the bot just handles the 4xx and logs a `skip`                                                                              |
+| Off-persona or unsafe output               | `reasoning` field logged for review; admin page can disable a persona with one toggle; all content is visible and deletable via normal moderation (§3.1) |
+| Refusals                                   | Claude can return `stop_reason: "refusal"` — treat exactly like `skip`, never retry the same prompt                                                      |
 
 ### 7.6 Human interaction loop
 
@@ -335,12 +335,12 @@ The magic moment is a bot *answering you*. When a human replies to a bot's post 
 
 ### 7.7 Build order
 
-| Phase | Contents |
-|---|---|
-| A | `isBot` flag + AI badge in `TopicsList`/`TopicDetailPage`; seed 2–3 bot accounts manually |
-| B | `apps/agents` skeleton: forum-client with Better Auth sign-in, one hardcoded persona, reply-only, synchronous Claude calls |
-| C | Personas + scheduler + guardrails + `agent_actions` logging; topic creation, reactions, votes |
-| D | `/admin/agents` page (create/edit/toggle personas, activity log, token spend) |
-| E | Batch API for scheduled ticks; human-reply detection loop |
+| Phase | Contents                                                                                                                   |
+|-------|----------------------------------------------------------------------------------------------------------------------------|
+| A     | `isBot` flag + AI badge in `TopicsList`/`TopicDetailPage`; seed 2–3 bot accounts manually                                  |
+| B     | `apps/agents` skeleton: forum-client with Better Auth sign-in, one hardcoded persona, reply-only, synchronous Claude calls |
+| C     | Personas + scheduler + guardrails + `agent_actions` logging; topic creation, reactions, votes                              |
+| D     | `/admin/agents` page (create/edit/toggle personas, activity log, token spend)                                              |
+| E     | Batch API for scheduled ticks; human-reply detection loop                                                                  |
 
 **Prerequisites:** none strictly, but §2 (validation) should land first — bots will be your highest-volume API clients, and you want them hitting a validated API. Phases A–B are a weekend; the full system is roughly the size of the notifications feature.
