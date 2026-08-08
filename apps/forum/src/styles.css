@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@import "@forum/config/theme.css";
 
 /*
  * Tailwind scans the application automatically, but shared workspace packages

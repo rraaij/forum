@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/modernist-4f5949c9-ca3c-48d9-aa3e-a532022d3333/styles.css">
+<script src="_ds/modernist-4f5949c9-ca3c-48d9-aa3e-a532022d3333/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --color-accent:#0e7f78;--color-accent-100:#eef7f6;--color-accent-200:#d7ecea;--color-accent-300:#b0dbd7;
+  --color-accent-400:#6dbdb7;--color-accent-500:#2ba39a;--color-accent-600:#0a6b66;--color-accent-700:#075652;
+  --color-accent-800:#06413f;--color-accent-900:#123634;
+  --color-accent-2:#e07b1e;--color-accent-2-100:#fdf2e4;--color-accent-2-200:#f9e0c4;--color-accent-2-300:#f0c28e;
+  --color-accent-2-400:#e79a4a;--color-accent-2-500:#e07b1e;--color-accent-2-600:#c26410;--color-accent-2-700:#8f4a06;
+  --color-accent-2-800:#653504;--color-accent-2-900:#3f2306;
+  --font-heading:"Newsreader",Georgia,serif;--font-heading-weight:600;
+}
+body{margin:0;background:#f3f2f2;font-family:"Archivo",system-ui,sans-serif}
+h1,h2,h3,h4,h5,h6,.card-title,.dialog-title{font-family:"Newsreader",Georgia,serif;font-weight:600}
+.btn,.tag,.input,.table th{font-family:"Archivo",system-ui,sans-serif}
+.btn{font-weight:700}
+.dv-tname,.dv-tid,.dv-oid,.dv-olabel{font-family:"Archivo",system-ui,sans-serif!important}
+a{color:#0e7f78}a:hover{color:#075652}
+.dv-turn{padding:40px 44px 32px;border-bottom:2px solid var(--color-divider);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+.dv-tid{font:800 10px "Archivo",monospace;letter-spacing:.08em;padding:3px 7px;background:#201e1d;color:#f3f2f2;border-radius:0;text-decoration:none}
+.dv-tname{font:800 13px/1.2 "Archivo",sans-serif;color:#201e1d;text-transform:uppercase;letter-spacing:.06em}
+.dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+.dv-oid{font:800 10.5px "Archivo",monospace;letter-spacing:.06em;padding:3px 7px;background:#d7d3d3;color:#201e1d;border-radius:0;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:500 11.5px/1.3 "Archivo",sans-serif;color:#605d5d;text-transform:uppercase;letter-spacing:.05em}
+.dv-card{max-width:100%;background:#f3f2f2;border:2px solid var(--color-divider);overflow:hidden}
+.dv-opt:target .dv-oid{background:#0e7f78;color:#f3f2f2}
+.dv-next{margin:26px 0 0;font:400 12px/1.6 "Archivo",sans-serif;color:#605d5d}
+.rowlink{text-decoration:none;color:inherit;display:block}
+.rowlink:hover{background:#eae9e9}
+.abbr:hover{background:#0e7f78;color:#f3f2f2;border-color:#0e7f78}
+.tl:hover .tlt{color:#0e7f78}
+</style></helmet>
+
+<section class="dv-turn" id="t5">
+<div class="dv-thd"><a class="dv-tid" href="#t5">5</a><span class="dv-tname">De andere apps — ruwe schetsen op dezelfde shell (<a class="dv-oid" href="#4a">4a</a>)</span></div>
+<div class="dv-opts">
+
+<!-- ============ 5a: news app ============ -->
+<div class="dv-opt" id="5a">
+<div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Nieuws — ruwe schets: één lead, ruitpatroon eronder, forumdraad als voetnoot</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">marijn.nl</div>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">forum</span>
+    <span style="padding:0 14px;font-size:13.5px;font-weight:700;color:#e79a4a">nieuws</span>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">fotoboek</span>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">dm</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <span style="font-size:13px;color:#d7d3d3">hoi, marijn</span>
+      <div style="width:30px;height:30px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+    </div>
+  </div>
+  <div style="background:#d7ecea;border-bottom:2px solid #201e1d;display:flex;align-items:center;gap:18px;padding:9px 22px;font-size:13.5px;color:#08494a">
+    <span style="font-weight:700;color:#0b5f5b">Alles</span><span>Software</span><span>Hardware</span><span>Het net</span><span>Van de redactie</span><span style="margin-left:auto">archief</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;border-bottom:2px solid #201e1d">
+    <div style="padding:34px 34px 30px;background:#fff;border-right:1px solid #b0dbd7">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <span class="tag" style="background:#e07b1e;color:#fdf2e4;font-size:11.5px;padding:3px 9px">Voorpagina</span>
+        <span style="font-size:13px;color:#0b5f5b">Software · vanochtend 08:15 · door annelies</span>
+      </div>
+      <h1 style="font-size:40px;margin:0;line-height:1.06;letter-spacing:-.014em;max-width:20ch">De bundler-oorlog is voorbij en niemand heeft gewonnen</h1>
+      <div style="aspect-ratio:16/8;background:#d7ecea;border:1px solid #b0dbd7;margin:20px 0;display:grid;place-items:center;font-size:12.5px;color:#0b5f5b">foto — 16:8</div>
+      <p style="font-size:16.5px;line-height:1.65;margin:0;max-width:58ch;text-wrap:pretty">Vijf jaar lang was elke keuze definitief en elke keuze fout. Nu iedereen op dezelfde drie tools zit, blijkt het probleem nooit de tool te zijn geweest.</p>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid #b0dbd7">
+        <a href="#5a" style="font-size:14.5px;text-decoration:none;font-weight:600">Lees verder →</a>
+        <span style="margin-left:auto;font-size:13px;color:#0b5f5b">7 min · 41 reacties op het forum</span>
+      </div>
+    </div>
+
+    <div style="background:#d7ecea;padding:28px 26px 30px">
+      <h4 style="font-size:17px;margin:0 0 14px">Ook vandaag</h4>
+      <a class="rowlink tl" href="#5a" style="display:block;padding:12px 0;border-bottom:1px solid #b0dbd7">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:4px">Hardware</div>
+        <div class="tlt" style="font-weight:700;font-size:15.5px;line-height:1.3">Een NAS bouwen kost nu meer dan er een kopen</div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:4px">09:40 · 12 reacties</div>
+      </a>
+      <a class="rowlink tl" href="#5a" style="display:block;padding:12px 0;border-bottom:1px solid #b0dbd7">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:4px">Het net</div>
+        <div class="tlt" style="font-weight:700;font-size:15.5px;line-height:1.3">Kleine forums leven langer dan de platforms die ze wilden vervangen</div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:4px">gisteren · 86 reacties</div>
+      </a>
+      <a class="rowlink tl" href="#5a" style="display:block;padding:12px 0">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:4px">Van de redactie</div>
+        <div class="tlt" style="font-weight:700;font-size:15.5px;line-height:1.3">We hebben het fotoboek teruggebracht</div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:4px">dinsdag · 34 reacties</div>
+      </a>
+      <div style="margin-top:20px;padding-top:16px;border-top:2px solid #201e1d">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:8px">Nu op het forum</div>
+        <a class="rowlink tl" href="#2a" style="display:flex;gap:10px;align-items:center;padding:8px 0">
+          <div style="width:26px;height:26px;flex:none;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+          <div class="tlt" style="font-size:14px;font-weight:600;line-height:1.3">Waarom is mijn build 40 seconden langzamer?</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+    <a class="rowlink" href="#5a" style="padding:22px 24px 24px;border-right:1px solid #b0dbd7;background:#fff">
+      <div style="aspect-ratio:4/3;background:#d7ecea;border:1px solid #b0dbd7;margin-bottom:14px"></div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:6px">Software</div>
+      <h3 style="font-size:20px;margin:0;line-height:1.2">Waarom je database niet je wachtrij is</h3>
+      <div style="font-size:12.5px;color:#0b5f5b;margin-top:10px">woensdag · 5 min · 23 reacties</div>
+    </a>
+    <a class="rowlink" href="#5a" style="padding:22px 24px 24px;border-right:1px solid #b0dbd7;background:#fff">
+      <div style="aspect-ratio:4/3;background:#d7ecea;border:1px solid #b0dbd7;margin-bottom:14px"></div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:6px">Hardware</div>
+      <h3 style="font-size:20px;margin:0;line-height:1.2">Vier jaar met dezelfde laptop</h3>
+      <div style="font-size:12.5px;color:#0b5f5b;margin-top:10px">dinsdag · 9 min · 58 reacties</div>
+    </a>
+    <a class="rowlink" href="#5a" style="padding:22px 24px 24px;background:#fff">
+      <div style="aspect-ratio:4/3;background:#d7ecea;border:1px solid #b0dbd7;margin-bottom:14px"></div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#8f4a06;margin-bottom:6px">Het net</div>
+      <h3 style="font-size:20px;margin:0;line-height:1.2">RSS is nooit weggeweest</h3>
+      <div style="font-size:12.5px;color:#0b5f5b;margin-top:10px">maandag · 4 min · 91 reacties</div>
+    </a>
+  </div>
+</div>
+</div>
+
+<!-- ============ 5b: dm app ============ -->
+<div class="dv-opt" id="5b">
+<div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>DM — ruwe schets: gesprekkenlijst links, draad rechts, zelfde postbit-logica</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">marijn.nl</div>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">forum</span>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">nieuws</span>
+    <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">fotoboek</span>
+    <span style="padding:0 14px;font-size:13.5px;font-weight:700;color:#e79a4a">dm</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <span style="background:#e07b1e;color:#fdf2e4;font-size:11.5px;font-weight:800;padding:2px 7px">3</span>
+      <div style="width:30px;height:30px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:320px 1fr;min-height:520px">
+    <aside style="border-right:2px solid #201e1d;background:#d7ecea;display:flex;flex-direction:column">
+      <div style="padding:18px 20px 14px;border-bottom:1px solid #b0dbd7">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+          <h4 style="font-size:19px;margin:0">Berichten</h4>
+          <span style="font-size:12.5px;color:#0b5f5b">3 ongelezen</span>
+        </div>
+        <button class="btn btn-primary btn-block" style="min-height:38px;font-size:14.5px">Nieuw bericht</button>
+      </div>
+
+      <a class="rowlink" href="#5b" style="display:flex;gap:11px;padding:14px 18px;border-bottom:1px solid #b0dbd7;background:#eef7f6;border-left:3px solid #0e7f78">
+        <div style="width:36px;height:36px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:14px;font-weight:800">T</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px"><strong style="font-size:15px">tijs</strong><span style="margin-left:auto;font-size:12px;color:#0b5f5b">19:12</span></div>
+          <div style="font-size:13px;color:#08494a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ja precies dat — ik probeer het morgen even</div>
+        </div>
+      </a>
+      <a class="rowlink" href="#5b" style="display:flex;gap:11px;padding:14px 18px;border-bottom:1px solid #b0dbd7">
+        <div style="width:36px;height:36px;flex:none;background:#444141;color:#eef7f6;display:grid;place-items:center;font-size:14px;font-weight:800">A</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px"><strong style="font-size:15px">annelies</strong><span style="background:#e07b1e;color:#fdf2e4;font-size:10.5px;font-weight:800;padding:1px 6px">2</span><span style="margin-left:auto;font-size:12px;color:#0b5f5b">gisteren</span></div>
+          <div style="font-size:13px;color:#08494a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600">Kun je even naar die bugmelding kijken?</div>
+        </div>
+      </a>
+      <a class="rowlink" href="#5b" style="display:flex;gap:11px;padding:14px 18px;border-bottom:1px solid #b0dbd7">
+        <div style="width:36px;height:36px;flex:none;background:#bab6b6;color:#201e1d;display:grid;place-items:center;font-size:14px;font-weight:800">F</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px"><strong style="font-size:15px">fenna</strong><span style="background:#e07b1e;color:#fdf2e4;font-size:10.5px;font-weight:800;padding:1px 6px">1</span><span style="margin-left:auto;font-size:12px;color:#0b5f5b">dinsdag</span></div>
+          <div style="font-size:13px;color:#08494a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600">Die schijven zijn binnen!</div>
+        </div>
+      </a>
+      <a class="rowlink" href="#5b" style="display:flex;gap:11px;padding:14px 18px;border-bottom:1px solid #b0dbd7">
+        <div style="width:36px;height:36px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:14px;font-weight:800">J</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:8px"><strong style="font-size:15px">joost</strong><span style="margin-left:auto;font-size:12px;color:#0b5f5b">vorige week</span></div>
+          <div style="font-size:13px;color:#08494a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Dank voor het welkom!</div>
+        </div>
+      </a>
+    </aside>
+
+    <div style="display:flex;flex-direction:column;background:#fff">
+      <div style="padding:16px 26px;border-bottom:2px solid #201e1d;display:flex;align-items:center;gap:11px;background:#eef7f6">
+        <div style="width:34px;height:34px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:14px;font-weight:800">T</div>
+        <div>
+          <div style="font-weight:800;font-size:16px;line-height:1.2">tijs</div>
+          <div style="font-size:12.5px;color:#0b5f5b">lid sinds 2021 · <a href="#3a" style="text-decoration:none">profiel</a></div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn" style="min-height:32px;font-size:13.5px;background:#d7ecea;color:#08494a">Blokkeren</button>
+          <button class="btn" style="min-height:32px;font-size:13.5px;background:transparent;border:1px solid #b0dbd7;color:#0b5f5b">Melden</button>
+        </div>
+      </div>
+
+      <div style="flex:1;padding:22px 26px;display:flex;flex-direction:column;gap:18px">
+        <div style="text-align:center;font-size:12px;color:#0b5f5b;letter-spacing:.04em;text-transform:uppercase">vrijdag 24 juli</div>
+
+        <div style="display:flex;gap:12px">
+          <div style="width:32px;height:32px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">T</div>
+          <div style="max-width:58ch">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><strong style="font-size:14.5px">tijs</strong><span style="font-size:12px;color:#0b5f5b">18:52</span></div>
+            <div style="background:#d7ecea;padding:12px 15px;font-size:15px;line-height:1.6">Zag je vraag in SolidJS langskomen — heb je die dubbele fetch al opgelost? Ik loop er nu ook tegenaan op een ander project.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-direction:row-reverse">
+          <div style="width:32px;height:32px;flex:none;background:#0e7f78;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+          <div style="max-width:58ch">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;flex-direction:row-reverse"><strong style="font-size:14.5px">jij</strong><span style="font-size:12px;color:#0b5f5b">19:04</span></div>
+            <div style="background:#0e7f78;color:#eef7f6;padding:12px 15px;font-size:15px;line-height:1.6">Half. We dedupliceren nu op de sleutel in plaats van initialValue te zetten — refetch blijft dan werken. Ik heb het net in het topic gezet.</div>
+            <div style="text-align:right;font-size:12px;color:#0b5f5b;margin-top:4px">gelezen</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <div style="width:32px;height:32px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">T</div>
+          <div style="max-width:58ch">
+            <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><strong style="font-size:14.5px">tijs</strong><span style="font-size:12px;color:#0b5f5b">19:12</span></div>
+            <div style="background:#d7ecea;padding:12px 15px;font-size:15px;line-height:1.6">Ja precies dat — ik probeer het morgen even.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:16px 26px 20px;border-top:2px solid #201e1d;background:#d7ecea;display:flex;gap:8px;align-items:flex-end">
+        <textarea class="input" placeholder="Schrijf een bericht…" style="flex:1;border-color:#b0dbd7;background:#fff;min-height:60px;font-size:15px"></textarea>
+        <button class="btn btn-primary" style="min-height:44px;font-size:15px">Versturen</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "nieuws <a class="dv-oid" href="#5a">5a</a> met een artikelpagina erbij" · "dm <a class="dv-oid" href="#5b">5b</a> op mobiel" · "fotoboek schetsen"</p>
+</section>
+
+<section class="dv-turn" id="t4">
+<div class="dv-thd"><a class="dv-tid" href="#t4">4</a><span class="dv-tname">Ontbrekende delen — gedeelde shell, auth, states, chrome, mobiel</span></div>
+<div class="dv-opts">
+
+<!-- ============ 4a: shared app shell ============ -->
+<div class="dv-opt" id="4a">
+<div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Gedeelde shell — één balk voor forum, nieuws, fotoboek en dm</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="padding:26px 32px 20px;border-bottom:1px solid #b0dbd7">
+    <h4 style="font-size:19px;margin:0 0 4px">De balk is het enige dat alle apps delen</h4>
+    <p style="font-size:14px;line-height:1.55;color:#08494a;margin:0;max-width:70ch">Merk links, appwissel in het midden, sessie rechts. De actieve app is oranje; de rest blijft grijs. Elke app zet daarna zijn eigen tweede rij eronder.</p>
+  </div>
+
+  <div style="padding:22px 32px 30px;display:flex;flex-direction:column;gap:22px">
+    <div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:8px">Forum</div>
+      <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center;border:1px solid #201e1d">
+        <div style="padding:13px 18px;font-weight:900;font-size:15px;border-right:1px solid #605d5d">marijn.nl</div>
+        <span style="padding:0 14px;font-size:13.5px;font-weight:700;color:#e79a4a">forum</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">nieuws</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">fotoboek</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">dm</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:14px">
+          <span style="background:#e07b1e;color:#fdf2e4;font-size:11.5px;font-weight:800;padding:2px 7px">3</span>
+          <span style="font-size:13px;color:#d7d3d3">hoi, marijn</span>
+          <div style="width:28px;height:28px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:12px;font-weight:800">M</div>
+        </div>
+      </div>
+      <div style="background:#d7ecea;border:1px solid #b0dbd7;border-top:none;display:flex;align-items:center;gap:18px;padding:9px 18px;font-size:13.5px;color:#08494a">
+        <span style="font-weight:700;color:#0b5f5b">Technology</span><span>Web Development</span><span>Frontend</span><span style="margin-left:auto">zoeken</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:8px">Fotoboek</div>
+      <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center;border:1px solid #201e1d">
+        <div style="padding:13px 18px;font-weight:900;font-size:15px;border-right:1px solid #605d5d">marijn.nl</div>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">forum</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">nieuws</span>
+        <span style="padding:0 14px;font-size:13.5px;font-weight:700;color:#e79a4a">fotoboek</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">dm</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:14px">
+          <span style="font-size:13px;color:#d7d3d3">hoi, marijn</span>
+          <div style="width:28px;height:28px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:12px;font-weight:800">M</div>
+        </div>
+      </div>
+      <div style="background:#d7ecea;border:1px solid #b0dbd7;border-top:none;display:flex;align-items:center;gap:18px;padding:9px 18px;font-size:13.5px;color:#08494a">
+        <span style="font-weight:700;color:#0b5f5b">Alle albums</span><span>Van mij</span><span>Recent geüpload</span><span style="margin-left:auto">uploaden</span>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:8px">Gast — niet ingelogd</div>
+      <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center;border:1px solid #201e1d">
+        <div style="padding:13px 18px;font-weight:900;font-size:15px;border-right:1px solid #605d5d">marijn.nl</div>
+        <span style="padding:0 14px;font-size:13.5px;font-weight:700;color:#e79a4a">forum</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">nieuws</span>
+        <span style="padding:0 14px;font-size:13.5px;color:#bab6b6">fotoboek</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:14px">
+          <a href="#4a" style="font-size:13px;color:#6dbdb7;text-decoration:none">inloggen</a>
+          <button class="btn btn-primary" style="min-height:28px;font-size:13px;padding:0 12px">Aanmelden</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4b: sign-up + forgot password ============ -->
+<div class="dv-opt" id="4b">
+<div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Aanmelden — posterhelft als <a class="dv-oid" href="#3c">3c</a>, velden 1-op-1 uit sign-up.tsx · wachtwoord vergeten is een voorstel (route bestaat nog niet)</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d;padding:26px;display:flex;flex-direction:column;gap:26px">
+  <div style="border:1px solid #201e1d">
+    <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+      <div style="padding:13px 18px;font-weight:900;font-size:15px;border-right:1px solid #605d5d">forum</div>
+      <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">frontpage</span>
+      <div style="margin-left:auto;padding-right:16px;font-size:13.5px;font-weight:700;color:#e79a4a">aanmelden</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.05fr 1fr">
+      <div style="background:#0e7f78;color:#eef7f6;padding:40px 36px 36px;display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#b0dbd7;margin-bottom:16px">Eén account</div>
+          <h1 style="font-size:42px;margin:0;line-height:1.03;letter-spacing:-.014em;color:#eef7f6">Meelezen mag.<br>Meepraten<br>is leuker.</h1>
+          <p style="font-size:15.5px;line-height:1.6;margin:20px 0 0;max-width:34ch;color:#d7ecea">Dezelfde inlog geldt straks ook voor het nieuws, het fotoboek en je dm's.</p>
+        </div>
+        <div style="display:flex;align-items:center;margin-top:32px">
+          <div style="display:flex">
+            <div style="width:34px;height:34px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78">T</div>
+            <div style="width:34px;height:34px;background:#075652;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78;margin-left:-8px">F</div>
+            <div style="width:34px;height:34px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78;margin-left:-8px">A</div>
+          </div>
+          <span style="font-size:13.5px;color:#d7ecea;margin-left:12px">1.284 leden gingen je voor</span>
+        </div>
+      </div>
+      <div style="background:#fff;padding:40px 36px 36px">
+        <h2 style="font-size:27px;margin:0 0 4px;letter-spacing:-.008em">Account aanmaken</h2>
+        <p style="font-size:14px;color:#0b5f5b;margin:0 0 22px">Drie velden en je bent binnen.</p>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Naam</span><input class="input" value="Marijn de Vries" style="border-color:#b0dbd7;font-size:15px"><span style="font-size:12.5px;color:#0b5f5b">Dit zien anderen bij je posts.</span></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">E-mailadres</span><input class="input" value="marijn@voorbeeld.nl" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Wachtwoord</span><input class="input" type="password" value="langgenoeg123" style="border-color:#b0dbd7;font-size:15px"><span style="font-size:12.5px;color:#0b5f5b">Minimaal 8 tekens.</span></label>
+          <button class="btn btn-primary btn-block" style="min-height:44px;font-size:16px">Account aanmaken</button>
+          <p style="font-size:13.5px;color:#08494a;margin:2px 0 0">Al een account? <a href="#3c" style="text-decoration:none">Inloggen</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border:1px solid #201e1d">
+    <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+      <div style="padding:13px 18px;font-weight:900;font-size:15px;border-right:1px solid #605d5d">forum</div>
+      <div style="margin-left:auto;padding-right:16px;font-size:13.5px;font-weight:700;color:#e79a4a">wachtwoord vergeten</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr">
+      <div style="background:#fff;padding:32px 34px 34px;border-right:1px solid #b0dbd7">
+        <div style="display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#fdf2e4;color:#8f4a06;padding:3px 8px;margin-bottom:12px">Voorstel — nog geen route</div>
+        <h2 style="font-size:27px;margin:0 0 4px;letter-spacing:-.008em">Wachtwoord vergeten</h2>
+        <p style="font-size:14px;line-height:1.55;color:#0b5f5b;margin:0 0 22px;max-width:40ch">Vul je e-mailadres in. Als we het kennen, sturen we binnen een minuut een link.</p>
+        <div style="display:flex;flex-direction:column;gap:15px">
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">E-mailadres</span><input class="input" value="" placeholder="jij@voorbeeld.nl" style="border-color:#b0dbd7;font-size:15px"></label>
+          <button class="btn btn-primary btn-block" style="min-height:44px;font-size:16px">Stuur de link</button>
+          <a href="#3c" style="font-size:13.5px;text-decoration:none">← Terug naar inloggen</a>
+        </div>
+      </div>
+      <div style="padding:32px 34px 34px;background:#d7ecea">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:10px">Daarna</div>
+        <div style="background:#eef7f6;border-left:3px solid #0e7f78;padding:14px 16px">
+          <div style="font-weight:700;font-size:15.5px;margin-bottom:4px">Mail verstuurd</div>
+          <p style="font-size:14px;line-height:1.55;color:#08494a;margin:0;max-width:44ch">Kijk in je inbox — en anders in spam, daar belandt-ie soms. De link werkt een uur.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4c: dialog + system states ============ -->
+<div class="dv-opt" id="4c">
+<div class="dv-olabel"><a class="dv-oid" href="#4c">4c</a>Dialoog &amp; systeemtoestanden — velden uit ChangePasswordDialog.tsx (nu nog een inline sectie, hier als dialoog voorgesteld)</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #b0dbd7">
+    <div style="padding:26px 30px 30px;border-right:1px solid #b0dbd7;background:#d7ecea">
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:12px">Dialoog — wachtwoord wijzigen</div>
+      <div style="background:#fff;border:2px solid #201e1d;box-shadow:6px 6px 0 rgba(32,30,29,.12)">
+        <div style="padding:20px 24px 0"><h3 style="font-size:22px;margin:0">Wachtwoord wijzigen</h3></div>
+        <div style="padding:16px 24px 20px;display:flex;flex-direction:column;gap:13px">
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Huidig wachtwoord</span><input class="input" type="password" value="huidigwachtwoord" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Nieuw wachtwoord</span><input class="input" type="password" value="nieuwlangwachtwoord" style="border-color:#b0dbd7;font-size:15px"><span style="font-size:12.5px;color:#0b5f5b">Minimaal 8 tekens.</span></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Nieuw wachtwoord bevestigen</span><input class="input" type="password" value="nieuwlangwachtwoord" style="border-color:#b0dbd7;font-size:15px"></label>
+        </div>
+        <div style="padding:14px 24px 18px;border-top:1px solid #b0dbd7;display:flex;gap:8px">
+          <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Wijzigen</button>
+          <button class="btn" style="min-height:36px;font-size:14.5px;background:transparent;border:1px solid #b0dbd7;color:#08494a">Annuleren</button>
+          <span style="margin-left:auto;align-self:center;font-size:12.5px;color:#0b5f5b">Je blijft ingelogd</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-rows:1fr 1fr">
+      <div style="padding:24px 30px;border-bottom:1px solid #b0dbd7;background:#fff">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:14px">Leeg — subforum zonder topics</div>
+        <h4 style="font-size:21px;margin:0 0 6px">Nog niets hier</h4>
+        <p style="font-size:14.5px;line-height:1.55;color:#08494a;margin:0 0 16px;max-width:42ch">Dit subforum is net aangemaakt. Iemand moet de eerste zijn — dat mag jij zijn.</p>
+        <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Start het eerste topic</button>
+      </div>
+      <div style="padding:24px 30px;background:#fff">
+        <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:14px">Laden — skelet, geen spinner</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:34px;height:34px;background:#d7ecea"></div><div style="flex:1"><div style="height:11px;width:62%;background:#d7ecea"></div><div style="height:9px;width:36%;background:#eef7f6;margin-top:6px"></div></div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:34px;height:34px;background:#d7ecea"></div><div style="flex:1"><div style="height:11px;width:78%;background:#d7ecea"></div><div style="height:9px;width:30%;background:#eef7f6;margin-top:6px"></div></div></div>
+          <div style="display:flex;align-items:center;gap:12px"><div style="width:34px;height:34px;background:#eef7f6"></div><div style="flex:1"><div style="height:11px;width:48%;background:#eef7f6"></div><div style="height:9px;width:26%;background:#eef7f6;margin-top:6px"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr">
+    <div style="padding:26px 30px 30px;border-right:1px solid #b0dbd7;background:#fdf2e4">
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8f4a06;margin-bottom:12px">Fout</div>
+      <h4 style="font-size:21px;margin:0 0 6px">Dat ging mis</h4>
+      <p style="font-size:14.5px;line-height:1.55;color:#653504;margin:0 0 16px;max-width:44ch">We konden de topics niet ophalen. Meestal is het tijdelijk — probeer het zo nog eens.</p>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn" style="min-height:36px;font-size:14.5px;background:#e07b1e;color:#fdf2e4">Opnieuw proberen</button>
+        <span style="font-size:12.5px;color:#8f4a06">foutcode 502 · 10:04</span>
+      </div>
+    </div>
+    <div style="padding:26px 30px 30px;background:#d7ecea">
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;margin-bottom:12px">Geen toegang</div>
+      <h4 style="font-size:21px;margin:0 0 6px">Dit is niet voor jou bedoeld</h4>
+      <p style="font-size:14.5px;line-height:1.55;color:#08494a;margin:0 0 16px;max-width:44ch">Beheerpagina's zijn alleen voor beheerders. Denk je dat dit onterecht is? Stuur marijn een dm.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Terug naar het forum</button>
+        <button class="btn" style="min-height:36px;font-size:14.5px;background:transparent;border:1px solid #b0dbd7;color:#08494a">Andere account gebruiken</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4d: search + pagination chrome ============ -->
+<div class="dv-opt" id="4d">
+<div class="dv-olabel"><a class="dv-oid" href="#4d">4d</a>Lijst-chrome — zoeken, filters en paginering</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:14px 18px;font-weight:900;font-size:16px;border-right:1px solid #605d5d">forum</div>
+    <div style="padding:0 16px;font-size:13px;color:#bab6b6">Zoeken in <span style="color:#eef7f6">alle forums</span></div>
+  </div>
+
+  <div style="padding:24px 32px 20px;border-bottom:1px solid #b0dbd7">
+    <div style="display:flex;gap:8px">
+      <input class="input" value="keyset paginatie" style="flex:1;border-color:#201e1d;background:#fff;font-size:16px;min-height:44px">
+      <button class="btn btn-primary" style="min-height:44px;font-size:15px">Zoeken</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;align-items:center">
+      <span style="font-size:12.5px;color:#0b5f5b;margin-right:4px">filters:</span>
+      <span class="abbr" style="background:#e07b1e;color:#fdf2e4;padding:5px 10px;font-size:12.5px;font-weight:600;border:1px solid #e07b1e">Technology ✕</span>
+      <span class="abbr" style="background:#d7ecea;color:#08494a;padding:5px 10px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">alleen topics</span>
+      <span class="abbr" style="background:#d7ecea;color:#08494a;padding:5px 10px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">laatste maand</span>
+      <span class="abbr" style="background:#d7ecea;color:#08494a;padding:5px 10px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">van marijn</span>
+      <span style="margin-left:auto;font-size:13px;color:#0b5f5b">38 resultaten · nieuwste eerst</span>
+    </div>
+  </div>
+
+  <div style="background:#fff">
+    <a class="rowlink tl" href="#4d" style="display:flex;gap:14px;padding:15px 32px;border-bottom:1px solid #d7ecea">
+      <div style="width:34px;height:34px;flex:none;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+      <div style="flex:1">
+        <div class="tlt" style="font-weight:700;font-size:15.5px">Keyset-paginatie op de topiclijst — cursor of offset?</div>
+        <p style="font-size:13.5px;line-height:1.5;color:#08494a;margin:4px 0 0;max-width:78ch">…we zijn van offset naar <mark style="background:#fdf2e4;color:#8f4a06">keyset</mark> gegaan omdat pagina 400 een halve seconde kostte. Sindsdien is de <mark style="background:#fdf2e4;color:#8f4a06">paginatie</mark> constant…</p>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:5px">marijn in Backend · 41 reacties · 3 dagen geleden</div>
+      </div>
+    </a>
+    <a class="rowlink tl" href="#4d" style="display:flex;gap:14px;padding:15px 32px;border-bottom:1px solid #d7ecea">
+      <div style="width:34px;height:34px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">T</div>
+      <div style="flex:1">
+        <div class="tlt" style="font-weight:700;font-size:15.5px">Cursor kwijt bij het terugnavigeren</div>
+        <p style="font-size:13.5px;line-height:1.5;color:#08494a;margin:4px 0 0;max-width:78ch">…de <mark style="background:#fdf2e4;color:#8f4a06">keyset</mark>-cursor staat in de url, maar na een refresh…</p>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:5px">tijs in Frontend · 12 reacties · vorige week</div>
+      </div>
+    </a>
+  </div>
+
+  <div style="padding:18px 32px 24px;border-top:2px solid #201e1d;display:flex;align-items:center;gap:6px">
+    <button class="btn" style="min-height:34px;font-size:14px;background:transparent;border:1px solid #b0dbd7;color:#0b5f5b">← Vorige</button>
+    <span style="min-width:34px;height:34px;display:grid;place-items:center;background:#0e7f78;color:#eef7f6;font-size:14px;font-weight:800">1</span>
+    <a href="#4d" style="min-width:34px;height:34px;display:grid;place-items:center;background:#d7ecea;font-size:14px;text-decoration:none">2</a>
+    <a href="#4d" style="min-width:34px;height:34px;display:grid;place-items:center;background:#d7ecea;font-size:14px;text-decoration:none">3</a>
+    <span style="padding:0 6px;color:#0b5f5b">…</span>
+    <a href="#4d" style="min-width:34px;height:34px;display:grid;place-items:center;background:#d7ecea;font-size:14px;text-decoration:none">9</a>
+    <button class="btn" style="min-height:34px;font-size:14px;background:#d7ecea;color:#08494a">Volgende →</button>
+    <span style="margin-left:auto;font-size:13px;color:#0b5f5b">pagina 1 van 9</span>
+  </div>
+</div>
+</div>
+
+<!-- ============ 4e: mobile ============ -->
+<div class="dv-opt" id="4e">
+<div class="dv-olabel"><a class="dv-oid" href="#4e">4e</a>Mobiel — index en topic op 390px, postbit wordt gestapeld</div>
+<div class="dv-card" style="width:892px;background:#eef7f6;border-color:#201e1d;padding:26px;display:flex;gap:26px">
+  <div style="width:390px;border:1px solid #201e1d;background:#eef7f6">
+    <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+      <div style="padding:12px 14px;font-weight:900;font-size:15px">forum</div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:12px">
+        <span style="background:#e07b1e;color:#fdf2e4;font-size:11px;font-weight:800;padding:2px 6px">3</span>
+        <div style="width:26px;height:26px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+        <span style="font-size:18px;line-height:1">☰</span>
+      </div>
+    </div>
+    <div style="padding:18px 16px 14px">
+      <div style="font-size:12.5px;color:#0b5f5b;margin-bottom:8px">17 nieuwe reacties</div>
+      <h1 style="font-size:28px;margin:0;line-height:1.05;letter-spacing:-.01em">Waar wil je vandaag rondkijken?</h1>
+      <button class="btn btn-primary btn-block" style="min-height:44px;font-size:15px;margin-top:14px">Nieuw topic</button>
+    </div>
+    <div style="border-top:2px solid #201e1d">
+      <a class="rowlink" href="#4e" style="display:block;padding:14px 16px;background:#d7ecea;border-bottom:1px solid #b0dbd7">
+        <div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:13px;font-weight:900">1</div><h3 style="font-size:19px;margin:0">General Discussion</h3></div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:8px">2 subforums · 412 topics · joost, 20 min</div>
+      </a>
+      <a class="rowlink" href="#4e" style="display:block;padding:14px 16px;background:#d7ecea;border-bottom:1px solid #b0dbd7">
+        <div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:13px;font-weight:900">2</div><h3 style="font-size:19px;margin:0">Technology</h3></div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:8px">8 subforums · 731 topics · marijn, net</div>
+      </a>
+      <a class="rowlink" href="#4e" style="display:block;padding:14px 16px;background:#d7ecea">
+        <div style="display:flex;align-items:center;gap:9px"><div style="width:28px;height:28px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:13px;font-weight:900">3</div><h3 style="font-size:19px;margin:0">Meta</h3></div>
+        <div style="font-size:12.5px;color:#0b5f5b;margin-top:8px">2 subforums · 141 topics · annelies, gisteren</div>
+      </a>
+    </div>
+    <div style="padding:16px;border-top:2px solid #201e1d">
+      <h4 style="font-size:16px;margin:0 0 10px">Waar nu over gepraat wordt</h4>
+      <a class="rowlink tl" href="#4e" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #b0dbd7">
+        <div style="width:28px;height:28px;flex:none;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+        <div><div class="tlt" style="font-weight:700;font-size:14.5px;line-height:1.3">Waarom is mijn build 40 seconden langzamer?</div><div style="font-size:12px;color:#0b5f5b;margin-top:3px">Frontend · 37 reacties · net</div></div>
+      </a>
+      <a class="rowlink tl" href="#4e" style="display:flex;gap:10px;padding:10px 0">
+        <div style="width:28px;height:28px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">F</div>
+        <div><div class="tlt" style="font-weight:700;font-size:14.5px;line-height:1.3">Zelf een NAS bouwen in 2026</div><div style="font-size:12px;color:#0b5f5b;margin-top:3px">Self-Hosting · 214 reacties · 15 min</div></div>
+      </a>
+    </div>
+  </div>
+
+  <div style="width:390px;border:1px solid #201e1d;background:#eef7f6">
+    <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+      <div style="padding:12px 14px;font-size:14px">← SolidJS</div>
+      <div style="margin-left:auto;padding-right:12px;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">M</div></div>
+    </div>
+    <div style="padding:16px;border-bottom:2px solid #201e1d">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="tag" style="background:#e07b1e;color:#fdf2e4;font-size:11px;padding:3px 8px">Vastgepind</span>
+        <span style="font-size:12px;color:#0b5f5b">37 reacties</span>
+      </div>
+      <h1 style="font-size:23px;margin:0;line-height:1.15;letter-spacing:-.006em">createResource + TanStack Start: dubbele fetch bij hydratie</h1>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12.5px;color:#08494a"><div style="width:24px;height:24px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">T</div><span><strong style="color:#201e1d">tijs</strong> · vrijdag 18:40</span></div>
+    </div>
+    <div style="background:#fff;padding:14px 16px 16px;border-bottom:1px solid #b0dbd7">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:30px;height:30px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:12px;font-weight:800">T</div>
+        <div><div style="font-weight:800;font-size:14.5px;line-height:1.2">tijs</div><div style="font-size:11.5px;color:#0b5f5b">lid sinds 2021 · 1.402 posts</div></div>
+        <span style="margin-left:auto;font-size:11.5px;color:#0b5f5b">18:40</span>
+      </div>
+      <p style="font-size:15px;line-height:1.6;margin:0">Sinds ik de loader naar de route heb verplaatst, doet <code style="background:#d7ecea;padding:1px 4px">createResource</code> zijn fetch twee keer: één op de server en dan nóg eens na hydratie.</p>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:14px">
+        <button class="btn" style="min-height:44px;font-size:13.5px;background:#d7ecea;color:#08494a">👍 12</button>
+        <button class="btn" style="min-height:44px;font-size:13.5px;background:transparent;border:1px solid #b0dbd7;color:#0b5f5b">quoten</button>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13.5px"><a href="#4e" style="text-decoration:none">▲</a><strong>24</strong><a href="#4e" style="text-decoration:none">▼</a></span>
+      </div>
+    </div>
+    <div style="background:#fff;padding:14px 16px 16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:30px;height:30px;background:#0e7f78;color:#eef7f6;display:grid;place-items:center;font-size:12px;font-weight:800">M</div>
+        <div><div style="font-weight:800;font-size:14.5px;line-height:1.2">marijn</div><div style="font-size:11.5px;color:#0e7f78">beheerder</div></div>
+        <span style="margin-left:auto;font-size:11.5px;color:#0b5f5b">19:05</span>
+      </div>
+      <div style="background:#d7ecea;border-left:3px solid #3d9c96;padding:9px 12px;margin-bottom:10px"><div style="font-size:11.5px;color:#0b5f5b"><strong style="color:#201e1d">tijs</strong> schreef:</div><p style="font-size:13.5px;line-height:1.5;margin:2px 0 0;color:#08494a">…dan verliest de resource z'n refetch-gedrag.</p></div>
+      <p style="font-size:15px;line-height:1.6;margin:0">Dat is verwacht: <code style="background:#d7ecea;padding:1px 4px">initialValue</code> markeert de resource als “al geladen”.</p>
+    </div>
+    <div style="padding:12px 16px;border-top:2px solid #201e1d;background:#d7ecea;display:flex;gap:8px;align-items:center">
+      <input class="input" placeholder="Reageer…" style="flex:1;border-color:#b0dbd7;background:#fff;font-size:15px;min-height:44px">
+      <button class="btn btn-primary" style="min-height:44px;font-size:14.5px">Plaats</button>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "maak van <a class="dv-oid" href="#4a">4a</a> de gedeelde header voor packages/ui" · "dm-app schetsen in dezelfde stijl" · "tokenlijst voor de DaisyUI-thema-override"</p>
+</section>
+
+<section class="dv-turn" id="t3">
+<div class="dv-thd"><a class="dv-tid" href="#t3">3</a><span class="dv-tname">Profiel, beheer &amp; inloggen — in de stijl van <a class="dv-oid" href="#2a">2a</a></span></div>
+<div class="dv-opts">
+
+<!-- ============ 3a: profile ============ -->
+<div class="dv-opt" id="3a">
+<div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Profiel — identiteitspaneel links, velden in het raster, activiteit rechts</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">forum</div>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">forum</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">frontpage</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">dm</span>
+    <span style="padding:0 16px;font-size:13.5px;font-weight:700;color:#e79a4a">profiel</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <span style="font-size:13px;color:#d7d3d3">hoi, marijn</span>
+      <div style="width:30px;height:30px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="padding:30px 40px 22px;border-bottom:2px solid #201e1d;display:flex;align-items:flex-end;justify-content:space-between;gap:30px">
+    <div>
+      <div style="font-size:13.5px;color:#0b5f5b;margin-bottom:10px">Alles hier is van jou — wijzig gerust, niemand kijkt mee.</div>
+      <h1 style="font-size:42px;margin:0;letter-spacing:-.012em;line-height:1">Je profiel</h1>
+    </div>
+    <div style="display:flex;gap:8px;padding-bottom:4px">
+      <button class="btn" style="min-height:36px;font-size:14.5px;background:#d7ecea;color:#08494a">Wachtwoord wijzigen</button>
+      <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Profiel opslaan</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:300px 1fr">
+    <aside style="border-right:1px solid #b0dbd7;background:#d7ecea;padding:26px 26px 30px">
+      <div style="width:88px;height:88px;background:#0e7f78;color:#eef7f6;display:grid;place-items:center;font-size:36px;font-weight:900">M</div>
+      <div style="font-weight:800;font-size:21px;margin-top:14px">marijn</div>
+      <div style="font-size:13px;color:#0b5f5b;margin-top:2px">marijn@voorbeeld.nl</div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn" style="min-height:30px;font-size:13px;background:transparent;border:1px solid #0e7f78;color:#0b5f5b">Avatar kiezen</button>
+        <button class="btn" style="min-height:30px;font-size:13px;background:transparent;border:none;color:#0b5f5b">Verwijderen</button>
+      </div>
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid #b0dbd7;display:flex;flex-direction:column;gap:9px">
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#08494a"><span>lid sinds</span><strong style="color:#201e1d">maart 2019</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#08494a"><span>posts</span><strong style="color:#201e1d">6.771</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#08494a"><span>topics gestart</span><strong style="color:#201e1d">184</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#08494a"><span>rol</span><span class="tag" style="background:#e07b1e;color:#fdf2e4;font-size:11.5px;padding:2px 8px">beheerder</span></div>
+      </div>
+    </aside>
+
+    <div style="background:#fff">
+      <div style="padding:26px 30px 28px;border-bottom:1px solid #b0dbd7">
+        <h4 style="font-size:18px;margin:0 0 16px">Over jou</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 20px">
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Weergavenaam</span><input class="input" value="Marijn de Vries" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Geboortedatum</span><input class="input" value="1988-06-14" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Woonplaats</span><input class="input" value="Utrecht" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Website</span><input class="input" value="https://marijn.nl" style="border-color:#b0dbd7;font-size:15px"></label>
+          <label class="field" style="display:flex;flex-direction:column;gap:5px;grid-column:1/-1"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Over mij</span><textarea class="input" style="border-color:#b0dbd7;min-height:76px;font-size:15px">Bouw al te lang aan forums. Houdt van keyset-paginatie en slechte koffie.</textarea></label>
+        </div>
+      </div>
+
+      <div style="padding:24px 30px 26px;border-bottom:1px solid #b0dbd7">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+          <h4 style="font-size:18px;margin:0">Je fotoboek</h4>
+          <span style="font-size:13px;color:#0b5f5b">4 van de 12 plekken gebruikt</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+          <div style="aspect-ratio:1;background:#d7ecea;border:1px solid #b0dbd7"></div>
+          <div style="aspect-ratio:1;background:#b0dbd7;border:1px solid #b0dbd7"></div>
+          <div style="aspect-ratio:1;background:#d7ecea;border:1px solid #b0dbd7"></div>
+          <div style="aspect-ratio:1;background:#b0dbd7;border:1px solid #b0dbd7"></div>
+          <div style="aspect-ratio:1;border:1px dashed #6dbdb7;display:grid;place-items:center;font-size:12.5px;color:#0b5f5b">+ toevoegen</div>
+          <div></div>
+        </div>
+      </div>
+
+      <div style="padding:24px 30px 30px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+          <h4 style="font-size:18px;margin:0">Wat je laatst deed</h4>
+          <a href="#3a" style="font-size:13.5px;text-decoration:none">alles bekijken →</a>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <a class="rowlink tl" href="#3a" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #d7ecea">
+            <span class="tag" style="background:#d7ecea;color:#08494a;font-size:11px;padding:2px 7px">reactie</span>
+            <div class="tlt" style="flex:1;font-weight:600;font-size:15px">createResource + TanStack Start: dubbele fetch bij hydratie</div>
+            <span style="font-size:12.5px;color:#0b5f5b;white-space:nowrap">25 min geleden</span>
+          </a>
+          <a class="rowlink tl" href="#3a" style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #d7ecea">
+            <span class="tag" style="background:#fdf2e4;color:#8f4a06;font-size:11px;padding:2px 7px">topic</span>
+            <div class="tlt" style="flex:1;font-weight:600;font-size:15px">Waarom is mijn build 40 seconden langzamer sinds vrijdag?</div>
+            <span style="font-size:12.5px;color:#0b5f5b;white-space:nowrap">vanochtend</span>
+          </a>
+          <a class="rowlink tl" href="#3a" style="display:flex;align-items:center;gap:12px;padding:11px 0">
+            <span class="tag" style="background:#d7ecea;color:#08494a;font-size:11px;padding:2px 7px">reactie</span>
+            <div class="tlt" style="flex:1;font-weight:600;font-size:15px">Zelf een NAS bouwen in 2026 — wat is nog zinnig?</div>
+            <span style="font-size:12.5px;color:#0b5f5b;white-space:nowrap">gisteren</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 3b: admin board management ============ -->
+<div class="dv-opt" id="3b">
+<div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Beheer — hiërarchie met oranje takken, bewerken in het paneel ernaast</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">forum</div>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">forum</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">profiel</span>
+    <span style="padding:0 16px;font-size:13.5px;font-weight:700;color:#e79a4a">beheer</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <span class="tag" style="background:#e07b1e;color:#fdf2e4;font-size:11.5px;padding:2px 8px">beheerder</span>
+      <div style="width:30px;height:30px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="padding:30px 40px 22px;border-bottom:2px solid #201e1d;display:flex;align-items:flex-end;justify-content:space-between;gap:30px">
+    <div>
+      <div style="font-size:13.5px;color:#0b5f5b;margin-bottom:10px">3 categorieën · 12 subforums · 1.284 topics</div>
+      <h1 style="font-size:42px;margin:0;letter-spacing:-.012em;line-height:1">Forums beheren</h1>
+    </div>
+    <div style="display:flex;gap:8px;padding-bottom:4px">
+      <button class="btn" style="min-height:36px;font-size:14.5px;background:#d7ecea;color:#08494a">Volgorde opslaan</button>
+      <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Nieuw forum</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px">
+    <div style="background:#fff;padding:8px 0 20px">
+      <div style="display:flex;align-items:center;gap:14px;padding:10px 30px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#0b5f5b;border-bottom:1px solid #b0dbd7">
+        <span style="flex:1">Naam</span><span style="width:70px;text-align:right">Topics</span><span style="width:70px;text-align:right">Posts</span><span style="width:120px;text-align:right">Acties</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;padding:13px 30px;border-bottom:1px solid #d7ecea;background:#eef7f6">
+        <span style="color:#0b5f5b;font-size:13px;cursor:grab">⠿</span>
+        <div style="flex:1;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:12.5px;font-weight:900">1</div><strong style="font-size:16px">General Discussion</strong></div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">412</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">9.104</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 62px;border-bottom:1px solid #d7ecea">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:15px">Introductions</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">96</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">1.240</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 62px;border-bottom:1px solid #d7ecea">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:15px">Off Topic</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">316</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">7.864</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:14px;padding:13px 30px;border-bottom:1px solid #d7ecea;background:#eef7f6">
+        <span style="color:#0b5f5b;font-size:13px;cursor:grab">⠿</span>
+        <div style="flex:1;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:12.5px;font-weight:900">2</div><strong style="font-size:16px">Technology</strong></div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">731</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">28.402</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 62px;border-bottom:1px solid #d7ecea">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:15px">Web Development</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">402</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">16.771</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 90px;border-bottom:1px solid #d7ecea">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:14.5px;color:#08494a">Frontend</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">248</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">11.093</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 118px;border-bottom:1px solid #d7ecea;background:#fdf2e4;border-left:3px solid #e07b1e">
+        <span style="color:#e07b1e;font-size:13px">└</span>
+        <div style="flex:1;font-size:14.5px;font-weight:700">SolidJS <span style="font-weight:400;color:#8f4a06;font-size:13px">— wordt nu bewerkt</span></div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#8f4a06">134</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#8f4a06">5.402</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end;color:#8f4a06">bewerken</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 118px;border-bottom:1px solid #d7ecea">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:14.5px;color:#08494a">TanStack</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">64</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">2.318</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;padding:11px 30px 11px 62px">
+        <span style="color:#b0dbd7;font-size:13px">└</span>
+        <div style="flex:1;font-size:15px">Hardware</div>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">188</span>
+        <span style="width:70px;text-align:right;font-size:13.5px;color:#08494a">6.204</span>
+        <span style="width:120px;text-align:right;font-size:13.5px;display:flex;gap:12px;justify-content:flex-end"><a href="#3b" style="text-decoration:none">bewerken</a><a href="#3b" style="text-decoration:none;color:#0b5f5b">verbergen</a></span>
+      </div>
+    </div>
+
+    <aside style="border-left:2px solid #201e1d;background:#d7ecea;padding:24px 26px 30px">
+      <div style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#8f4a06;margin-bottom:6px">Bewerken</div>
+      <h4 style="font-size:21px;margin:0 0 18px">SolidJS</h4>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Naam</span><input class="input" value="SolidJS" style="border-color:#b0dbd7;background:#fff;font-size:15px"></label>
+        <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Omschrijving</span><textarea class="input" style="border-color:#b0dbd7;background:#fff;min-height:70px;font-size:15px">Signals, resources en alles wat daarna misgaat.</textarea></label>
+        <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Bovenliggend forum</span><input class="input" value="Frontend" style="border-color:#b0dbd7;background:#fff;font-size:15px"></label>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid #b0dbd7;border-bottom:1px solid #b0dbd7">
+          <span style="font-size:14px;color:#08494a">Zichtbaar voor gasten</span>
+          <span style="width:38px;height:20px;background:#0e7f78;position:relative;display:inline-block"><span style="position:absolute;top:2px;right:2px;width:16px;height:16px;background:#eef7f6"></span></span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:4px">
+          <span style="font-size:14px;color:#08494a">Nieuwe topics toegestaan</span>
+          <span style="width:38px;height:20px;background:#b0dbd7;position:relative;display:inline-block"><span style="position:absolute;top:2px;left:2px;width:16px;height:16px;background:#eef7f6"></span></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button class="btn btn-primary" style="min-height:36px;font-size:14.5px">Opslaan</button>
+        <button class="btn" style="min-height:36px;font-size:14.5px;background:transparent;border:1px solid #b0dbd7;color:#08494a">Annuleren</button>
+      </div>
+      <a href="#3b" style="display:inline-block;margin-top:18px;font-size:13px;color:#8f4a06;text-decoration:none">Dit forum verwijderen →</a>
+    </aside>
+  </div>
+</div>
+</div>
+
+<!-- ============ 3c: auth ============ -->
+<div class="dv-opt" id="3c">
+<div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Inloggen — posterhelft links, formulier rechts, aanmelden eronder</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">forum</div>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">frontpage</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">weblog</span>
+    <div style="margin-left:auto;padding-right:16px;font-size:13.5px;font-weight:700;color:#e79a4a">inloggen</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.05fr 1fr">
+    <div style="background:#0e7f78;color:#eef7f6;padding:44px 40px 40px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <div style="font-size:13px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#b0dbd7;margin-bottom:16px">Sinds 2004</div>
+        <h1 style="font-size:46px;margin:0;line-height:1.02;letter-spacing:-.014em;color:#eef7f6">Welkom terug.<br>Er is veel<br>gebeurd.</h1>
+        <p style="font-size:15.5px;line-height:1.6;margin:20px 0 0;max-width:34ch;color:#d7ecea">17 nieuwe reacties in de topics die je volgt, en iemand heeft eindelijk antwoord gegeven op die vraag over hydratie.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:-8px;margin-top:36px">
+        <div style="display:flex">
+          <div style="width:34px;height:34px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78">T</div>
+          <div style="width:34px;height:34px;background:#075652;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78;margin-left:-8px">F</div>
+          <div style="width:34px;height:34px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:13px;font-weight:800;border:2px solid #0e7f78;margin-left:-8px">A</div>
+        </div>
+        <span style="font-size:13.5px;color:#d7ecea;margin-left:12px">1.284 leden waren vandaag online</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;padding:44px 40px 40px">
+      <h2 style="font-size:28px;margin:0 0 4px;letter-spacing:-.008em">Inloggen</h2>
+      <p style="font-size:14px;color:#0b5f5b;margin:0 0 24px">Met je e-mailadres en wachtwoord.</p>
+
+      <div style="display:flex;align-items:center;gap:10px;background:#fdf2e4;border-left:3px solid #e07b1e;padding:10px 14px;margin-bottom:20px">
+        <span style="font-size:13.5px;color:#8f4a06">Dat wachtwoord klopt niet. Nog twee pogingen.</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">E-mailadres</span><input class="input" value="marijn@voorbeeld.nl" style="border-color:#b0dbd7;font-size:15px"></label>
+        <label class="field" style="display:flex;flex-direction:column;gap:5px"><span style="font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0b5f5b">Wachtwoord</span><input class="input" type="password" value="verkeerdwachtwoord" style="border-color:#e79a4a;font-size:15px"></label>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#08494a"><span style="width:16px;height:16px;border:1px solid #0e7f78;background:#0e7f78;display:inline-block;position:relative"><span style="position:absolute;inset:3px;background:#eef7f6"></span></span>Ingelogd blijven</label>
+          <a href="#3c" style="font-size:13.5px;text-decoration:none">Wachtwoord vergeten?</a>
+        </div>
+        <button class="btn btn-primary btn-block" style="min-height:44px;font-size:16px">Inloggen</button>
+      </div>
+
+      <div style="margin-top:28px;padding-top:22px;border-top:2px solid #201e1d">
+        <h4 style="font-size:17px;margin:0 0 6px">Nog geen account?</h4>
+        <p style="font-size:14px;line-height:1.55;color:#08494a;margin:0 0 14px;max-width:38ch">Aanmelden kost een minuut. Lezen mag ook zonder, maar meepraten is leuker.</p>
+        <button class="btn" style="min-height:38px;font-size:15px;background:#d7ecea;color:#08494a">Account aanmaken</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "profiel <a class="dv-oid" href="#3a">3a</a> compacter — activiteit naast de velden" · "beheer <a class="dv-oid" href="#3b">3b</a> met een dialoog in plaats van het zijpaneel" · "aanmelden als eigen scherm naast <a class="dv-oid" href="#3c">3c</a>"</p>
+</section>
+
+<section class="dv-turn" id="t2">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Warmer &amp; more casual — <a class="dv-oid" href="#1b">1b</a> index + <a class="dv-oid" href="#1d">1d</a> topic</span></div>
+<div class="dv-opts">
+
+<!-- ============ 2a: warm index (from 1b) ============ -->
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Index — same grid as <a class="dv-oid" href="#1b">1b</a>, warm ground, sentence-case voice</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:15px 20px;font-weight:900;font-size:16px;letter-spacing:-.01em;border-right:1px solid #605d5d">forum</div>
+    <span style="padding:0 16px;font-size:13.5px;font-weight:700;color:#e79a4a">forum</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">frontpage</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">weblog</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">fotoboek</span>
+    <span style="padding:0 13px;font-size:13.5px;color:#bab6b6">dm</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <sc-if value="{{ memberView }}" hint-placeholder-val="{{ true }}">
+        <span style="font-size:13px;color:#d7d3d3">hoi, marijn</span>
+      </sc-if>
+      <sc-if value="{{ guestView }}" hint-placeholder-val="{{ false }}">
+        <a href="#2a" style="font-size:13px;color:#6dbdb7;text-decoration:none">inloggen</a>
+      </sc-if>
+      <div style="width:30px;height:30px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="padding:34px 40px 20px">
+    <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:44px;align-items:end">
+      <div>
+        <div style="font-size:14px;color:#0b5f5b;margin-bottom:12px">Goedemorgen — er zijn <strong style="color:#8f4a06">17 nieuwe reacties</strong> sinds je laatste bezoek.</div>
+        <h1 style="font-size:54px;margin:0;letter-spacing:-.012em;line-height:1">Waar wil je<br>vandaag rondkijken?</h1>
+      </div>
+      <div style="padding-bottom:8px">
+        <p style="font-size:15px;line-height:1.6;color:#08494a;margin:0 0 14px;max-width:36ch">Drie categorieën, twaalf subforums, één heel lange donderdagavond aan meningen.</p>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="min-height:38px;font-size:15px">Nieuw topic</button>
+          <button class="btn" style="min-height:38px;font-size:15px;background:#d7ecea;color:#08494a">Actieve topics</button>
+        </div>
+      </div>
+    </div>
+    <sc-if value="{{ showAbbrevGrid }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:28px 0 4px">
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Introductions</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Off Topic</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Web Development</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Frontend</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">SolidJS</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">TanStack</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Styling</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Backend</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Hardware</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Self-Hosting</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Bug Reports</span>
+        <span class="abbr" style="background:#d7ecea;color:#08494a;padding:6px 11px;font-size:12.5px;font-weight:600;border:1px solid #b0dbd7">Feature Requests</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:2px solid #201e1d">
+    <a class="rowlink" href="#2a" style="padding:24px 26px 22px;border-right:1px solid #b0dbd7;background:#d7ecea">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:17px;font-weight:900">1</div>
+        <h3 style="font-size:23px;margin:0">General Discussion</h3>
+      </div>
+      <p style="font-size:14px;line-height:1.55;color:#08494a;margin:14px 0 18px">Kennismaken, klagen over het weer, en alles daartussenin.</p>
+      <div style="font-size:13px;color:#0b5f5b">2 subforums · 412 topics</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #b0dbd7">
+        <div style="width:24px;height:24px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:10.5px;font-weight:800">J</div>
+        <span style="font-size:12.5px;color:#08494a">joost reageerde 20 min geleden</span>
+      </div>
+    </a>
+    <a class="rowlink" href="#2a" style="padding:24px 26px 22px;border-right:1px solid #b0dbd7;background:#d7ecea">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:17px;font-weight:900">2</div>
+        <h3 style="font-size:23px;margin:0">Technology</h3>
+      </div>
+      <p style="font-size:14px;line-height:1.55;color:#08494a;margin:14px 0 18px">Van bundlers tot bouwen: code, hardware en de serverkast.</p>
+      <div style="font-size:13px;color:#0b5f5b">8 subforums · 731 topics</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #b0dbd7">
+        <div style="width:24px;height:24px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:10.5px;font-weight:800">M</div>
+        <span style="font-size:12.5px;color:#08494a">marijn reageerde net</span>
+      </div>
+    </a>
+    <a class="rowlink" href="#2a" style="padding:24px 26px 22px;background:#d7ecea">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;background:#e07b1e;color:#fdf2e4;display:grid;place-items:center;font-size:17px;font-weight:900">3</div>
+        <h3 style="font-size:23px;margin:0">Meta</h3>
+      </div>
+      <p style="font-size:14px;line-height:1.55;color:#08494a;margin:14px 0 18px">Wat kapot is en wat er nog bij mag — over het forum zelf.</p>
+      <div style="font-size:13px;color:#0b5f5b">2 subforums · 141 topics</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid #b0dbd7">
+        <div style="width:24px;height:24px;background:#444141;color:#eef7f6;display:grid;place-items:center;font-size:10.5px;font-weight:800">A</div>
+        <span style="font-size:12.5px;color:#08494a">annelies reageerde gisteren</span>
+      </div>
+    </a>
+  </div>
+
+  <div style="padding:26px 40px 34px;border-top:2px solid #201e1d">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+      <h4 style="font-size:19px;margin:0">Waar nu over gepraat wordt</h4>
+      <a href="#2a" style="font-size:13.5px;text-decoration:none">alles bekijken →</a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <a class="rowlink tl" href="#2a" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #b0dbd7">
+        <div style="width:34px;height:34px;flex:none;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+        <div style="flex:1"><div class="tlt" style="font-weight:700;font-size:15.5px">Waarom is mijn build 40 seconden langzamer sinds vrijdag?</div><div style="font-size:12.5px;color:#0b5f5b;margin-top:2px">marijn in Frontend · 37 reacties · net gereageerd</div></div>
+        <div style="font-size:13px;color:#08494a;white-space:nowrap">10:02</div>
+      </a>
+      <a class="rowlink tl" href="#2a" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #b0dbd7">
+        <div style="width:34px;height:34px;flex:none;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">F</div>
+        <div style="flex:1"><div class="tlt" style="font-weight:700;font-size:15.5px">Zelf een NAS bouwen in 2026 — wat is nog zinnig?</div><div style="font-size:12.5px;color:#0b5f5b;margin-top:2px">fenna in Self-Hosting · 214 reacties · 15 min geleden</div></div>
+        <div style="font-size:13px;color:#08494a;white-space:nowrap">09:47</div>
+      </a>
+      <a class="rowlink tl" href="#2a" style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid #b0dbd7">
+        <div style="width:34px;height:34px;flex:none;background:#bab6b6;color:#201e1d;display:grid;place-items:center;font-size:13px;font-weight:800">J</div>
+        <div style="flex:1"><div class="tlt" style="font-weight:700;font-size:15.5px">Even hallo — lang gelezen, nu eindelijk aangemeld</div><div style="font-size:12.5px;color:#0b5f5b;margin-top:2px">joost in Introductions · 9 reacties · een uur geleden</div></div>
+        <div style="font-size:13px;color:#08494a;white-space:nowrap">09:14</div>
+      </a>
+      <a class="rowlink tl" href="#2a" style="display:flex;align-items:center;gap:14px;padding:13px 0">
+        <div style="width:34px;height:34px;flex:none;background:#444141;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">A</div>
+        <div style="flex:1"><div class="tlt" style="font-weight:700;font-size:15.5px">Quote-snapshots verdwijnen na een edit</div><div style="font-size:12.5px;color:#0b5f5b;margin-top:2px">annelies in Bug Reports · 12 reacties · gisteren</div></div>
+        <div style="font-size:13px;color:#08494a;white-space:nowrap">16:20</div>
+      </a>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 2b: warm topic (from 1d) ============ -->
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>Topic — <a class="dv-oid" href="#1d">1d</a>'s postbit, softened: warm author column, conversational meta</div>
+<div class="dv-card" style="width:1120px;background:#eef7f6;border-color:#201e1d">
+  <div style="background:#201e1d;color:#eef7f6;display:flex;align-items:center">
+    <div style="padding:14px 18px;font-weight:900;font-size:16px;border-right:1px solid #605d5d">forum</div>
+    <div style="padding:0 16px;font-size:13px;color:#bab6b6">Technology › Web Development › Frontend › <span style="color:#eef7f6">SolidJS</span></div>
+    <div style="margin-left:auto;padding-right:16px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;color:#d7d3d3">hoi, marijn</span><div style="width:26px;height:26px;background:#3d9c96;color:#eef7f6;display:grid;place-items:center;font-size:11px;font-weight:800">M</div></div>
+  </div>
+
+  <div style="padding:28px 40px 22px;border-bottom:2px solid #201e1d">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span class="tag" style="background:#e07b1e;color:#fdf2e4;font-size:12px;padding:4px 10px">Vastgepind</span>
+      <span style="font-size:13px;color:#0b5f5b">in SolidJS · 37 reacties · 1.104 keer bekeken</span>
+    </div>
+    <h1 style="font-size:34px;margin:0;max-width:30ch;letter-spacing:-.008em">createResource + TanStack Start: dubbele fetch bij hydratie</h1>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:16px">
+      <div style="width:32px;height:32px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">T</div>
+      <span style="font-size:14px;color:#08494a"><strong style="color:#201e1d">tijs</strong> opende dit topic op vrijdag 24 juli, 18:40</span>
+      <button class="btn" style="margin-left:auto;min-height:34px;font-size:14px;background:#d7ecea;color:#08494a">Abonneer</button>
+      <button class="btn btn-primary" style="min-height:34px;font-size:14px">Reageer</button>
+    </div>
+  </div>
+
+  <!-- opening post -->
+  <div style="display:grid;grid-template-columns:210px 1fr;border-bottom:1px solid #b0dbd7">
+    <aside style="border-right:1px solid #b0dbd7;padding:22px 20px;background:#d7ecea">
+      <div style="width:60px;height:60px;background:#7d7979;color:#eef7f6;display:grid;place-items:center;font-size:24px;font-weight:900">T</div>
+      <div style="font-weight:800;font-size:17px;margin-top:12px">tijs</div>
+      <div style="font-size:13px;color:#0b5f5b;margin-top:2px">lid sinds 2021 · 1.402 posts</div>
+      <p style="font-size:12.5px;line-height:1.5;color:#08494a;margin:12px 0 0;font-style:italic">“ik test in productie, maar met gevoel”</p>
+    </aside>
+    <div style="padding: 22px 30px 24px; background-color: #FFFFFF">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#0b5f5b">
+        <span>vrijdag 18:40 · eerste post</span>
+        <span style="display:flex;gap:16px"><a href="#2b" style="text-decoration:none">quoten</a><a href="#2b" style="text-decoration:none">link</a></span>
+      </div>
+      <p style="font-size:16px;line-height:1.68;margin:14px 0 0;max-width:70ch;text-wrap:pretty">Sinds ik de loader naar de route heb verplaatst, doet <code style="background:#d7ecea;padding:1px 5px">createResource</code> zijn fetch twee keer: één keer op de server en dan nóg eens direct na hydratie. De response is identiek, dus het is puur verspilling — maar op de topiclijst betekent het wel twee keyset-queries per navigatie.</p>
+      <p style="font-size:16px;line-height:1.68;margin:14px 0 0;max-width:70ch;text-wrap:pretty">Heeft iemand dit netjes opgelost zonder de loader te laten vallen? Ik gaf de serverdata mee als <code style="background:#d7ecea;padding:1px 5px">initialValue</code>, maar dan verliest de resource z'n refetch-gedrag.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:20px">
+        <button class="btn" style="min-height:32px;font-size:13.5px;background:#d7ecea;color:#08494a">👍 12</button>
+        <button class="btn" style="min-height:32px;font-size:13.5px;background:#d7ecea;color:#08494a">🎉 3</button>
+        <button class="btn" style="min-height:32px;font-size:13.5px;background:transparent;border:1px solid #b0dbd7;color:#0b5f5b">+ reactie</button>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13.5px;color:#08494a"><a href="#2b" style="text-decoration:none">▲</a><strong style="color:#201e1d">24</strong><a href="#2b" style="text-decoration:none">▼</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- reply -->
+  <div style="display:grid;grid-template-columns:210px 1fr;border-bottom:1px solid #b0dbd7">
+    <aside style="border-right:1px solid #b0dbd7;padding:22px 20px;background:#d7ecea">
+      <div style="width:60px;height:60px;background:#0e7f78;color:#eef7f6;display:grid;place-items:center;font-size:24px;font-weight:900">M</div>
+      <div style="font-weight:800;font-size:17px;margin-top:12px">marijn</div>
+      <div style="font-size:13px;color:#0e7f78;margin-top:2px">beheerder</div>
+      <div style="font-size:13px;color:#0b5f5b">lid sinds 2019 · 6.771 posts</div>
+    </aside>
+    <div style="padding: 22px 30px 24px; background-color: #FFFFFF">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#0b5f5b">
+        <span>vrijdag 19:05 · 25 min later</span>
+        <span style="display:flex;gap:16px"><a href="#2b" style="text-decoration:none">quoten</a><a href="#2b" style="text-decoration:none">bewerken</a><a href="#2b" style="text-decoration:none;color:#0b5f5b">verwijderen</a></span>
+      </div>
+      <div style="margin-top:14px;background:#d7ecea;border-left:4px solid #3d9c96;padding:12px 16px">
+        <div style="font-size:13px;color:#0b5f5b;margin-bottom:4px"><strong style="color:#201e1d">tijs</strong> schreef:</div>
+        <p style="font-size:14px;line-height:1.55;margin:0;color:#08494a">…dan verliest de resource z'n refetch-gedrag.</p>
+      </div>
+      <p style="font-size:16px;line-height:1.68;margin:16px 0 0;max-width:70ch;text-wrap:pretty">Dat is verwacht: <code style="background:#d7ecea;padding:1px 5px">initialValue</code> markeert de resource als “al geladen”, dus de eerste refetch wordt overgeslagen. Wat je wilt is de loaderdata dedupliceren op de sleutel, niet de resource omzeilen. Wij houden het browser-sessie-id aan en slaan de tweede fetch binnen hetzelfde tick over — refetch blijft dan gewoon werken.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:20px">
+        <button class="btn" style="min-height:32px;font-size:13.5px;background:#d7ecea;color:#08494a">👍 19</button>
+        <button class="btn" style="min-height:32px;font-size:13.5px;background:transparent;border:1px solid #b0dbd7;color:#0b5f5b">+ reactie</button>
+        <span style="font-size:12.5px;color:#0b5f5b">bewerkt om 19:11</span>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13.5px;color:#08494a"><a href="#2b" style="text-decoration:none">▲</a><strong style="color:#201e1d">41</strong><a href="#2b" style="text-decoration:none">▼</a></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- composer -->
+  <div style="padding:24px 40px 32px;background:#d7ecea;border-top:2px solid #201e1d">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:32px;height:32px;background:#0e7f78;color:#eef7f6;display:grid;place-items:center;font-size:13px;font-weight:800">M</div>
+      <h4 style="font-size:18px;margin:0">Wat denk jij, marijn?</h4>
+    </div>
+    <textarea class="input" placeholder="Typ je reactie… quoten kan met de knop bij een post." style="border-color: #b0dbd7; min-height: 104px; font-size: 15px; background-color: #FFFFFF"></textarea>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" style="min-height:36px;font-size:15px">Plaats reactie</button>
+      <button class="btn" style="min-height:36px;font-size:15px;background:transparent;border:1px solid #b0dbd7;color:#08494a">Voorbeeld</button>
+      <span style="margin-left:auto;font-size:12.5px;color:#0b5f5b">Wees aardig. Dat scheelt iedereen tijd.</span>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "warmer nog — meer rood in <a class="dv-oid" href="#2a">2a</a>" · "houd <a class="dv-oid" href="#2b">2b</a> maar met de dichte lijst van <a class="dv-oid" href="#1f">1f</a>" · "doe profiel + admin + inloggen in de stijl van <a class="dv-oid" href="#2a">2a</a>"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Forum redesign — Modernist</span></div>
+<div class="dv-opts">
+
+<!-- ============ 1a: index as ledger ============ -->
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Index — ruled ledger, categories always open</div>
+<div class="dv-card" style="width:1120px">
+
+  <!-- chrome -->
+  <div style="background:#201e1d;color:#f3f2f2;display:flex;align-items:stretch;gap:0">
+    <div style="padding:14px 18px;background:#0e7f78;font-weight:900;font-size:15px;letter-spacing:.14em;text-transform:uppercase">Forum</div>
+    <sc-if value="{{ showSectionNav }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;align-items:stretch">
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">frontpage</span>
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">weblog</span>
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f3f2f2;box-shadow:inset 0 -3px 0 #e07b1e">forum</span>
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">fotoboek</span>
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">zoeken</span>
+        <span style="display:flex;align-items:center;padding:0 16px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">dm</span>
+      </nav>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:0;padding-right:12px">
+      <input class="input" placeholder="zoek in het forum" style="background:#2d2b2b;border-color:#605d5d;color:#f3f2f2;width:220px;min-height:30px;font-size:12px">
+      <button class="btn btn-primary" style="min-height:30px;padding:6px 12px;font-size:12px">zoek</button>
+    </div>
+  </div>
+  <div style="background:#eae9e9;border-bottom:2px solid var(--color-divider);display:flex;align-items:center;gap:16px;padding:7px 18px;font-size:11.5px">
+    <sc-if value="{{ memberView }}" hint-placeholder-val="{{ true }}">
+      <span style="color:#605d5d">Ingelogd als <strong style="color:#201e1d">marijn</strong> · <strong style="color:#8f4a06">4 nieuwe reacties</strong></span>
+    </sc-if>
+    <sc-if value="{{ guestView }}" hint-placeholder-val="{{ false }}">
+      <span style="color:#605d5d">Je bent niet ingelogd.</span>
+    </sc-if>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+      <sc-if value="{{ guestView }}" hint-placeholder-val="{{ false }}">
+        <a href="#1a" style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-decoration:none">Sign in</a>
+      </sc-if>
+      <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">Manage</span>
+      <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">Light</span>
+      <div style="width:24px;height:24px;background:#0e7f78;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="padding:32px 40px 40px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:2px solid var(--color-divider);padding-bottom:14px">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8f4a06;margin-bottom:8px">Index</div>
+        <h1 style="font-size:44px;margin:0;letter-spacing:-.008em">Alle categorieën</h1>
+      </div>
+      <div style="display:flex;gap:0;text-align:left">
+        <div style="padding:0 20px;border-left:1px solid var(--color-divider)"><div style="font-size:24px;font-weight:800">3</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#605d5d">categorieën</div></div>
+        <div style="padding:0 20px;border-left:1px solid var(--color-divider)"><div style="font-size:24px;font-weight:800">12</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#605d5d">subforums</div></div>
+        <div style="padding:0 0 0 20px;border-left:1px solid var(--color-divider)"><div style="font-size:24px;font-weight:800">1.284</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#605d5d">topics</div></div>
+      </div>
+    </div>
+
+    <!-- category 1 -->
+    <div style="margin-top:28px">
+      <div style="display:flex;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px solid #201e1d">
+        <span style="font-size:11px;font-weight:800;letter-spacing:.1em;color:#f3f2f2;background:#201e1d;padding:3px 7px">GEN</span>
+        <h2 style="font-size:22px;margin:0"><a href="#1a" style="color:#201e1d;text-decoration:none">General Discussion</a></h2>
+        <span style="font-size:12.5px;color:#605d5d">Everything that doesn't fit anywhere else</span>
+        <span style="margin-left:auto;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">412 topics</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 96px 96px 220px">
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Introductions</div><div style="font-size:12px;color:#605d5d;margin-top:2px">New here? Say hello.</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">86</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">1.9k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">26-07-2026 09:14 · <span style="color:#201e1d">joost</span></div>
+        </a>
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Off Topic</div><div style="font-size:12px;color:#605d5d;margin-top:2px">Anything goes, within reason.</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">326</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">14k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">26-07-2026 08:51 · <span style="color:#201e1d">annelies</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- category 2 -->
+    <div style="margin-top:34px">
+      <div style="display:flex;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px solid #201e1d">
+        <span style="font-size:11px;font-weight:800;letter-spacing:.1em;color:#f3f2f2;background:#201e1d;padding:3px 7px">TECH</span>
+        <h2 style="font-size:22px;margin:0"><a href="#1a" style="color:#201e1d;text-decoration:none">Technology</a></h2>
+        <span style="font-size:12.5px;color:#605d5d">Code, hardware and the machines in the cupboard</span>
+        <span style="margin-left:auto;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">731 topics</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 96px 96px 220px">
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0">
+            <div style="font-weight:700;font-size:15px">Web Development</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+              <span style="font-size:11px;color:#605d5d">Frontend</span><span style="font-size:11px;color:#bab6b6">/</span>
+              <span style="font-size:11px;color:#605d5d">Styling</span><span style="font-size:11px;color:#bab6b6">/</span>
+              <span style="font-size:11px;color:#605d5d">Backend</span>
+            </div>
+          </div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">402</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">31k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">26-07-2026 10:02 · <span style="color:#201e1d">marijn</span></div>
+        </a>
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Hardware</div><div style="font-size:12px;color:#605d5d;margin-top:2px">Builds, benchmarks, broken fans.</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">187</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">9.4k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">25-07-2026 22:37 · <span style="color:#201e1d">tijs</span></div>
+        </a>
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Self-Hosting</div><div style="font-size:12px;color:#605d5d;margin-top:2px">NAS, containers, and the electricity bill.</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">142</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">7.1k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">25-07-2026 19:08 · <span style="color:#201e1d">fenna</span></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- category 3 -->
+    <div style="margin-top:34px">
+      <div style="display:flex;align-items:baseline;gap:14px;padding-bottom:10px;border-bottom:2px solid #201e1d">
+        <span style="font-size:11px;font-weight:800;letter-spacing:.1em;color:#f3f2f2;background:#201e1d;padding:3px 7px">META</span>
+        <h2 style="font-size:22px;margin:0"><a href="#1a" style="color:#201e1d;text-decoration:none">Meta</a></h2>
+        <span style="font-size:12.5px;color:#605d5d">About the forum itself</span>
+        <span style="margin-left:auto;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">141 topics</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 96px 96px 220px">
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Bug Reports</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">78</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">2.2k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">24-07-2026 16:20 · <span style="color:#201e1d">marijn</span></div>
+        </a>
+        <a class="rowlink" href="#1a" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider)">
+          <div style="padding:12px 12px 12px 0"><div style="font-weight:700;font-size:15px">Feature Requests</div></div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">63</div>
+          <div style="padding:12px;text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">1.8k</div>
+          <div style="padding:12px 0 12px 12px;font-size:12px;color:#605d5d">23-07-2026 11:44 · <span style="color:#201e1d">joost</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 1b: index as modular poster grid ============ -->
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Index — modular grid, category as poster cell</div>
+<div class="dv-card" style="width:1120px">
+  <div style="background:#201e1d;color:#f3f2f2;display:flex;align-items:center;padding:0">
+    <div style="padding:16px 20px;font-weight:900;font-size:15px;letter-spacing:.16em;text-transform:uppercase;border-right:2px solid #605d5d">Forum</div>
+    <span style="padding:0 18px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e07b1e">forum</span>
+    <span style="padding:0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">frontpage</span>
+    <span style="padding:0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">weblog</span>
+    <span style="padding:0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">fotoboek</span>
+    <span style="padding:0 14px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9b9797">dm</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:12px;padding-right:16px">
+      <span style="font-size:11.5px;color:#9b9797">marijn</span>
+      <div style="width:26px;height:26px;background:#0e7f78;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+    </div>
+  </div>
+
+  <div style="padding:36px 40px 12px;border-bottom:2px solid var(--color-divider)">
+    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:end">
+      <div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0e7f78;margin-bottom:10px">Sinds 2019 — 1.284 topics</div>
+        <h1 style="font-size:56px;margin:0 0 10px;letter-spacing:-.01em;line-height:.98">Het forum,<br>per categorie</h1>
+      </div>
+      <div style="border-left:2px solid var(--color-divider);padding-left:24px;padding-bottom:6px">
+        <p style="font-size:13.5px;color:#605d5d;margin:0 0 12px;max-width:34ch">Drie categorieën, twaalf subforums. Kies een cel of spring meteen naar de laatste activiteit.</p>
+        <div style="display:flex;gap:8px"><button class="btn btn-primary" style="min-height:34px">Nieuw topic</button><button class="btn btn-secondary" style="min-height:34px">Actieve topics</button></div>
+      </div>
+    </div>
+    <sc-if value="{{ showAbbrevGrid }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:26px 0 18px">
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">GEN</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">INTRO</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">OFF</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">TECH</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">WEB</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">FE</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">SOLID</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">TAN</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">CSS</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">BE</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">HW</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">SELF</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">META</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">BUG</span>
+        <span class="abbr" style="border:1px solid var(--color-divider);padding:5px 9px;font-size:10.5px;font-weight:800;letter-spacing:.1em">FEAT</span>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+    <a class="rowlink" href="#1b" style="padding:26px 24px 22px;border-right:2px solid var(--color-divider)">
+      <div style="font-size:64px;font-weight:900;line-height:.85;letter-spacing:-.018em;color:#e07b1e">01</div>
+      <h3 style="font-size:24px;margin:16px 0 6px">General Discussion</h3>
+      <p style="font-size:13px;color:#605d5d;margin:0 0 16px">Introductions, off topic, and the rest of daily life.</p>
+      <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d"><span>2 subforums</span><span>·</span><span>412 topics</span></div>
+    </a>
+    <a class="rowlink" href="#1b" style="padding:26px 24px 22px;border-right:2px solid var(--color-divider)">
+      <div style="font-size:64px;font-weight:900;line-height:.85;letter-spacing:-.018em;color:#e07b1e">02</div>
+      <h3 style="font-size:24px;margin:16px 0 6px">Technology</h3>
+      <p style="font-size:13px;color:#605d5d;margin:0 0 16px">Web development down to TanStack, hardware, self-hosting.</p>
+      <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d"><span>8 subforums</span><span>·</span><span>731 topics</span></div>
+    </a>
+    <a class="rowlink" href="#1b" style="padding:26px 24px 22px">
+      <div style="font-size:64px;font-weight:900;line-height:.85;letter-spacing:-.018em;color:#e07b1e">03</div>
+      <h3 style="font-size:24px;margin:16px 0 6px">Meta</h3>
+      <p style="font-size:13px;color:#605d5d;margin:0 0 16px">Bug reports and feature requests for the forum itself.</p>
+      <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d"><span>2 subforums</span><span>·</span><span>141 topics</span></div>
+    </a>
+  </div>
+
+  <div style="border-top:2px solid #201e1d;padding:24px 40px 34px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+      <h4 style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0">Laatste activiteit</h4>
+      <a href="#1b" style="font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none">alles bekijken</a>
+    </div>
+    <table class="table">
+      <thead><tr><th>Topic</th><th>Forum</th><th style="text-align:right">Reacties</th><th>Laatste reactie</th></tr></thead>
+      <tbody>
+        <tr class="tl"><td><a class="tlt" href="#1b" style="font-weight:700;color:#201e1d;text-decoration:none">Waarom is mijn build 40 seconden langzamer sinds vrijdag?</a></td><td style="font-size:12.5px;color:#605d5d">FE</td><td style="text-align:right;font-variant-numeric:tabular-nums">37</td><td style="font-size:12.5px;color:#605d5d">10:02 · marijn</td></tr>
+        <tr class="tl"><td><a class="tlt" href="#1b" style="font-weight:700;color:#201e1d;text-decoration:none">Zelf een NAS bouwen in 2026 — wat is nog zinnig?</a></td><td style="font-size:12.5px;color:#605d5d">SELF</td><td style="text-align:right;font-variant-numeric:tabular-nums">214</td><td style="font-size:12.5px;color:#605d5d">09:47 · fenna</td></tr>
+        <tr class="tl"><td><a class="tlt" href="#1b" style="font-weight:700;color:#201e1d;text-decoration:none">Even hallo — lang gelezen, nu eindelijk aangemeld</a></td><td style="font-size:12.5px;color:#605d5d">INTRO</td><td style="text-align:right;font-variant-numeric:tabular-nums">9</td><td style="font-size:12.5px;color:#605d5d">09:14 · joost</td></tr>
+        <tr class="tl"><td><a class="tlt" href="#1b" style="font-weight:700;color:#201e1d;text-decoration:none">Quote-snapshots verdwijnen na een edit</a></td><td style="font-size:12.5px;color:#605d5d">BUG</td><td style="text-align:right;font-variant-numeric:tabular-nums">12</td><td style="font-size:12.5px;color:#605d5d">gisteren · annelies</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- ============ 1c: index two-column with rail ============ -->
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Index — hierarchy rail + live feed (arbitrary depth visible)</div>
+<div class="dv-card" style="width:1120px">
+  <div style="background:#201e1d;color:#f3f2f2;display:flex;align-items:center;padding:0">
+    <div style="padding:15px 20px;font-weight:900;font-size:15px;letter-spacing:.16em;text-transform:uppercase;background:#0e7f78">Forum</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:0;padding-right:14px">
+      <input class="input" placeholder="zoek" style="background:#2d2b2b;border-color:#605d5d;color:#f3f2f2;width:200px;min-height:30px;font-size:12px">
+      <span style="padding:0 14px;font-size:11.5px;color:#9b9797">marijn</span>
+      <div style="width:26px;height:26px;background:#f3f2f2;color:#201e1d;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:320px 1fr">
+    <aside style="border-right:2px solid #201e1d;padding:24px 22px 30px;background:#eae9e9">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#605d5d;padding-bottom:8px;border-bottom:2px solid var(--color-divider)">Hiërarchie</div>
+      <div style="margin-top:14px;display:flex;flex-direction:column;gap:2px">
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:6px 0;font-weight:800;font-size:14px;color:#201e1d;text-decoration:none;border-bottom:1px solid var(--color-divider)">General Discussion <span style="font-weight:500;color:#605d5d;font-size:12px">412</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Introductions <span style="color:#7d7979;font-size:12px">86</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Off Topic <span style="color:#7d7979;font-size:12px">326</span></a>
+
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:6px 0;margin-top:12px;font-weight:800;font-size:14px;color:#201e1d;text-decoration:none;border-bottom:1px solid var(--color-divider)">Technology <span style="font-weight:500;color:#605d5d;font-size:12px">731</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Web Development <span style="color:#7d7979;font-size:12px">402</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 32px;font-size:13px;color:#444141;text-decoration:none">Frontend <span style="color:#7d7979;font-size:12px">228</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 48px;font-size:13px;background:#f3f2f2;box-shadow:inset 3px 0 0 #e07b1e;color:#201e1d;font-weight:700;text-decoration:none">SolidJS <span style="color:#7d7979;font-size:12px;font-weight:500">94</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 64px;font-size:13px;color:#444141;text-decoration:none">TanStack <span style="color:#7d7979;font-size:12px">41</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 32px;font-size:13px;color:#444141;text-decoration:none">Styling <span style="color:#7d7979;font-size:12px">67</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 32px;font-size:13px;color:#444141;text-decoration:none">Backend <span style="color:#7d7979;font-size:12px">107</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Hardware <span style="color:#7d7979;font-size:12px">187</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Self-Hosting <span style="color:#7d7979;font-size:12px">142</span></a>
+
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:6px 0;margin-top:12px;font-weight:800;font-size:14px;color:#201e1d;text-decoration:none;border-bottom:1px solid var(--color-divider)">Meta <span style="font-weight:500;color:#605d5d;font-size:12px">141</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Bug Reports <span style="color:#7d7979;font-size:12px">78</span></a>
+        <a href="#1c" style="display:flex;justify-content:space-between;padding:5px 0 5px 16px;font-size:13px;color:#444141;text-decoration:none">Feature Requests <span style="color:#7d7979;font-size:12px">63</span></a>
+      </div>
+      <button class="btn btn-block btn-secondary" style="margin-top:22px">Beheer forums</button>
+    </aside>
+
+    <div style="padding:26px 32px 34px">
+      <div style="display:flex;align-items:baseline;gap:12px;font-size:11.5px;color:#605d5d;margin-bottom:18px">
+        <a href="#1c" style="text-decoration:none">Forum</a><span>/</span><span>Technology</span><span>/</span><span>Web Development</span><span>/</span><span>Frontend</span><span>/</span><strong style="color:#201e1d">SolidJS</strong>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:2px solid #201e1d;padding-bottom:14px">
+        <div>
+          <div style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0e7f78;margin-bottom:6px">SOLID</div>
+          <h1 style="font-size:38px;margin:0">SolidJS</h1>
+          <p style="font-size:13.5px;color:#605d5d;margin:8px 0 0;max-width:60ch">Signals, resources, SSR-hydratie en alles wat daar stuk aan gaat.</p>
+        </div>
+        <button class="btn btn-primary" style="min-height:36px">Nieuw topic</button>
+      </div>
+
+      <div style="display:flex;gap:0;margin:18px 0 0;border-bottom:1px solid var(--color-divider)">
+        <span style="padding:8px 14px 8px 0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 -2px 0 #e07b1e">Actieve topics</span>
+        <span style="padding:8px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">Nieuwe topics</span>
+        <span style="padding:8px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">Abonnement</span>
+        <span style="margin-left:auto;padding:8px 0;font-size:11.5px;color:#605d5d">gesorteerd op laatste reactie</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr auto">
+        <a class="rowlink tl" href="#1c" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider);align-items:center">
+          <div style="padding:13px 12px 13px 0;display:flex;gap:10px;align-items:baseline">
+            <span class="tag tag-accent-2" style="flex:none">Sticky</span>
+            <div><div class="tlt" style="font-weight:700;font-size:15px">Lees dit eerst: hoe stel je een goede vraag over signals</div><div style="font-size:11.5px;color:#605d5d;margin-top:3px">marijn · 12-01-2026 · 44 reacties · 8.2k views</div></div>
+          </div>
+          <div style="padding:13px 0;text-align:right;font-size:11.5px;color:#605d5d;white-space:nowrap">26-07 10:02<br><span style="color:#201e1d">marijn</span></div>
+        </a>
+        <a class="rowlink tl" href="#1c" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider);align-items:center">
+          <div style="padding:13px 12px 13px 0"><div class="tlt" style="font-weight:700;font-size:15px">createResource + TanStack Start: dubbele fetch bij hydratie</div><div style="font-size:11.5px;color:#605d5d;margin-top:3px">tijs · 24-07-2026 · 37 reacties · 1.1k views</div></div>
+          <div style="padding:13px 0;text-align:right;font-size:11.5px;color:#605d5d;white-space:nowrap">26-07 09:58<br><span style="color:#201e1d">fenna</span></div>
+        </a>
+        <a class="rowlink tl" href="#1c" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider);align-items:center">
+          <div style="padding:13px 12px 13px 0;display:flex;gap:10px;align-items:baseline">
+            <span class="tag tag-neutral" style="flex:none">Locked</span>
+            <div><div class="tlt" style="font-weight:700;font-size:15px">Signals versus stores — de zoveelste ronde</div><div style="font-size:11.5px;color:#605d5d;margin-top:3px">annelies · 21-07-2026 · 168 reacties · 12k views</div></div>
+          </div>
+          <div style="padding:13px 0;text-align:right;font-size:11.5px;color:#605d5d;white-space:nowrap">25-07 21:12<br><span style="color:#201e1d">joost</span></div>
+        </a>
+        <a class="rowlink tl" href="#1c" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider);align-items:center">
+          <div style="padding:13px 12px 13px 0"><div class="tlt" style="font-weight:700;font-size:15px">Keyset-cursors in de UI: hoe ga je om met verschoven rijen?</div><div style="font-size:11.5px;color:#605d5d;margin-top:3px">marijn · 19-07-2026 · 23 reacties · 902 views</div></div>
+          <div style="padding:13px 0;text-align:right;font-size:11.5px;color:#605d5d;white-space:nowrap">25-07 14:03<br><span style="color:#201e1d">tijs</span></div>
+        </a>
+        <a class="rowlink tl" href="#1c" style="display:grid;grid-template-columns:subgrid;grid-column:1/-1;border-bottom:1px solid var(--color-divider);align-items:center">
+          <div style="padding:13px 12px 13px 0"><div class="tlt" style="font-weight:700;font-size:15px">Waarom rendert mijn For opnieuw bij elke keystroke?</div><div style="font-size:11.5px;color:#605d5d;margin-top:3px">fenna · 16-07-2026 · 11 reacties · 448 views</div></div>
+          <div style="padding:13px 0;text-align:right;font-size:11.5px;color:#605d5d;white-space:nowrap">23-07 08:29<br><span style="color:#201e1d">annelies</span></div>
+        </a>
+      </div>
+      <div style="display:flex;justify-content:flex-start;margin-top:18px"><button class="btn btn-secondary">Meer topics laden</button></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 1d: topic detail — postbit ============ -->
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Topic — classic postbit, ruled columns</div>
+<div class="dv-card" style="width:1120px">
+  <div style="background:#201e1d;color:#f3f2f2;display:flex;align-items:center">
+    <div style="padding:14px 18px;background:#0e7f78;font-weight:900;font-size:14px;letter-spacing:.16em;text-transform:uppercase">Forum</div>
+    <div style="padding:0 16px;font-size:11.5px;color:#9b9797">Technology / Web Development / Frontend / <span style="color:#f3f2f2">SolidJS</span></div>
+    <div style="margin-left:auto;padding-right:16px;display:flex;align-items:center;gap:10px"><span style="font-size:11.5px;color:#9b9797">marijn</span><div style="width:24px;height:24px;background:#f3f2f2;color:#201e1d;display:grid;place-items:center;font-size:10.5px;font-weight:800">M</div></div>
+  </div>
+
+  <div style="padding:28px 40px 20px;border-bottom:2px solid #201e1d">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#f3f2f2;background:#201e1d;padding:3px 7px">SOLID</span>
+      <span class="tag tag-accent-2">Sticky</span>
+      <span style="margin-left:auto;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">1.1k views · 37 reacties</span>
+    </div>
+    <h1 style="font-size:36px;margin:0;max-width:26ch">createResource + TanStack Start: dubbele fetch bij hydratie</h1>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px;font-size:12.5px;color:#605d5d">
+      <div style="width:28px;height:28px;background:#d7d3d3;color:#201e1d;display:grid;place-items:center;font-size:11px;font-weight:800">T</div>
+      <strong style="color:#201e1d">tijs</strong> · geopend 24-07-2026 18:40
+    </div>
+  </div>
+
+  <!-- opening post -->
+  <div style="display:grid;grid-template-columns:220px 1fr;border-bottom:2px solid var(--color-divider)">
+    <aside style="border-right:2px solid var(--color-divider);padding:20px;background:#eae9e9">
+      <div style="width:56px;height:56px;background:#201e1d;color:#f3f2f2;display:grid;place-items:center;font-size:22px;font-weight:900">T</div>
+      <div style="font-weight:800;font-size:15px;margin-top:10px">tijs</div>
+      <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d;margin-top:2px">Lid sinds 2021</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--color-divider);font-size:11.5px;color:#605d5d;display:flex;flex-direction:column;gap:3px"><span>Posts <strong style="color:#201e1d">1.402</strong></span><span>Reputatie <strong style="color:#201e1d">+318</strong></span></div>
+    </aside>
+    <div style="padding:20px 28px 22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d;padding-bottom:12px;border-bottom:1px solid var(--color-divider)">
+        <span>24-07-2026 18:40</span>
+        <span style="display:flex;gap:14px"><span>#1</span><a href="#1d" style="text-decoration:none">quote</a><a href="#1d" style="text-decoration:none">link</a></span>
+      </div>
+      <p style="font-size:15px;line-height:1.62;margin:16px 0 0;max-width:74ch;text-wrap:pretty">Sinds ik de loader naar de route heb verplaatst, doet <code style="background:#eae9e9;padding:1px 4px">createResource</code> zijn fetch twee keer: één keer op de server en dan nóg eens direct na hydratie. De response is identiek, dus het is puur verspilling — maar op de topiclijst betekent het wel twee keyset-queries per navigatie.</p>
+      <p style="font-size:15px;line-height:1.62;margin:14px 0 0;max-width:74ch;text-wrap:pretty">Heeft iemand dit netjes opgelost zonder de loader te laten vallen? Ik heb geprobeerd de serverdata als <code style="background:#eae9e9;padding:1px 4px">initialValue</code> mee te geven, maar dan verliest de resource z'n refetch-gedrag.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:20px;padding-top:14px;border-top:1px solid var(--color-divider)">
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">▲ 24</button>
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">▼</button>
+        <span style="width:2px;height:20px;background:var(--color-divider);margin:0 6px"></span>
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">👍 12</button>
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">🎉 3</button>
+        <button class="btn btn-primary" style="min-height:30px;font-size:12px;margin-left:auto">Reageer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- reply 1 -->
+  <div style="display:grid;grid-template-columns:220px 1fr;border-bottom:1px solid var(--color-divider)">
+    <aside style="border-right:2px solid var(--color-divider);padding:20px;background:#eae9e9">
+      <div style="width:56px;height:56px;background:#0e7f78;color:#f3f2f2;display:grid;place-items:center;font-size:22px;font-weight:900">M</div>
+      <div style="font-weight:800;font-size:15px;margin-top:10px">marijn</div>
+      <div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#0e7f78;margin-top:2px">Beheerder</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--color-divider);font-size:11.5px;color:#605d5d;display:flex;flex-direction:column;gap:3px"><span>Posts <strong style="color:#201e1d">6.771</strong></span><span>Reputatie <strong style="color:#201e1d">+2.104</strong></span></div>
+    </aside>
+    <div style="padding:20px 28px 22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#605d5d;padding-bottom:12px;border-bottom:1px solid var(--color-divider)">
+        <span>24-07-2026 19:05</span>
+        <span style="display:flex;gap:14px"><span>#2</span><a href="#1d" style="text-decoration:none">quote</a><a href="#1d" style="text-decoration:none">bewerk</a><a href="#1d" style="text-decoration:none;color:#075652">verwijder</a></span>
+      </div>
+      <div style="margin-top:16px;border-left:3px solid #0e7f78;padding:10px 0 10px 14px;background:#eae9e9">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#605d5d;margin-bottom:5px">tijs schreef</div>
+        <p style="font-size:13.5px;line-height:1.5;margin:0;color:#444141">…dan verliest de resource z'n refetch-gedrag.</p>
+      </div>
+      <p style="font-size:15px;line-height:1.62;margin:16px 0 0;max-width:74ch;text-wrap:pretty">Dat is verwacht: <code style="background:#eae9e9;padding:1px 4px">initialValue</code> markeert de resource als "al geladen", dus de eerste refetch wordt overgeslagen. Wat je wilt is de loaderdata dedupliceren op de sleutel, niet de resource omzeilen. Wij houden het browser-sessie-id aan en slaan de tweede fetch binnen hetzelfde tick over.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:20px;padding-top:14px;border-top:1px solid var(--color-divider)">
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">▲ 41</button>
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">▼</button>
+        <span style="width:2px;height:20px;background:var(--color-divider);margin:0 6px"></span>
+        <button class="btn btn-secondary" style="min-height:30px;font-size:12px">👍 19</button>
+        <span style="margin-left:auto;font-size:11px;color:#7d7979">bewerkt 24-07-2026 19:11</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- composer -->
+  <div style="padding:22px 40px 30px;background:#eae9e9;border-top:2px solid #201e1d">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+      <h4 style="font-size:13px;letter-spacing:.1em;text-transform:uppercase;margin:0">Plaats een reactie</h4>
+      <span style="font-size:11.5px;color:#605d5d">Reageert als <strong style="color:#201e1d">marijn</strong></span>
+    </div>
+    <textarea class="input" placeholder="Schrijf je reactie…" style="background:#f3f2f2;min-height:96px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-primary">Plaats reactie</button><button class="btn btn-secondary">Voorbeeld</button></div>
+  </div>
+</div>
+</div>
+
+<!-- ============ 1e: topic detail — transcript ============ -->
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Topic — transcript, hanging author, one reading measure</div>
+<div class="dv-card" style="width:1120px">
+  <div style="background:#201e1d;color:#f3f2f2;display:flex;align-items:center">
+    <div style="padding:14px 18px;font-weight:900;font-size:14px;letter-spacing:.16em;text-transform:uppercase;border-right:2px solid #605d5d">Forum</div>
+    <div style="padding:0 16px;font-size:11.5px;color:#9b9797">SOLID</div>
+    <div style="margin-left:auto;padding-right:16px;display:flex;align-items:center;gap:10px"><span style="font-size:11.5px;color:#9b9797">marijn</span><div style="width:24px;height:24px;background:#0e7f78;color:#f3f2f2;display:grid;place-items:center;font-size:10.5px;font-weight:800">M</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 280px">
+    <div style="padding:34px 44px 0">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0e7f78;margin-bottom:10px">Frontend / SolidJS · topic #4192</div>
+      <h1 style="font-size:40px;margin:0 0 18px;max-width:24ch;letter-spacing:-.008em">createResource + TanStack Start: dubbele fetch bij hydratie</h1>
+      <div class="hr" style="margin:0 0 26px"></div>
+
+      <article style="display:grid;grid-template-columns:130px 1fr;gap:24px;padding-bottom:26px;border-bottom:1px solid var(--color-divider)">
+        <div style="text-align:left">
+          <div style="font-weight:800;font-size:14px">tijs</div>
+          <div style="font-size:11px;color:#605d5d;letter-spacing:.04em">24-07 18:40</div>
+          <div style="font-size:11px;color:#7d7979;margin-top:6px">#1 · opener</div>
+        </div>
+        <div>
+          <p style="font-size:16px;line-height:1.65;margin:0 0 12px;max-width:68ch;text-wrap:pretty">Sinds ik de loader naar de route heb verplaatst, doet <code style="background:#eae9e9;padding:1px 4px">createResource</code> zijn fetch twee keer: één keer op de server en dan nóg eens direct na hydratie. De response is identiek, dus het is puur verspilling.</p>
+          <p style="font-size:16px;line-height:1.65;margin:0;max-width:68ch;text-wrap:pretty">Heeft iemand dit opgelost zonder de loader te laten vallen?</p>
+          <div style="display:flex;gap:16px;margin-top:14px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">
+            <a href="#1e" style="text-decoration:none">▲ 24</a><a href="#1e" style="text-decoration:none">quote</a><a href="#1e" style="text-decoration:none">link</a>
+          </div>
+        </div>
+      </article>
+
+      <article style="display:grid;grid-template-columns:130px 1fr;gap:24px;padding:26px 0;border-bottom:1px solid var(--color-divider)">
+        <div>
+          <div style="font-weight:800;font-size:14px">marijn</div>
+          <div style="font-size:11px;color:#0e7f78;letter-spacing:.06em;text-transform:uppercase">beheerder</div>
+          <div style="font-size:11px;color:#605d5d;margin-top:4px">24-07 19:05</div>
+          <div style="font-size:11px;color:#7d7979;margin-top:6px">#2</div>
+        </div>
+        <div>
+          <div style="border-left:3px solid #201e1d;padding:2px 0 2px 12px;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#605d5d">tijs, #1</div>
+            <p style="font-size:13.5px;line-height:1.5;margin:4px 0 0;color:#605d5d">…zonder de loader te laten vallen?</p>
+          </div>
+          <p style="font-size:16px;line-height:1.65;margin:0;max-width:68ch;text-wrap:pretty">Dedupliceer de loaderdata op de sleutel in plaats van de resource te omzeilen. Wij houden het browser-sessie-id aan; de tweede fetch binnen hetzelfde tick wordt overgeslagen en de refetch blijft intact.</p>
+          <div style="display:flex;gap:16px;margin-top:14px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">
+            <a href="#1e" style="text-decoration:none">▲ 41</a><a href="#1e" style="text-decoration:none">quote</a><a href="#1e" style="text-decoration:none">bewerk</a>
+          </div>
+        </div>
+      </article>
+
+      <article style="display:grid;grid-template-columns:130px 1fr;gap:24px;padding:26px 0">
+        <div>
+          <div style="font-weight:800;font-size:14px">fenna</div>
+          <div style="font-size:11px;color:#605d5d;margin-top:4px">26-07 09:58</div>
+          <div style="font-size:11px;color:#7d7979;margin-top:6px">#3</div>
+        </div>
+        <div>
+          <p style="font-size:16px;line-height:1.65;margin:0;max-width:68ch;text-wrap:pretty">Wij loggen ook de query-counts in de integratietests, precies om te zien wanneer zo'n dubbele fetch terugkomt. Aanrader — het valt anders pas op als de lijst traag wordt.</p>
+          <div style="display:flex;gap:16px;margin-top:14px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#605d5d">
+            <a href="#1e" style="text-decoration:none">▲ 7</a><a href="#1e" style="text-decoration:none">quote</a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <aside style="border-left:2px solid #201e1d;padding:34px 24px;background:#eae9e9;display:flex;flex-direction:column;gap:22px">
+      <div>
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#605d5d;padding-bottom:7px;border-bottom:2px solid var(--color-divider)">Topic</div>
+        <div style="display:flex;flex-direction:column;gap:0;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--color-divider);font-size:12.5px"><span style="color:#605d5d">Reacties</span><strong>37</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--color-divider);font-size:12.5px"><span style="color:#605d5d">Views</span><strong>1.104</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--color-divider);font-size:12.5px"><span style="color:#605d5d">Deelnemers</span><strong>9</strong></div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:12.5px"><span style="color:#605d5d">Laatste</span><strong>09:58</strong></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#605d5d;padding-bottom:7px;border-bottom:2px solid var(--color-divider)">Deelnemers</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">
+          <div style="width:30px;height:30px;background:#201e1d;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">T</div>
+          <div style="width:30px;height:30px;background:#0e7f78;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">M</div>
+          <div style="width:30px;height:30px;background:#7d7979;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">F</div>
+          <div style="width:30px;height:30px;background:#444141;color:#f3f2f2;display:grid;place-items:center;font-size:11px;font-weight:800">A</div>
+          <div style="width:30px;height:30px;background:#bab6b6;color:#201e1d;display:grid;place-items:center;font-size:11px;font-weight:800">J</div>
+          <div style="width:30px;height:30px;border:1px solid var(--color-divider);color:#605d5d;display:grid;place-items:center;font-size:10.5px;font-weight:700">+4</div>
+        </div>
+      </div>
+      <div style="margin-top:auto">
+        <button class="btn btn-primary btn-block">Reageer op topic</button>
+        <button class="btn btn-secondary btn-block">Abonneer</button>
+      </div>
+    </aside>
+  </div>
+</div>
+</div>
+
+<!-- ============ 1f: poster board page ============ -->
+<div class="dv-opt" id="1f">
+<div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Board — poster header, very dense list</div>
+<div class="dv-card" style="width:1120px">
+  <div style="background:#0e7f78;color:#f3f2f2;padding:30px 40px 26px">
+    <div style="display:flex;align-items:baseline;gap:12px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.85">Forum / Technology / Web Development / <strong>Frontend</strong></div>
+    <h1 style="font-size:64px;margin:14px 0 0;letter-spacing:-.012em;line-height:.92;color:#f3f2f2">Frontend</h1>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-top:18px;padding-top:16px;border-top:2px solid rgba(243,242,242,.4)">
+      <p style="font-size:14px;margin:0;max-width:56ch;color:#d7ecea">Alles wat in de browser gebeurt: signals, styling, bundlers en de rest. Subforums: SolidJS, TanStack, Styling.</p>
+      <div style="display:flex;gap:26px;text-align:left;white-space:nowrap">
+        <div><div style="font-size:26px;font-weight:900">228</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.85">topics</div></div>
+        <div><div style="font-size:26px;font-weight:900">3</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.85">subforums</div></div>
+        <div><div style="font-size:26px;font-weight:900">18k</div><div style="font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.85">reacties</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:0;padding:0 40px;background:#201e1d;color:#f3f2f2">
+    <span style="padding:11px 0 11px;margin-right:18px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 -3px 0 #e07b1e">Topics</span>
+    <span style="padding:11px 0;margin-right:18px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9b9797">Subforums</span>
+    <span style="padding:11px 0;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#9b9797">Abonnement</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;padding:8px 0">
+      <select class="input" style="width:170px;min-height:28px;font-size:12px;background:#2d2b2b;border-color:#605d5d;color:#f3f2f2"><option>Laatste reactie</option><option>Nieuwste eerst</option><option>Meeste reacties</option></select>
+      <button class="btn btn-primary" style="min-height:28px;font-size:12px">Nieuw topic</button>
+    </div>
+  </div>
+
+  <div style="padding:0 40px 34px">
+    <table class="table" style="font-size:13.5px">
+      <thead><tr><th style="padding-left:0">Topic</th><th>Topicstarter</th><th style="text-align:right">Reacties</th><th style="text-align:right">Views</th><th style="padding-right:0">Laatste reactie</th></tr></thead>
+      <tbody>
+        <tr class="tl"><td style="padding-left:0"><span class="tag tag-accent-2" style="margin-right:8px">Sticky</span><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Lees dit eerst: hoe stel je een goede vraag over signals</a></td><td style="color:#605d5d">marijn</td><td style="text-align:right;font-variant-numeric:tabular-nums">44</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">8.204</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">26-07 10:02 · marijn</td></tr>
+        <tr class="tl"><td style="padding-left:0"><span class="tag tag-neutral" style="margin-right:8px">Locked</span><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Signals versus stores — de zoveelste ronde</a></td><td style="color:#605d5d">annelies</td><td style="text-align:right;font-variant-numeric:tabular-nums">168</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">12.041</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">25-07 21:12 · joost</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">createResource + TanStack Start: dubbele fetch bij hydratie</a></td><td style="color:#605d5d">tijs</td><td style="text-align:right;font-variant-numeric:tabular-nums">37</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">1.104</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">26-07 09:58 · fenna</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Keyset-cursors in de UI: hoe ga je om met verschoven rijen?</a></td><td style="color:#605d5d">marijn</td><td style="text-align:right;font-variant-numeric:tabular-nums">23</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">902</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">25-07 14:03 · tijs</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">CSS-nesting in productie: wie draait het al?</a></td><td style="color:#605d5d">fenna</td><td style="text-align:right;font-variant-numeric:tabular-nums">54</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">3.377</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">24-07 20:41 · annelies</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Waarom rendert mijn For opnieuw bij elke keystroke?</a></td><td style="color:#605d5d">fenna</td><td style="text-align:right;font-variant-numeric:tabular-nums">11</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">448</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">23-07 08:29 · annelies</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Bundle van 900kB naar 240kB — logboek</a></td><td style="color:#605d5d">joost</td><td style="text-align:right;font-variant-numeric:tabular-nums">92</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">6.510</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">22-07 17:55 · tijs</td></tr>
+        <tr class="tl"><td style="padding-left:0"><a class="tlt" href="#1f" style="font-weight:700;color:#201e1d;text-decoration:none">Dark mode zonder flits bij SSR</a></td><td style="color:#605d5d">annelies</td><td style="text-align:right;font-variant-numeric:tabular-nums">28</td><td style="text-align:right;font-variant-numeric:tabular-nums;color:#605d5d">1.855</td><td style="padding-right:0;color:#605d5d;font-size:12.5px">21-07 12:10 · marijn</td></tr>
+      </tbody>
+    </table>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:18px"><button class="btn btn-secondary">Meer topics laden</button><span style="font-size:11.5px;color:#605d5d">25 van 228 geladen</span></div>
+  </div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "take <a class="dv-oid" href="#1a">1a</a>'s index with <a class="dv-oid" href="#1f">1f</a>'s red board header" · "make <a class="dv-oid" href="#1d">1d</a> denser" · "now do profile + admin + sign-in in the <a class="dv-oid" href="#1c">1c</a> direction"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSectionNav&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;showAbbrevGrid&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;guestView&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Chrome&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const guest = this.props.guestView ?? false;
+    return {
+      showSectionNav: this.props.showSectionNav ?? true,
+      showAbbrevGrid: this.props.showAbbrevGrid ?? true,
+      guestView: guest,
+      memberView: !guest,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+/*
+ * Shared theme for every app in the monorepo (forum, news, fotoboek, dm).
+ *
+ * Usage — in each app's src/styles.css, replace `@plugin "daisyui";` with:
+ *
+ *   @import "tailwindcss";
+ *   @import "@forum/config/theme.css";
+ *
+ * Every color below comes from the design doc (Forum Redesign.dc.html).
+ * Apps and packages/ui must use semantic classes (btn-primary, bg-base-200,
+ * text-base-content) — never a raw hex. Changing the palette happens here
+ * and nowhere else.
+ */
+
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "forum";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Surfaces --------------------------------------------------------
+   * base-100  white       — post bodies, form panels, article text
+   * base-200  teal-100    — page ground
+   * base-300  teal-200    — category cells, author columns, side panels
+   * base-content ink      — all body text
+   */
+  --color-base-100: #ffffff;
+  --color-base-200: #eef7f6;
+  --color-base-300: #d7ecea;
+  --color-base-content: #201e1d;
+
+  /* Primary — teal. Buttons, links, active form controls. */
+  --color-primary: #0e7f78;
+  --color-primary-content: #eef7f6;
+
+  /* Secondary — orange. ONLY for: active nav marker, pinned/sticky tags,
+   * unread counts, category numerals, active hierarchy branch. Never a
+   * general-purpose button color. */
+  --color-secondary: #e07b1e;
+  --color-secondary-content: #fdf2e4;
+
+  /* Accent — mid teal. Avatars, quote bars, subtle emphasis. */
+  --color-accent: #2ba39a;
+  --color-accent-content: #06413f;
+
+  /* Neutral — the dark bar at the top of every app. */
+  --color-neutral: #201e1d;
+  --color-neutral-content: #eef7f6;
+
+  /* Feedback. Success and info stay in the teal family so they read as
+   * part of the system; warning is the orange; error is the one color
+   * outside both ramps, deliberately dark enough not to be mistaken for
+   * the orange accent. */
+  --color-info: #2ba39a;
+  --color-info-content: #06413f;
+  --color-success: #0a6b66;
+  --color-success-content: #eef7f6;
+  --color-warning: #e07b1e;
+  --color-warning-content: #3f2306;
+  --color-error: #8f2f14;
+  --color-error-content: #fdf2e4;
+
+  /* Geometry — Modernist: nothing is rounded, nothing floats. */
+  --radius-selector: 0rem;
+  --radius-field: 0rem;
+  --radius-box: 0rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/*
+ * Type and the full tonal ramps.
+ *
+ * The ramps use their own namespaces (brand / flame / ink) so they never
+ * collide with Tailwind's built-in teal-* and amber-* utilities.
+ *
+ * NOTE: --color-primary is #0e7f78, which is brand-600 — NOT brand-500.
+ * Reaching for the 500 step by habit gets you the lighter mid-teal used
+ * for avatars and quote bars.
+ *
+ * They are here for the handful of places a semantic role is not enough — a hairline rule between rows, a tinted quote block, an inline
+ * <mark>. Reach for a semantic class first; use a ramp step only when
+ * none of them says what you mean.
+ */
+@theme {
+  --font-sans: "Archivo", system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, serif;
+
+  /* Headings are Newsreader; everything else — body, tables, buttons,
+   * form labels — is Archivo. */
+  --font-heading: var(--font-serif);
+  --font-body: var(--font-sans);
+
+  /* Teal — brand. brand-600 is the primary. */
+  --color-brand-100: #eef7f6;
+  --color-brand-200: #d7ecea;
+  --color-brand-300: #b0dbd7;
+  --color-brand-400: #6dbdb7;
+  --color-brand-500: #2ba39a;
+  --color-brand-600: #0e7f78;
+  --color-brand-700: #0b5f5b;
+  --color-brand-800: #08494a;
+  --color-brand-900: #06413f;
+
+  /* Orange — flame. flame-500 is the secondary. */
+  --color-flame-100: #fdf2e4;
+  --color-flame-200: #f9e0c4;
+  --color-flame-300: #f0c28e;
+  --color-flame-400: #e79a4a;
+  --color-flame-500: #e07b1e;
+  --color-flame-600: #c26410;
+  --color-flame-700: #8f4a06;
+  --color-flame-800: #653504;
+  --color-flame-900: #3f2306;
+
+  /* Ink / greys — avatars, muted meta on dark bars */
+  --color-ink-100: #f3f2f2;
+  --color-ink-200: #d7d3d3;
+  --color-ink-300: #bab6b6;
+  --color-ink-400: #9b9797;
+  --color-ink-500: #7d7979;
+  --color-ink-600: #605d5d;
+  --color-ink-700: #444141;
+  --color-ink-800: #201e1d;
+}
+
+/*
+ * Rules. Modernist draws structure with two weights and nothing else:
+ * a 2px rule between major sections, a 1px hairline between rows.
+ */
+@layer base {
+  :root {
+    --rule-strong: 2px solid var(--color-base-content);
+    --rule-hair: 1px solid var(--color-brand-300);
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-base-200);
+    color: var(--color-base-content);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  /* Keyboard focus is themed everywhere, never the browser default. */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-900);
+  }
+}
