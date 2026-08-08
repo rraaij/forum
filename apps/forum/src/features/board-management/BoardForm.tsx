@@ -1,8 +1,10 @@
+import { Button, Field } from "@forum/ui";
 import { createSignal, Show } from "solid-js";
 import type { BoardFields } from "./api";
 
 type BoardFormProps = {
   title: string;
+  showTitle?: boolean;
   submitLabel: string;
   initial?: Partial<BoardFields>;
   disabled?: boolean;
@@ -11,9 +13,8 @@ type BoardFormProps = {
 };
 
 /*
- * One form for both creation and editing. It only collects and submits
- * fields — normalization and uniqueness are server-side domain rules, so
- * this component deliberately does not pre-validate slugs or casing.
+ * One form collects both creation and update fields. Normalization and
+ * uniqueness remain server-owned domain rules; this only changes presentation.
  */
 export function BoardForm(props: BoardFormProps) {
   const [name, setName] = createSignal(props.initial?.name ?? "");
@@ -42,43 +43,53 @@ export function BoardForm(props: BoardFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} class="space-y-3">
-      <h3 class="font-bold">{props.title}</h3>
+    <form onSubmit={handleSubmit} class="space-y-3" aria-label={props.title}>
+      <Show when={props.showTitle !== false}>
+        <h2 class="text-[22px] font-semibold">{props.title}</h2>
+      </Show>
 
-      <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control gap-1">
-          <span class="label-text text-xs font-semibold">Name</span>
-          <input
-            type="text"
-            class="input input-bordered input-sm w-full"
-            placeholder="General Discussion"
-            value={name()}
-            onInput={(event) => setName(event.currentTarget.value)}
-            disabled={props.disabled}
-            required
-          />
-        </label>
+      <Field label="Naam" for="board-name">
+        <input
+          id="board-name"
+          type="text"
+          class="input h-[38px]"
+          placeholder="General Discussion"
+          value={name()}
+          onInput={(event) => setName(event.currentTarget.value)}
+          disabled={props.disabled}
+          required
+        />
+      </Field>
 
-        <label class="form-control gap-1">
-          <span class="label-text text-xs font-semibold">Slug</span>
+      <Field label="Omschrijving" for="board-description">
+        <textarea
+          id="board-description"
+          class="textarea min-h-[70px]"
+          value={description() ?? ""}
+          onInput={(event) => setDescription(event.currentTarget.value)}
+          disabled={props.disabled}
+        />
+      </Field>
+
+      <div class="grid grid-cols-2 gap-3">
+        <Field label="Slug" for="board-slug">
           <input
+            id="board-slug"
             type="text"
-            class="input input-bordered input-sm w-full"
+            class="input h-[38px]"
             placeholder="general-discussion"
             value={slug()}
             onInput={(event) => setSlug(event.currentTarget.value)}
             disabled={props.disabled}
             required
           />
-        </label>
+        </Field>
 
-        <label class="form-control gap-1">
-          <span class="label-text text-xs font-semibold">
-            Abbreviation (max 5)
-          </span>
+        <Field label="Afkorting (max. 5)" for="board-abbreviation">
           <input
+            id="board-abbreviation"
             type="text"
-            class="input input-bordered input-sm w-full"
+            class="input h-[38px]"
             placeholder="GEN"
             maxLength={5}
             value={abbreviation()}
@@ -86,64 +97,55 @@ export function BoardForm(props: BoardFormProps) {
             disabled={props.disabled}
             required
           />
-        </label>
+        </Field>
 
-        <label class="form-control gap-1">
-          <span class="label-text text-xs font-semibold">Sort order</span>
+        <Field label="Volgorde" for="board-sort-order">
           <input
+            id="board-sort-order"
             type="number"
             min="0"
-            class="input input-bordered input-sm w-full"
+            class="input h-[38px]"
             value={sortOrder()}
             onInput={(event) => setSortOrder(event.currentTarget.value)}
             disabled={props.disabled}
           />
-        </label>
+        </Field>
 
-        <label class="form-control gap-1">
-          <span class="label-text text-xs font-semibold">Icon</span>
+        <Field label="Icoon" for="board-icon">
           <input
+            id="board-icon"
             type="text"
-            class="input input-bordered input-sm w-full"
+            class="input h-[38px]"
             placeholder="💬"
             value={icon()}
             onInput={(event) => setIcon(event.currentTarget.value)}
             disabled={props.disabled}
           />
-        </label>
-
-        <label class="form-control gap-1 sm:col-span-2">
-          <span class="label-text text-xs font-semibold">Description</span>
-          <textarea
-            class="textarea textarea-bordered textarea-sm w-full"
-            rows={2}
-            value={description() ?? ""}
-            onInput={(event) => setDescription(event.currentTarget.value)}
-            disabled={props.disabled}
-          />
-        </label>
+        </Field>
       </div>
 
-      <div class="flex justify-end gap-2">
+      <div class="flex flex-wrap gap-2 pt-1">
+        <Button
+          type="submit"
+          variant="primary"
+          size="sm"
+          loading={props.disabled}
+        >
+          {props.submitLabel}
+        </Button>
         <Show when={props.onCancel}>
           {(onCancel) => (
-            <button
+            <Button
               type="button"
-              class="btn btn-ghost btn-sm"
+              variant="surface"
+              size="sm"
               onClick={onCancel()}
               disabled={props.disabled}
             >
-              Cancel
-            </button>
+              Annuleren
+            </Button>
           )}
         </Show>
-        <button
-          type="submit"
-          class="btn btn-primary btn-sm"
-          disabled={props.disabled}
-        >
-          {props.submitLabel}
-        </button>
       </div>
     </form>
   );

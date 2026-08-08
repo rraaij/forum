@@ -1,21 +1,24 @@
+import { Tag } from "@forum/ui";
 import { For, Show } from "solid-js";
 import { ActivityTopicLink } from "./ActivityTopicLink";
 import type { ProfileActivity } from "./api";
 
-/*
- * Activity presentation, extracted from the profile route (plan Phase 7).
- * Every field is served by the ProfileActivity module: the post's own kind,
- * its deletion state, and the canonical link target.
- */
-
-const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString(undefined, {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+function formatRelativeTime(value: string): string {
+  const elapsedSeconds = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(value).getTime()) / 1_000),
+  );
+  if (elapsedSeconds < 60) return "net";
+  if (elapsedSeconds < 3_600) {
+    return `${Math.floor(elapsedSeconds / 60)} min geleden`;
+  }
+  if (elapsedSeconds < 86_400) return "vandaag";
+  if (elapsedSeconds < 172_800) return "gisteren";
+  return new Date(value).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "short",
   });
+}
 
 export function ActivityPanel(props: {
   activity: ProfileActivity | undefined;
@@ -23,47 +26,51 @@ export function ActivityPanel(props: {
   const items = () => props.activity ?? [];
 
   return (
-    <section class="card border border-base-content/10 bg-base-100 shadow-sm">
-      <div class="card-body gap-3">
-        <h2 class="text-sm font-bold uppercase tracking-wide">Your activity</h2>
-        <Show
-          when={items().length > 0}
-          fallback={<p class="text-sm text-base-content/60">No posts yet.</p>}
-        >
-          <div class="overflow-x-auto">
-            <table class="table table-zebra table-sm">
-              <thead>
-                <tr>
-                  <th>Topic</th>
-                  <th>Kind</th>
-                  <th>Posted</th>
-                </tr>
-              </thead>
-              <tbody>
-                <For each={items()}>
-                  {(item) => (
-                    <tr>
-                      <td>
-                        <ActivityTopicLink activity={item} />
-                      </td>
-                      <td>
-                        <span class="badge badge-ghost badge-sm">
-                          {item.postKind === "opening"
-                            ? "Opening post"
-                            : "Reply"}
-                        </span>
-                      </td>
-                      <td class="text-sm text-base-content/70">
-                        {formatDateTime(item.postCreatedAt)}
-                      </td>
-                    </tr>
-                  )}
-                </For>
-              </tbody>
-            </table>
-          </div>
-        </Show>
+    <section
+      aria-label="Wat je laatst deed"
+      class="bg-base-100 px-7 py-6 sm:px-[30px]"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h2 class="text-[18px] font-semibold">Wat je laatst deed</h2>
+        <a href="#profile-activity" class="text-[12.5px] text-primary">
+          alles bekijken →
+        </a>
       </div>
+
+      <Show
+        when={items().length > 0}
+        fallback={
+          <p class="mt-4 text-sm text-brand-700">
+            Nog niets gedaan. Dat is ook weleens lekker.
+          </p>
+        }
+      >
+        <ul id="profile-activity" class="mt-4">
+          <For each={items()}>
+            {(item) => (
+              <li
+                data-activity-item
+                class="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-brand-300 py-3 last:border-b-0"
+              >
+                <Tag
+                  variant={item.postKind === "opening" ? "secondary" : "base"}
+                >
+                  {item.postKind === "opening" ? "topic" : "reactie"}
+                </Tag>
+                <span class="min-w-0 truncate text-sm">
+                  <ActivityTopicLink activity={item} />
+                </span>
+                <time
+                  datetime={item.postCreatedAt}
+                  class="text-[12.5px] text-brand-700"
+                >
+                  {formatRelativeTime(item.postCreatedAt)}
+                </time>
+              </li>
+            )}
+          </For>
+        </ul>
+      </Show>
     </section>
   );
 }

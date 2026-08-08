@@ -1,3 +1,4 @@
+import { Button, Field } from "@forum/ui";
 import { createSignal, For } from "solid-js";
 import type { BoardTreeNode } from "@/features/forum-read/api";
 
@@ -8,7 +9,7 @@ type MoveBoardFormProps = {
   onMove: (newParentId: string | null, sortOrder: number) => Promise<void>;
 };
 
-/** Flattens the tree into "— — Name" options for the parent selector. */
+/** Flattens the tree into indented options for the parent selector. */
 function flatten(
   nodes: BoardTreeNode[],
   depth = 0,
@@ -20,10 +21,8 @@ function flatten(
 }
 
 /*
- * Reparenting is a separate command from editing (plan section 5.3), so it
- * gets its own form. Invalid targets (self, descendants) are rejected by
- * the server with a typed BOARD_CYCLE error rather than hidden here — the
- * database trigger is the authority, and the UI reports what it says.
+ * Reparenting remains a separate server command from editing. Invalid targets
+ * stay visible because the database-backed domain rule is the authority.
  */
 export function MoveBoardForm(props: MoveBoardFormProps) {
   const [parentId, setParentId] = createSignal<string>(
@@ -38,45 +37,44 @@ export function MoveBoardForm(props: MoveBoardFormProps) {
 
   return (
     <form onSubmit={handleSubmit} class="space-y-3">
-      <h3 class="font-bold">Move “{props.board.name}”</h3>
+      <h3 class="text-[16px] font-semibold">Plaatsing</h3>
 
-      <label class="form-control gap-1">
-        <span class="label-text text-xs font-semibold">New parent</span>
+      <Field label="Bovenliggend forum" for="board-parent">
         <select
-          class="select select-bordered select-sm w-full"
+          id="board-parent"
+          class="select h-[38px] w-full rounded-none border-brand-300 bg-base-100"
           value={parentId()}
           onChange={(event) => setParentId(event.currentTarget.value)}
           disabled={props.disabled}
-          aria-label="New parent board"
+          aria-label="Bovenliggend forum"
         >
-          <option value="">(root category)</option>
+          <option value="">Hoofdcategorie</option>
           <For each={flatten(props.allBoards)}>
             {(option) => <option value={option.id}>{option.label}</option>}
           </For>
         </select>
-      </label>
+      </Field>
 
-      <label class="form-control gap-1">
-        <span class="label-text text-xs font-semibold">Sort order</span>
+      <Field label="Volgorde binnen het forum" for="move-sort-order">
         <input
+          id="move-sort-order"
           type="number"
           min="0"
-          class="input input-bordered input-sm w-full"
+          class="input h-[38px]"
           value={sortOrder()}
           onInput={(event) => setSortOrder(event.currentTarget.value)}
           disabled={props.disabled}
         />
-      </label>
+      </Field>
 
-      <div class="flex justify-end">
-        <button
-          type="submit"
-          class="btn btn-secondary btn-sm"
-          disabled={props.disabled}
-        >
-          Move board
-        </button>
-      </div>
+      <Button
+        type="submit"
+        variant="surface"
+        size="sm"
+        loading={props.disabled}
+      >
+        Verplaatsen
+      </Button>
     </form>
   );
 }

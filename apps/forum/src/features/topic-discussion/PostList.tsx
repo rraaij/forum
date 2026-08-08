@@ -1,4 +1,4 @@
-import { Avatar } from "@forum/ui";
+import { Avatar, Button } from "@forum/ui";
 import { createSignal, For, Show } from "solid-js";
 import type { PostView } from "@/features/forum-read/api";
 import { PostInteractions } from "@/features/interactions/PostInteractions";
@@ -7,6 +7,7 @@ import { deleteReply, editPost } from "./api";
 import { QuoteSnapshot } from "./QuoteSnapshot";
 
 type PostListProps = {
+  openingPost: PostView;
   replies: PostView[];
   onQuote: (post: PostView) => void;
   onChanged: () => Promise<void>;
@@ -18,18 +19,16 @@ type PostListProps = {
 
 const formatDateTime = (value: string | null | undefined) =>
   value
-    ? new Date(value).toLocaleString(undefined, {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+    ? new Date(value).toLocaleString("nl-NL", {
+        weekday: "long",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "Unknown time";
+    : "onbekend tijdstip";
 
-function ReplyCard(props: {
+function PostBit(props: {
   post: PostView;
-  index: number;
+  number: number;
   onQuote: (post: PostView) => void;
   onChanged: () => Promise<void>;
   canReply: boolean;
@@ -39,6 +38,8 @@ function ReplyCard(props: {
   const isAuthor = () => user()?.id === props.post.author.id;
   const isAdmin = () =>
     (user() as { role?: string } | undefined)?.role === "admin";
+  const authorName = () =>
+    props.post.author.displayName ?? props.post.author.name ?? "Onbekend";
 
   const [editing, setEditing] = createSignal(false);
   const [draft, setDraft] = createSignal(props.post.content);
@@ -53,7 +54,9 @@ function ReplyCard(props: {
       setEditing(false);
       await props.onChanged();
     } catch (editError) {
-      setError(editError instanceof Error ? editError.message : "Edit failed");
+      setError(
+        editError instanceof Error ? editError.message : "Bewerken is mislukt",
+      );
     } finally {
       setBusy(false);
     }
@@ -67,7 +70,9 @@ function ReplyCard(props: {
       await props.onChanged();
     } catch (deleteError) {
       setError(
-        deleteError instanceof Error ? deleteError.message : "Delete failed",
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Verwijderen is mislukt",
       );
     } finally {
       setBusy(false);
@@ -75,64 +80,78 @@ function ReplyCard(props: {
   };
 
   return (
-    <article class="overflow-hidden rounded-sm border border-base-content/15 bg-base-100 shadow-sm">
-      <div class="grid md:grid-cols-[220px_1fr]">
-        <aside class="border-b border-base-content/10 bg-base-200/55 p-4 md:border-b-0 md:border-r">
-          <div class="flex items-center gap-3">
+    <article
+      data-post-kind={props.post.kind}
+      class="border-b border-brand-300 bg-base-100 last:border-b-0"
+    >
+      <div class="grid md:grid-cols-[210px_1fr]">
+        <aside class="border-b border-brand-300 bg-base-300 px-5 py-[22px] md:border-r md:border-b-0">
+          <div class="flex items-start gap-3 md:block">
             <Avatar
               src={props.post.author.image}
-              name={props.post.author.displayName ?? props.post.author.name}
-              size="md"
+              name={authorName()}
+              size="lg"
+              alt=""
             />
-            <div>
-              <p class="font-bold leading-tight">
-                {props.post.author.displayName ??
-                  props.post.author.name ??
-                  "Unknown"}
+            <div class="md:mt-3">
+              <p class="text-[17px] leading-tight font-extrabold">
+                {authorName()}
               </p>
-              <p class="text-xs text-base-content/60">
-                User #{props.post.author.id.slice(0, 8)}
-              </p>
+              <Show when={isAuthor() && isAdmin()}>
+                <p class="mt-1 text-[12.5px] font-semibold text-primary">
+                  beheerder
+                </p>
+              </Show>
+              <p class="mt-1 text-[12.5px] text-brand-700">Lid van het forum</p>
             </div>
           </div>
         </aside>
 
-        <div class="p-4 md:p-6">
-          <div class="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-base-content/60">
-            <span>{formatDateTime(props.post.createdAt)}</span>
-            <div class="flex items-center gap-3">
-              {/* Reply numbering continues after opening post #1. */}
-              <span>#{props.index + 2}</span>
+        <div class="px-6 py-[22px] sm:px-[30px] sm:pb-6">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-brand-700">
+            <span>
+              {formatDateTime(props.post.createdAt)} ·{" "}
+              {props.post.kind === "opening"
+                ? "eerste post"
+                : `reactie #${props.number}`}
+            </span>
+            <div class="flex items-center gap-4">
               <Show when={!props.post.isDeleted && props.canReply}>
                 <button
                   type="button"
-                  class="link link-hover"
+                  class="font-medium text-primary hover:underline"
                   onClick={() => props.onQuote(props.post)}
                 >
-                  quote
+                  quoten
                 </button>
               </Show>
               <Show when={!props.post.isDeleted && isAuthor()}>
                 <button
                   type="button"
-                  class="link link-hover"
+                  class="font-medium text-primary hover:underline disabled:opacity-40"
                   onClick={() => {
                     setDraft(props.post.content);
                     setEditing((current) => !current);
                   }}
                   disabled={busy()}
                 >
-                  bewerk
+                  bewerken
                 </button>
               </Show>
-              <Show when={!props.post.isDeleted && (isAuthor() || isAdmin())}>
+              <Show
+                when={
+                  props.post.kind === "reply" &&
+                  !props.post.isDeleted &&
+                  (isAuthor() || isAdmin())
+                }
+              >
                 <button
                   type="button"
-                  class="link link-hover text-error"
+                  class="font-medium text-error hover:underline disabled:opacity-40"
                   onClick={remove}
                   disabled={busy()}
                 >
-                  verwijder
+                  verwijderen
                 </button>
               </Show>
             </div>
@@ -140,8 +159,11 @@ function ReplyCard(props: {
 
           <Show when={error()}>
             {(message) => (
-              <div class="alert alert-error mb-3 py-2 text-sm" role="alert">
-                <span>{message()}</span>
+              <div
+                class="mb-4 border-l-[3px] border-error bg-error/10 px-4 py-2 text-sm text-error"
+                role="alert"
+              >
+                {message()}
               </div>
             )}
           </Show>
@@ -149,8 +171,8 @@ function ReplyCard(props: {
           <Show
             when={!props.post.isDeleted}
             fallback={
-              <p class="rounded-md border border-dashed border-base-content/20 p-4 italic text-base-content/50">
-                This post has been deleted.
+              <p class="border border-dashed border-brand-300 bg-base-200 p-4 italic text-brand-700">
+                Dit bericht is verwijderd.
               </p>
             }
           >
@@ -166,42 +188,42 @@ function ReplyCard(props: {
               <Show
                 when={editing()}
                 fallback={
-                  <p class="whitespace-pre-wrap text-base leading-relaxed">
+                  <p class="max-w-[70ch] whitespace-pre-wrap text-base leading-[1.68] text-wrap-pretty">
                     {props.post.content}
                   </p>
                 }
               >
                 <div class="space-y-2">
                   <textarea
-                    class="textarea textarea-bordered min-h-24 w-full"
+                    class="textarea min-h-24 w-full rounded-none border-brand-300 bg-base-100"
                     value={draft()}
                     onInput={(event) => setDraft(event.currentTarget.value)}
                     disabled={busy()}
-                    aria-label="Edit reply"
+                    aria-label="Reactie bewerken"
                   />
                   <div class="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      class="btn btn-ghost btn-xs"
+                    <Button
+                      variant="ghost"
+                      size="xs"
                       onClick={() => setEditing(false)}
                       disabled={busy()}
                     >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-primary btn-xs"
+                      Annuleren
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="xs"
                       onClick={saveEdit}
                       disabled={busy()}
                     >
-                      Save
-                    </button>
+                      Opslaan
+                    </Button>
                   </div>
                 </div>
               </Show>
               <Show when={props.post.editedAt}>
-                <p class="text-xs text-base-content/50">
-                  Edited on {formatDateTime(props.post.editedAt)}
+                <p class="text-[12.5px] text-brand-700">
+                  Bewerkt op {formatDateTime(props.post.editedAt)}
                 </p>
               </Show>
               <PostInteractions postId={props.post.id} />
@@ -215,19 +237,27 @@ function ReplyCard(props: {
 
 export function PostList(props: PostListProps) {
   return (
-    <section class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
+    <section aria-label="Berichten">
+      <PostBit
+        post={props.openingPost}
+        number={1}
+        onQuote={props.onQuote}
+        onChanged={props.onChanged}
+        canReply={props.canReply}
+      />
+
       <For
         each={props.replies}
         fallback={
-          <div class="rounded-sm border border-dashed border-base-content/20 bg-base-100 p-6 text-center text-sm text-base-content/60">
-            No replies yet. Be the first to join the discussion.
-          </div>
+          <p class="border-b border-brand-300 bg-base-100 px-6 py-8 text-sm text-brand-700 sm:px-[30px]">
+            Nog geen reacties. Schuif gerust als eerste aan.
+          </p>
         }
       >
         {(post, index) => (
-          <ReplyCard
+          <PostBit
             post={post}
-            index={index()}
+            number={index() + 2}
             onQuote={props.onQuote}
             onChanged={props.onChanged}
             canReply={props.canReply}
@@ -236,19 +266,15 @@ export function PostList(props: PostListProps) {
       </For>
 
       <Show when={props.nextCursor}>
-        <div class="flex justify-center py-2">
-          <button
-            type="button"
-            class="btn btn-outline btn-sm"
+        <div class="flex justify-center bg-base-100 py-4">
+          <Button
+            variant="surface"
+            size="sm"
+            loading={props.loadingMore}
             onClick={() => void props.onLoadMore()}
-            disabled={props.loadingMore}
           >
-            {props.loadingMore ? (
-              <span class="loading loading-spinner loading-xs" />
-            ) : (
-              "Load more replies"
-            )}
-          </button>
+            {props.loadingMore ? "Reacties laden…" : "Meer reacties laden"}
+          </Button>
         </div>
       </Show>
     </section>

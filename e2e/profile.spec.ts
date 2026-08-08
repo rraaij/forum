@@ -41,10 +41,10 @@ test("edits profile fields with replacement semantics", async ({ page }) => {
   await signUp(page, "profile-editor");
   await page.goto("/profile");
 
-  await fillWhenReady(page.getByLabel("Display name"), "Ramon");
-  await fillWhenReady(page.getByLabel("Location"), "Netherlands");
+  await fillWhenReady(page.getByLabel("Weergavenaam"), "Ramon");
+  await fillWhenReady(page.getByLabel("Woonplaats"), "Netherlands");
   await fillWhenReady(page.getByLabel("Website"), "https://example.com");
-  await page.getByRole("button", { name: "Save profile" }).click();
+  await page.getByRole("button", { name: "Profiel opslaan" }).click();
   await expect(page.getByText("Profile saved.")).toBeVisible();
 
   let stored = await storedProfile("profile-editor");
@@ -52,8 +52,8 @@ test("edits profile fields with replacement semantics", async ({ page }) => {
   expect(stored.location).toBe("Netherlands");
 
   // Replacement, not patch: clearing a field and saving nulls it.
-  await page.getByLabel("Location").fill("");
-  await page.getByRole("button", { name: "Save profile" }).click();
+  await page.getByLabel("Woonplaats").fill("");
+  await page.getByRole("button", { name: "Profiel opslaan" }).click();
   await expect(page.getByText("Profile saved.")).toBeVisible();
 
   stored = await storedProfile("profile-editor");
@@ -86,12 +86,12 @@ test("uploads and removes an avatar, and adds a gallery photo", async ({
     mimeType: "image/png",
     buffer: png,
   });
-  await expect(page.getByAltText("Gallery item 1")).toBeVisible();
-  await page.getByRole("button", { name: "Save profile" }).click();
+  await expect(page.getByAltText("Foto 1")).toBeVisible();
+  await page.getByRole("button", { name: "Profiel opslaan" }).click();
   await expect(page.getByText("Profile saved.")).toBeVisible();
   expect((await storedProfile("avatar-editor")).photo_urls).toHaveLength(1);
 
-  await page.getByRole("button", { name: "Remove avatar" }).click();
+  await page.getByRole("button", { name: "Verwijderen", exact: true }).click();
   await expect(page.getByText("Avatar removed.")).toBeVisible();
   expect((await storedProfile("avatar-editor")).image).toBeNull();
 });
@@ -109,7 +109,7 @@ test("the server rejects an invalid website and reports it", async ({
     input.value = "ftp://example.com";
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  await page.getByRole("button", { name: "Save profile" }).click();
+  await page.getByRole("button", { name: "Profiel opslaan" }).click();
 
   await expect(page.getByRole("alert")).toContainText(
     "Website must be a valid http(s) URL",
@@ -136,14 +136,14 @@ test("activity links navigate to root and deeply nested topics", async ({
   await createTopicViaUi(page, "Nested topic", "posted deep");
 
   await page.goto("/profile");
-  const activity = page.locator("table:has(th:text-is('Kind'))");
+  const activity = page.getByRole("region", { name: "Wat je laatst deed" });
   await expect(
     activity.getByRole("link", { name: "Nested topic" }),
   ).toBeVisible();
 
   // Both posts are opening posts, read from the row's own kind.
-  await expect(activity.locator("tbody tr")).toHaveCount(2);
-  await expect(activity.getByText("Reply")).toHaveCount(0);
+  await expect(activity.locator("[data-activity-item]")).toHaveCount(2);
+  await expect(activity.getByText("reactie")).toHaveCount(0);
 
   await activity.getByRole("link", { name: "Nested topic" }).click();
   await expect(page).toHaveURL(

@@ -67,10 +67,10 @@ export async function seedBoards(
 
 export async function signUp(page: Page, name: string): Promise<void> {
   await page.goto("/auth/sign-up");
-  await fillWhenReady(page.getByPlaceholder("Name"), name);
-  await fillWhenReady(page.getByPlaceholder("Email"), `${name}@example.test`);
-  await fillWhenReady(page.getByPlaceholder("Password"), "test-password-123");
-  await page.getByRole("button", { name: "Sign Up" }).click();
+  await fillWhenReady(page.getByLabel("Naam"), name);
+  await fillWhenReady(page.getByLabel("E-mailadres"), `${name}@example.test`);
+  await fillWhenReady(page.getByLabel("Wachtwoord"), "test-password-123");
+  await page.getByRole("button", { name: "Account aanmaken" }).click();
   await page.waitForURL("/");
 }
 

@@ -13,27 +13,25 @@ type QuoteSnapshotProps = {
 
 export function QuoteSnapshot(props: QuoteSnapshotProps) {
   return (
-    <blockquote class="relative rounded-sm border border-slate-200 bg-slate-100 px-5 py-3 text-slate-700">
+    <blockquote class="relative border-l-4 border-accent bg-base-300 px-4 py-3 text-brand-800">
       <Show when={props.onRemove}>
         {(onRemove) => (
           <button
             type="button"
-            class="btn btn-ghost btn-xs absolute right-1 top-1 text-slate-500"
+            class="absolute top-1 right-1 min-h-8 min-w-8 text-sm font-bold text-brand-700 hover:text-primary"
             onClick={onRemove()}
-            aria-label="Remove quoted post"
+            aria-label="Quote verwijderen"
           >
             ×
           </button>
         )}
       </Show>
-      <p class="whitespace-pre-wrap pr-5 text-sm leading-relaxed">
-        <span aria-hidden="true">“</span>
-        {props.content}
-        <span aria-hidden="true">”</span>
+      <p class="pr-7 text-[12.5px] font-bold text-base-content">
+        {props.authorName} schreef:
       </p>
-      <footer class="mt-1 text-xs font-semibold text-slate-500">
-        — {props.authorName}
-      </footer>
+      <p class="mt-1 max-w-[70ch] whitespace-pre-wrap text-sm leading-relaxed">
+        {props.content}
+      </p>
     </blockquote>
   );
 }

@@ -1,6 +1,6 @@
+import { Avatar, Button, Tag } from "@forum/ui";
 import { Link, useRouter } from "@tanstack/solid-router";
-import { createMemo, createSignal, For, onMount, Show } from "solid-js";
-import PageHeader from "@/components/PageHeader";
+import { createSignal, For, onMount, Show } from "solid-js";
 import {
   fetchTopicPage,
   type PostView,
@@ -17,16 +17,18 @@ type TopicDetailPageProps = {
   page: () => TopicPage;
 };
 
+const numberFormatter = new Intl.NumberFormat("nl-NL");
+
 const formatDateTime = (value: string | null | undefined) =>
   value
-    ? new Date(value).toLocaleString(undefined, {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
+    ? new Date(value).toLocaleString("nl-NL", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "Unknown time";
+    : "onbekend tijdstip";
 
 export function TopicDetailPage(props: TopicDetailPageProps) {
   const router = useRouter();
@@ -37,6 +39,9 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
   const openingPost = () => props.page().openingPost;
   const breadcrumbs = () => props.page().breadcrumbs;
   const rootSlug = () => breadcrumbs()[0]?.slug ?? "";
+  const boardName = () => breadcrumbs().at(-1)?.name ?? "het forum";
+  const openingAuthorName = () =>
+    openingPost().author.displayName ?? openingPost().author.name ?? "Onbekend";
 
   const [quotedPost, setQuotedPost] = createSignal<PostView | null>(null);
   let focusComposer: (() => void) | undefined;
@@ -58,12 +63,6 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
     });
   });
 
-  const openingPostText = createMemo(() => {
-    const post = openingPost();
-    if (post.isDeleted) return "This opening post has been deleted.";
-    return post.content;
-  });
-
   const canReply = () => Boolean(user()) && !topic().isLocked;
 
   const reload = async () => {
@@ -76,8 +75,11 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
   };
 
   return (
-    <div class="flex h-[calc(100dvh-7.5rem)] min-h-0 flex-col gap-2 overflow-hidden">
-      <div class="breadcrumbs shrink-0 text-sm">
+    <div class="-mx-4 -my-2 bg-base-200 text-base-content">
+      <nav
+        class="breadcrumbs border-b-2 border-base-content bg-base-300 px-6 py-2 text-[13.5px] sm:px-10"
+        aria-label="Kruimelpad"
+      >
         <ul>
           <li>
             <Link to="/">Forum</Link>
@@ -111,26 +113,53 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
           </For>
           <li>{topic().title}</li>
         </ul>
-      </div>
+      </nav>
 
-      <div class="shrink-0">
-        <PageHeader
-          forumCode={breadcrumbs().at(-1)?.slug.toUpperCase() ?? ""}
-          title={topic().title}
-          description={openingPostText()}
-          author={{
-            name: openingPost().author.displayName ?? openingPost().author.name,
-            image: openingPost().author.image,
-            createdAt: formatDateTime(openingPost().createdAt),
-          }}
-          stats={[
-            { label: "views", value: String(topic().viewCount) },
-            { label: "replies", value: String(topic().replyCount) },
-          ]}
-        />
-      </div>
+      <header class="border-b-2 border-base-content px-6 py-7 sm:px-10">
+        <div class="flex flex-wrap items-center gap-2 text-[12.5px] text-brand-700">
+          <Show when={topic().isPinned}>
+            <Tag variant="secondary">Vastgepind</Tag>
+          </Show>
+          <span>
+            in {boardName()} · {numberFormatter.format(topic().replyCount)}{" "}
+            {topic().replyCount === 1 ? "reactie" : "reacties"} ·{" "}
+            {numberFormatter.format(topic().viewCount)} keer bekeken
+          </span>
+        </div>
+
+        <h1 class="mt-2 max-w-[30ch] text-[34px] leading-[1.08] font-semibold tracking-[-0.01em] text-wrap-balance">
+          {topic().title}
+        </h1>
+
+        <div class="mt-5 flex flex-wrap items-end justify-between gap-4">
+          <div class="flex items-center gap-3 text-[13.5px] text-brand-800">
+            <Avatar
+              src={openingPost().author.image}
+              name={openingAuthorName()}
+              size="sm"
+              alt=""
+            />
+            <p>
+              <strong class="font-extrabold text-base-content">
+                {openingAuthorName()}
+              </strong>{" "}
+              opende dit topic op {formatDateTime(openingPost().createdAt)}
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <Button variant="surface">Abonneer</Button>
+            <Show when={canReply()}>
+              <Button variant="primary" onClick={() => focusComposer?.()}>
+                Reageer
+              </Button>
+            </Show>
+          </div>
+        </div>
+      </header>
 
       <PostList
+        openingPost={openingPost()}
         replies={replies.items()}
         onQuote={handleQuote}
         onChanged={reload}
@@ -143,6 +172,8 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
       <Show when={canReply()}>
         <ReplyComposer
           topicId={topic().id}
+          userName={user()?.name ?? "jij"}
+          userImage={user()?.image}
           quotedPost={quotedPost()}
           onRemoveQuote={() => setQuotedPost(null)}
           onPosted={reload}
@@ -153,8 +184,8 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
       </Show>
 
       <Show when={topic().isLocked}>
-        <div class="alert sticky bottom-0 z-20 shrink-0 border border-warning/40 bg-warning/10 text-warning-content shadow-[0_-8px_24px_rgba(0,0,0,0.08)]">
-          <span>This topic is locked. No new replies can be posted.</span>
+        <div class="border-t-2 border-base-content bg-flame-100 px-6 py-4 text-sm font-semibold text-flame-800 sm:px-10">
+          Dit topic is gesloten. Je kunt niet meer reageren.
         </div>
       </Show>
     </div>

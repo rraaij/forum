@@ -1,3 +1,4 @@
+import { Button } from "@forum/ui";
 import { createResource, For, Show } from "solid-js";
 import { useSession } from "@/lib/auth-client";
 import {
@@ -8,11 +9,8 @@ import {
 } from "./api";
 
 /*
- * Minimal reaction and vote controls for a post. Deliberately small: this
- * is not a reaction/vote redesign (plan section 5.6), it just surfaces the
- * existing endpoints so the behavior is reachable and testable from the UI.
- * Counts are refetched after each mutation rather than optimistically
- * patched, so what is displayed always matches the server.
+ * Counts are refetched after each mutation rather than optimistically patched,
+ * so the controls always display the server's authoritative reaction state.
  */
 const QUICK_REACTIONS = ["👍", "🎉", "❤️"];
 
@@ -47,48 +45,42 @@ export function PostInteractions(props: PostInteractionsProps) {
   };
 
   return (
-    <div class="flex flex-wrap items-center gap-3 pt-2">
-      <div class="flex items-center gap-1">
-        <For each={QUICK_REACTIONS}>
-          {(emoji) => (
-            <button
-              type="button"
-              class="btn btn-ghost btn-xs"
-              aria-label={`React with ${emoji}`}
-              disabled={!signedIn()}
-              onClick={() => void react(emoji)}
-            >
-              <span aria-hidden="true">{emoji}</span>
-              <Show when={countFor(emoji) > 0}>
-                <span class="ml-1 text-xs">{countFor(emoji)}</span>
-              </Show>
-            </button>
-          )}
-        </For>
-      </div>
+    <div class="flex flex-wrap items-center gap-2 pt-2">
+      <For each={QUICK_REACTIONS}>
+        {(emoji) => (
+          <Button
+            type="button"
+            variant="surface"
+            size="xs"
+            aria-label={`Reageer met ${emoji}`}
+            disabled={!signedIn()}
+            onClick={() => void react(emoji)}
+          >
+            <span aria-hidden="true">{emoji}</span>
+            <Show when={countFor(emoji) > 0}>
+              <span class="ml-1 text-xs">{countFor(emoji)}</span>
+            </Show>
+          </Button>
+        )}
+      </For>
 
-      <div class="flex items-center gap-1">
+      <div class="ml-auto flex items-center gap-1 text-sm font-bold text-brand-700">
         <button
           type="button"
-          class="btn btn-ghost btn-xs"
-          aria-label="Upvote"
+          class="min-h-8 min-w-8 text-primary disabled:opacity-40"
+          aria-label="Omhoog stemmen"
           disabled={!signedIn()}
           onClick={() => void vote(1)}
         >
           ▲
         </button>
-        {/* role="status" both supports aria-label and announces changes. */}
-        <span
-          class="text-xs font-semibold"
-          role="status"
-          aria-label="Vote score"
-        >
+        <span role="status" aria-label="Stemscore">
           {score()?.score ?? 0}
         </span>
         <button
           type="button"
-          class="btn btn-ghost btn-xs"
-          aria-label="Downvote"
+          class="min-h-8 min-w-8 text-primary disabled:opacity-40"
+          aria-label="Omlaag stemmen"
           disabled={!signedIn()}
           onClick={() => void vote(-1)}
         >

@@ -40,7 +40,7 @@ async function deleteBoardDirectly(boardId: string): Promise<void> {
  * lookup is scoped to its own form by heading text.
  */
 function form(page: Page, heading: string | RegExp) {
-  return page.locator("form", { hasText: heading });
+  return page.getByRole("form", { name: heading });
 }
 
 async function fillBoardForm(
@@ -49,10 +49,10 @@ async function fillBoardForm(
   values: { name: string; slug: string; abbreviation: string },
 ): Promise<void> {
   const scope = form(page, heading);
-  await fillWhenReady(scope.getByLabel("Name", { exact: true }), values.name);
+  await fillWhenReady(scope.getByLabel("Naam", { exact: true }), values.name);
   await fillWhenReady(scope.getByLabel("Slug", { exact: true }), values.slug);
   await fillWhenReady(
-    scope.getByLabel("Abbreviation (max 5)"),
+    scope.getByLabel("Afkorting (max. 5)"),
     values.abbreviation,
   );
 }
@@ -90,69 +90,69 @@ test("admin creates, edits, moves, previews, and purges a subtree", async ({
   await expect(page).toHaveURL("/admin/boards");
 
   // Create a root category.
-  await page.getByRole("button", { name: "New root category" }).click();
-  await fillBoardForm(page, "New root category", {
+  await page.getByRole("button", { name: "Nieuw forum" }).click();
+  await fillBoardForm(page, "Nieuw forum", {
     name: "Gaming",
     slug: "gaming",
     abbreviation: "GAM",
   });
-  await form(page, "New root category")
-    .getByRole("button", { name: "Create board" })
+  await form(page, "Nieuw forum")
+    .getByRole("button", { name: "Forum aanmaken" })
     .click();
-  await expect(page.getByText(/Created “Gaming”/)).toBeVisible();
+  await expect(page.getByText(/“Gaming” aangemaakt/)).toBeVisible();
 
   // Add a nested subforum under it.
   await page
     .getByRole("button", { name: /Gaming/ })
     .first()
     .click();
-  await page.getByRole("button", { name: /Add subforum under/ }).click();
-  await fillBoardForm(page, /New subforum under/, {
+  await page.getByRole("button", { name: "Subforum toevoegen" }).click();
+  await fillBoardForm(page, /Nieuw subforum onder/, {
     name: "Consoles",
     slug: "consoles",
     abbreviation: "CON",
   });
-  await form(page, /New subforum under/)
-    .getByRole("button", { name: "Create board" })
+  await form(page, /Nieuw subforum onder/)
+    .getByRole("button", { name: "Forum aanmaken" })
     .click();
-  await expect(page.getByText(/Created “Consoles”/)).toBeVisible();
+  await expect(page.getByText(/“Consoles” aangemaakt/)).toBeVisible();
 
   // Edit the subforum's description.
   await page
     .getByRole("button", { name: /Consoles/ })
     .first()
     .click();
-  const editForm = form(page, /Edit “Consoles”/);
+  const editForm = form(page, /Bewerk “Consoles”/);
   await fillWhenReady(
-    editForm.getByLabel("Description"),
+    editForm.getByLabel("Omschrijving"),
     "Console gaming talk",
   );
-  await editForm.getByRole("button", { name: "Save changes" }).click();
-  await expect(page.getByText(/Updated “Consoles”/)).toBeVisible();
+  await editForm.getByRole("button", { name: "Opslaan" }).click();
+  await expect(page.getByText(/“Consoles” bijgewerkt/)).toBeVisible();
 
   // Promote it to a root board via the dedicated move command.
-  await page.getByLabel("New parent board").selectOption("");
-  await page.getByRole("button", { name: "Move board" }).click();
-  await expect(page.getByText(/Moved “Consoles”/)).toBeVisible();
+  await page.getByLabel("Bovenliggend forum").selectOption("");
+  await page.getByRole("button", { name: "Verplaatsen" }).click();
+  await expect(page.getByText(/“Consoles” verplaatst/)).toBeVisible();
 
   // Purge requires previewing the impact and retyping the exact name.
   await page
     .getByRole("button", { name: /Consoles/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "Preview impact" }).click();
-  await expect(page.getByText(/Boards:/)).toBeVisible();
+  await page.getByRole("button", { name: "Dit forum verwijderen →" }).click();
+  await expect(page.getByText(/Forums:/)).toBeVisible();
 
   const deleteButton = page.getByRole("button", {
-    name: "Permanently delete",
+    name: "Definitief verwijderen",
   });
   await expect(deleteButton).toBeDisabled();
-  await fillWhenReady(page.getByLabel("Confirm board name"), "consoles");
+  await fillWhenReady(page.getByLabel("Bevestig forumnaam"), "consoles");
   await expect(deleteButton).toBeDisabled(); // case-sensitive
-  await fillWhenReady(page.getByLabel("Confirm board name"), "Consoles");
+  await fillWhenReady(page.getByLabel("Bevestig forumnaam"), "Consoles");
   await expect(deleteButton).toBeEnabled();
   await deleteButton.click();
-  await expect(page.getByText(/Deleted 1 board/)).toBeVisible();
+  await expect(page.getByText(/1 forum.*verwijderd/)).toBeVisible();
 
   // Gaming survives; Consoles is gone from the tree.
   await expect(page.getByRole("button", { name: /Gaming/ })).toBeVisible();
@@ -169,8 +169,8 @@ test("a stale purge preview is cleared and must be reviewed again", async ({
   await page.goto("/admin/boards");
 
   await page.getByRole("button", { name: /Stale/ }).first().click();
-  await page.getByRole("button", { name: "Preview impact" }).click();
-  await expect(page.getByText(/Boards:/)).toBeVisible();
+  await page.getByRole("button", { name: "Dit forum verwijderen →" }).click();
+  await expect(page.getByText(/Forums:/)).toBeVisible();
 
   // Change the server-owned impact after preview without refreshing the UI.
   const status = await page.evaluate(async (boardId) => {
@@ -188,17 +188,17 @@ test("a stale purge preview is cleared and must be reviewed again", async ({
   }, ids.Stale);
   expect(status).toBe(201);
 
-  await fillWhenReady(page.getByLabel("Confirm board name"), "Stale");
-  await page.getByRole("button", { name: "Permanently delete" }).click();
+  await fillWhenReady(page.getByLabel("Bevestig forumnaam"), "Stale");
+  await page.getByRole("button", { name: "Definitief verwijderen" }).click();
   await expect(
     page.getByText(/contents changed since the purge preview/i),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Permanently delete" }),
+    page.getByRole("button", { name: "Definitief verwijderen" }),
   ).toHaveCount(0);
-  await expect(page.getByLabel("Confirm board name")).toHaveCount(0);
+  await expect(page.getByLabel("Bevestig forumnaam")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Preview impact" }),
+    page.getByRole("button", { name: "Dit forum verwijderen →" }),
   ).toBeVisible();
 });
 
@@ -215,16 +215,16 @@ test("a failed impact refresh clears the previous preview", async ({
     .getByRole("button", { name: /Vanishing/ })
     .first()
     .click();
-  await page.getByRole("button", { name: "Preview impact" }).click();
-  await expect(page.getByText(/Boards:/)).toBeVisible();
+  await page.getByRole("button", { name: "Dit forum verwijderen →" }).click();
+  await expect(page.getByText(/Forums:/)).toBeVisible();
   await deleteBoardDirectly(ids.Vanishing);
 
-  await page.getByRole("button", { name: "Preview impact" }).click();
+  await page.getByRole("button", { name: "Dit forum verwijderen →" }).click();
   await expect(page.getByText("Board not found")).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Permanently delete" }),
+    page.getByRole("button", { name: "Definitief verwijderen" }),
   ).toHaveCount(0);
-  await expect(page.getByLabel("Confirm board name")).toHaveCount(0);
+  await expect(page.getByLabel("Bevestig forumnaam")).toHaveCount(0);
 });
 
 test("a cycle-producing move is rejected with a clear message", async ({
@@ -243,8 +243,8 @@ test("a cycle-producing move is rejected with a clear message", async ({
 
   // Try to move Root under its own grandchild.
   await page.getByRole("button", { name: /Root/ }).first().click();
-  await page.getByLabel("New parent board").selectOption(ids.Leaf);
-  await page.getByRole("button", { name: "Move board" }).click();
+  await page.getByLabel("Bovenliggend forum").selectOption(ids.Leaf);
+  await page.getByRole("button", { name: "Verplaatsen" }).click();
   // The server's typed BOARD_CYCLE error reaches the operator verbatim.
   await expect(page.getByRole("alert")).toContainText(
     /cannot become its own ancestor/i,
@@ -260,17 +260,19 @@ test("a signed-in user can react, unreact, upvote, switch, and unvote", async ({
   await createTopicViaUi(page, "Reactions topic", "Opening post");
 
   await fillWhenReady(
-    page.getByPlaceholder("Write your reply..."),
+    page.getByPlaceholder(
+      "Typ je reactie… quoten kan met de knop bij een post.",
+    ),
     "React to me",
   );
-  await page.getByRole("button", { name: "Post Reply" }).click();
+  await page.getByRole("button", { name: "Plaats reactie" }).click();
   await expect(page.getByText("React to me")).toBeVisible();
 
   const article = page.locator("article", { hasText: "React to me" });
-  const thumbsUp = article.getByRole("button", { name: "React with 👍" });
-  const upvote = article.getByRole("button", { name: "Upvote" });
-  const downvote = article.getByRole("button", { name: "Downvote" });
-  const score = article.getByLabel("Vote score");
+  const thumbsUp = article.getByRole("button", { name: "Reageer met 👍" });
+  const upvote = article.getByRole("button", { name: "Omhoog stemmen" });
+  const downvote = article.getByRole("button", { name: "Omlaag stemmen" });
+  const score = article.getByLabel("Stemscore");
 
   // React, then remove the reaction (toggle semantics).
   await thumbsUp.click();

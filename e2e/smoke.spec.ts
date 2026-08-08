@@ -20,10 +20,10 @@ test("forum renders for a signed-out visitor", async ({ page }) => {
 
 test("sign-up through the UI creates a working session", async ({ page }) => {
   await page.goto("/auth/sign-up");
-  await fillWhenReady(page.getByPlaceholder("Name"), "e2e-user");
-  await fillWhenReady(page.getByPlaceholder("Email"), "e2e-user@example.test");
-  await fillWhenReady(page.getByPlaceholder("Password"), "test-password-123");
-  await page.getByRole("button", { name: "Sign Up" }).click();
+  await fillWhenReady(page.getByLabel("Naam"), "e2e-user");
+  await fillWhenReady(page.getByLabel("E-mailadres"), "e2e-user@example.test");
+  await fillWhenReady(page.getByLabel("Wachtwoord"), "test-password-123");
+  await page.getByRole("button", { name: "Account aanmaken" }).click();
 
   // Successful sign-up navigates home and the header shows the user.
   await page.waitForURL("/");

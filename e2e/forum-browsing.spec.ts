@@ -69,25 +69,34 @@ test("creates a topic, replies, quotes, edits, and soft-deletes", async ({
 
   // Reply.
   await fillWhenReady(
-    page.getByPlaceholder("Write your reply..."),
+    page.getByPlaceholder(
+      "Typ je reactie… quoten kan met de knop bij een post.",
+    ),
     "First reply",
   );
-  await page.getByRole("button", { name: "Post Reply" }).click();
+  await page.getByRole("button", { name: "Plaats reactie" }).click();
   await expect(page.getByText("First reply")).toBeVisible();
 
   // Quote that reply: only the ID is sent; the server snapshots it.
   const composer = page.locator("section", {
-    has: page.getByPlaceholder("Write your reply..."),
+    has: page.getByPlaceholder(
+      "Typ je reactie… quoten kan met de knop bij een post.",
+    ),
   });
-  await page.getByRole("button", { name: "quote" }).first().click();
+  const firstReply = page
+    .locator('article[data-post-kind="reply"]', { hasText: "First reply" })
+    .first();
+  await firstReply.getByRole("button", { name: "quoten" }).click();
   // The composer preview is the signal that the quote actually registered;
   // posting before it appears would send a reply with no quotedPostId.
   await expect(composer.locator("blockquote")).toContainText("First reply");
   await fillWhenReady(
-    page.getByPlaceholder("Write your reply..."),
+    page.getByPlaceholder(
+      "Typ je reactie… quoten kan met de knop bij een post.",
+    ),
     "Quoting you",
   );
-  await page.getByRole("button", { name: "Post Reply" }).click();
+  await page.getByRole("button", { name: "Plaats reactie" }).click();
 
   // The composer clears its preview only after the post succeeds and route
   // invalidation is under way: a stable point to assert the rendered list.
@@ -99,9 +108,9 @@ test("creates a topic, replies, quotes, edits, and soft-deletes", async ({
   await expect(quotingReply.locator("blockquote")).toContainText("First reply");
 
   // Edit the quoted (first) reply; the immutable snapshot must NOT change.
-  await page.getByRole("button", { name: "bewerk" }).first().click();
-  await page.getByLabel("Edit reply").fill("First reply (edited)");
-  await page.getByRole("button", { name: "Save" }).click();
+  await firstReply.getByRole("button", { name: "bewerken" }).click();
+  await page.getByLabel("Reactie bewerken").fill("First reply (edited)");
+  await page.getByRole("button", { name: "Opslaan" }).click();
   await expect(page.getByText("First reply (edited)")).toBeVisible();
   await expect(quotingReply.locator("blockquote")).toContainText("First reply");
   await expect(quotingReply.locator("blockquote")).not.toContainText(
@@ -109,8 +118,8 @@ test("creates a topic, replies, quotes, edits, and soft-deletes", async ({
   );
 
   // Soft-delete it: the row remains, marked deleted.
-  await page.getByRole("button", { name: "verwijder" }).first().click();
-  await expect(page.getByText("This post has been deleted.")).toBeVisible();
+  await firstReply.getByRole("button", { name: "verwijderen" }).click();
+  await expect(page.getByText("Dit bericht is verwijderd.")).toBeVisible();
 });
 
 test("locked topics reject replies without corrupting UI state", async ({
@@ -129,9 +138,13 @@ test("locked topics reject replies without corrupting UI state", async ({
 
   await page.reload();
   await expect(
-    page.getByText("This topic is locked. No new replies can be posted."),
+    page.getByText("Dit topic is gesloten. Je kunt niet meer reageren."),
   ).toBeVisible();
-  await expect(page.getByPlaceholder("Write your reply...")).toHaveCount(0);
+  await expect(
+    page.getByPlaceholder(
+      "Typ je reactie… quoten kan met de knop bij een post.",
+    ),
+  ).toHaveCount(0);
 });
 
 test("reloading does not increase views; a new browser session does", async ({
@@ -295,10 +308,10 @@ test("reply Load more preserves ordering without duplicates", async ({
   }
 
   await page.reload();
-  const replies = page.locator("article");
+  const replies = page.locator('article[data-post-kind="reply"]');
   await expect(replies).toHaveCount(25);
 
-  await page.getByRole("button", { name: "Load more replies" }).click();
+  await page.getByRole("button", { name: "Meer reacties laden" }).click();
   await expect(replies).toHaveCount(26);
 
   // Ascending order preserved across the page boundary, no repeats.

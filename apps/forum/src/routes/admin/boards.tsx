@@ -52,9 +52,7 @@ function AdminBoardsRoute() {
   return (
     <Show
       when={allowed()}
-      fallback={
-        <p class="text-sm text-base-content/60">Checking permissions…</p>
-      }
+      fallback={<p class="text-sm text-brand-700">Toegang controleren…</p>}
     >
       <BoardManagerPage index={index} />
     </Show>

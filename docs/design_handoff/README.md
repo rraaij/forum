@@ -1,400 +1,469 @@
-# Handoff: Forum redesign — warm teal & orange, Modernist
-
-## Overview
-
-A visual redesign of the forum app and the shared foundation for three sibling apps
-(news, fotoboek, dm) that will live in the same monorepo behind one login.
-
-The direction: Modernist — flat, architectural, zero corner radius, structure drawn
-with rules rather than shadows — recolored from the system's stock near-mono red to a
-warm **teal primary / orange secondary** palette, with **Newsreader** serif headings
-over **Archivo** body text.
-
-Scope of this bundle:
-- Every route that exists today in `apps/forum` has a design.
-- A shared app shell that all four apps use.
-- Empty / loading / error / no-access states.
-- A 390px narrow breakpoint.
-- Rough sketches for the news and dm apps (not specs — see Fidelity).
-- A drop-in DaisyUI 5 theme file.
-
-## About the design files
-
-`Forum Redesign.dc.html` is a **design reference created in HTML** — a prototype showing
-intended look and structure. It is **not production code to copy**. Every frame in it is
-inline-styled static markup with no real state or data.
-
-The task is to recreate these designs in the existing codebase: **SolidJS + TanStack
-Router + Tailwind v4 + daisyUI 5**, using that stack's established patterns. Do not port
-the inline styles. Translate them into daisyUI semantic classes and Tailwind utilities,
-backed by the theme file described under Design Tokens.
-
-Open the file in a browser. It pans and zooms. Options are labelled `1a`, `2b`, `3c` … —
-those ids are used throughout this document.
-
-## Fidelity
-
-**High fidelity** for the forum (turns 2, 3, 4): final colors, type, spacing and copy.
-Recreate these closely.
-
-**Low fidelity** for the news and dm apps (turn 5, options `5a` / `5b`): correct palette
-and shell, but the layouts are sketches to establish that the system stretches to other
-apps. Treat them as direction, not specification. Design properly when those apps start.
-
-**Superseded:** turn 1 (`1a`–`1f`) is the original exploration in the old grey/red
-palette. Kept for history. **Do not implement turn 1.**
-
----
-
-## Foundations
-
-### The app shell (`4a`)
-
-One bar across all four apps. This is the single most reusable thing in the design.
-
-- Height ~50px, `bg-neutral text-neutral-content` (#201e1d on #eef7f6 text).
-- Brand at far left, `font-black text-base`, padding `px-[18px] py-[13px]`, with a
-  `border-r border-ink-600` separator.
-- App links follow: forum · nieuws · fotoboek · dm. `text-[13.5px] px-[14px]`.
-  Inactive `text-ink-300`; **active is `text-flame-400` (#e79a4a) + `font-bold`** —
-  this is the only navigation use of orange.
-- Right side: unread badge (`bg-secondary text-secondary-content`, `text-[11.5px]
-  font-extrabold px-[7px] py-[2px]`, square), greeting `text-[13px] text-ink-200`,
-  avatar 30×30.
-- Signed-out variant replaces greeting/avatar with an `inloggen` link
-  (`text-brand-400`) and a small primary "Aanmelden" button.
-
-Below the bar each app draws its **own** second row: `bg-base-300`, `border-b-2
-border-base-content`, `text-[13.5px] px-[18px] py-[9px]`, holding breadcrumb (forum),
-filter tabs (news), or album scopes (fotoboek). The dm app has no second row.
-
-### Structural rules
-
-Only two weights, everywhere:
-- **Strong**: `border-2 border-base-content` (#201e1d) — between major page sections.
-- **Hairline**: `border border-brand-300` (#b0dbd7) — between rows and cells.
-
-No shadows except one: the dialog in `4c` uses `6px 6px 0 rgba(32,30,29,.12)` — a hard
-offset block, not a blur. Nothing else floats.
-
-### Surfaces
-
-| Role | Hex | Where |
-|---|---|---|
-| `base-100` | `#ffffff` | post bodies, form panels, article text |
-| `base-200` | `#eef7f6` | page ground |
-| `base-300` | `#d7ecea` | category cells, author columns, side panels, composers |
-
-### Where orange is allowed
-
-Orange (`#e07b1e`) is the second accent and is **restricted**. Use it only for:
-active nav marker · pinned/sticky tags · unread counts · category numerals · the active
-branch in the admin hierarchy · section kickers in the news app · `<mark>` search
-highlights.
-
-Never for buttons, links, or general emphasis. Teal carries those.
-
-### Typography
-
-- Headings — Newsreader 600, `letter-spacing: -0.01em`. Page h1 42px, card h3 20–23px.
-- Body, tables, buttons, form labels, meta — Archivo.
-- Field labels: `text-[12px] font-bold uppercase tracking-[.05em] text-brand-700`.
-- Meta lines: `text-[12.5px]–[13px] text-brand-700` (#0b5f5b).
-- Body copy in a tinted panel: `text-brand-800` (#08494a).
-- Post body: `text-base leading-[1.68] max-w-[70ch] text-wrap-pretty`.
-
-Google Fonts:
-`Archivo:wght@400;500;600;700;800;900` and `Newsreader:opsz,wght@6..72,400..700`.
-
----
-
-## Screens
-
-Each entry lists the design id, the route it implements, and the source files it replaces.
-
-### 1. Forum index — `2a`
-**Route** `apps/forum/src/routes/index.tsx`
-
-Hero band on `base-200`: greeting line (`17 nieuwe reacties` in `text-flame-700`), h1 at
-54px/1.0, and a right column with a lede paragraph and two buttons (primary "Nieuw
-topic", `bg-base-300` "Actieve topics"). Below it a wrapping row of subforum chips
-(`bg-base-300 border border-brand-300 px-[11px] py-[6px] text-[12.5px] font-semibold`),
-which hover to `bg-primary text-primary-content`.
-
-Then a **3-column category grid**, `border-t-2`, each cell `bg-base-300 p-[24px_26px]`
-with a `border-r border-brand-300` between: a 38×38 orange numeral square, an h3, a
-description, a `2 subforums · 412 topics` line, and a footer rule with the last poster's
-avatar and a relative time.
-
-Finally "Waar nu over gepraat wordt": four rows, each avatar + title + `author in
-Subforum · N reacties · relative time` + right-aligned clock time.
-
-**Components**: `AppShell`, `Button`, `Tag`, `Avatar`, `CategoryCard`, `TopicRow`.
-
-### 2. Topic detail — `2b`
-**Route** `apps/forum/src/routes/categories/…` (topic view)
-
-Breadcrumb in the shell bar. Header band: pinned tag + `in SolidJS · 37 reacties · 1.104
-keer bekeken`, h1 34px `max-w-[30ch]`, opener line with avatar, then "Abonneer" and
-"Reageer" buttons right-aligned.
-
-**Postbit**: `grid-cols-[210px_1fr]`. Left `aside` on `bg-base-300` with a 60×60 avatar,
-username 17px/800, `lid sinds 2021 · 1.402 posts`, and an optional italic tagline. Admins
-get a `text-primary` role line. Right column `bg-base-100 p-[22px_30px_24px]`: a meta row
-(`vrijdag 18:40 · eerste post` left, quoten/link/bewerken right), the body, then a
-reaction row — emoji reaction buttons on `bg-base-300`, a ghost "+ reactie", and a
-right-aligned vote stack `▲ 24 ▼`.
-
-Quotes: `bg-base-300 border-l-4 border-accent p-[12px_16px]`, attribution above.
-Inline code: `bg-base-300 px-[5px] py-[1px]`.
-
-Composer at the bottom on `bg-base-300`, `border-t-2`: avatar + "Wat denk jij, marijn?",
-a textarea (`bg-base-100`, min-height 104px), primary "Plaats reactie", ghost
-"Voorbeeld", and a right-aligned note.
-
-**Components**: `AppShell`, `PostBit`, `Quote`, `ReactionRow`, `VoteStack`, `Composer`.
-
-### 3. Profile — `3a`
-**Route** `apps/forum/src/routes/profile.tsx`
-**Replaces** `features/profile-edit/ProfileForm.tsx`, `ProfileGallery.tsx`,
-`features/profile-activity/ActivityPanel.tsx`
-
-Header band with h1 "Je profiel" and two right-aligned buttons ("Wachtwoord wijzigen"
-ghost, "Profiel opslaan" primary).
-
-`grid-cols-[300px_1fr]`. Left `aside` on `bg-base-300`: 88×88 avatar, username 21px,
-email, "Avatar kiezen" / "Verwijderen", then a stat list separated by a hairline —
-lid sinds / posts / topics gestart / rol (the role is an orange `Tag`).
-
-Right column on `bg-base-100`, three stacked sections divided by hairlines:
-- **Over jou** — `grid-cols-2 gap-[16px_20px]`: Weergavenaam, Geboortedatum, Woonplaats,
-  Website, then Over mij spanning both columns. Field names map 1:1 to
-  `ProfileForm.tsx` (`displayName`, `dateOfBirth`, `location`, `website`, `about`).
-- **Je fotoboek** — `grid-cols-6 gap-2`, square cells, one dashed "+ toevoegen" slot.
-  Counter reads `4 van de 12 plekken gebruikt`.
-- **Wat je laatst deed** — rows with a type tag (`reactie` teal / `topic` orange), the
-  title, and a relative time.
-
-### 4. Admin — board management — `3b`
-**Route** `apps/forum/src/routes/admin/boards.tsx`
-**Replaces** `features/board-management/BoardManagerPage.tsx`
-
-Header band: `3 categorieën · 12 subforums · 1.284 topics`, h1 "Forums beheren",
-"Volgorde opslaan" + "Nieuw forum".
-
-`grid-cols-[1fr_340px]`. Left is the hierarchy on `bg-base-100`: a column header row
-(Naam / Topics / Posts / Acties, `text-[11.5px] font-bold uppercase tracking-[.06em]`),
-then rows. **Depth is expressed by left padding**: category `pl-[30px]`, depth 1
-`pl-[62px]`, depth 2 `pl-[90px]`, depth 3 `pl-[118px]`, each nested row prefixed by a
-`└` in `text-brand-300`. Categories sit on `bg-base-200` with a drag handle (`⠿`) and an
-orange numeral square. The **row being edited** is `bg-flame-100 border-l-[3px]
-border-secondary` with its text and figures in `text-flame-700`.
-
-Right `aside` on `bg-base-300`, `border-l-2`: an orange "Bewerken" kicker, the board
-name as h4, then Naam / Omschrijving / Bovenliggend forum fields on `bg-base-100`, two
-toggle rows separated by hairlines (on = `bg-primary` with a 16×16 knob at right; off =
-`bg-brand-300` with the knob at left — both square), Opslaan / Annuleren, and a
-`text-flame-700` delete link at the bottom.
-
-### 5. Sign in — `3c`
-**Route** `apps/forum/src/routes/auth/sign-in.tsx`
-
-`grid-cols-[1.05fr_1fr]`. Left is a **teal poster half** (`bg-primary
-text-primary-content`, `p-[44px_40px_40px]`): an uppercase kicker, h1 46px/1.02 in
-`base-200`, a lede in `base-300`, and at the bottom a row of three overlapping 34×34
-avatars (`-ml-2`, `border-2 border-primary`) with `1.284 leden waren vandaag online`.
-
-Right on `bg-base-100`: h2 "Inloggen", sub-line, the error state (`bg-flame-100
-border-l-[3px] border-secondary p-[10px_14px] text-flame-700`), E-mailadres and
-Wachtwoord fields (the errored field takes `border-flame-400`), a "Ingelogd blijven"
-checkbox next to a "Wachtwoord vergeten?" link, and a full-width 44px primary button.
-Below a `border-t-2`: "Nog geen account?" with a `bg-base-300` button.
-
-Fields match `sign-in.tsx` (email, password). "Ingelogd blijven" is **not** in the
-current code — it's a proposal; drop it or wire it to Better Auth's session length.
-
-### 6. Sign up — `4b` (top frame)
-**Route** `apps/forum/src/routes/auth/sign-up.tsx`
-
-Same poster/form split as `3c`, different copy. Fields are exactly those in
-`sign-up.tsx`: **Naam, E-mailadres, Wachtwoord** with a "Minimaal 8 tekens" hint
-matching the existing `minLength={8}`. No username, no confirm field, no terms
-checkbox — those were considered and cut for parity with the code.
-
-### 7. Forgot password — `4b` (bottom frame) — PROPOSED
-No route exists. The frame is badged "Voorstel — nog geen route". Left: email field and
-"Stuur de link". Right on `bg-base-300`: the post-submit confirmation. Build only if you
-want the flow; it needs a Better Auth reset endpoint first.
-
-### 8. Change password dialog — `4c` (top-left) — PROPOSED AS DIALOG
-**Currently** `features/profile-edit/ChangePasswordDialog.tsx` renders inline as a card
-section, not a dialog. The design proposes promoting it to a real modal.
-
-Fields match the code exactly: currentPassword / newPassword / confirmPassword, min 8.
-The design stacks them vertically; the code uses `sm:grid-cols-3`. Either works — the
-vertical stack reads better in a narrow modal.
-
-Dialog: `bg-base-100 border-2 border-base-content`, offset block shadow, title 22px,
-a footer divided by a hairline with primary "Wijzigen", ghost "Annuleren", and a
-right-aligned "Je blijft ingelogd" note (reflects `revokeOtherSessions: false`).
-
-### 9. System states — `4c`
-Four states, each a component in `packages/ui`:
-
-- **Empty** (`bg-base-100`): h4 21px, one explanatory sentence `max-w-[42ch]`, one
-  primary action. Copy: "Nog niets hier" / "Start het eerste topic".
-- **Loading** (`bg-base-100`): a **skeleton, never a spinner** — 34×34 avatar blocks and
-  11px/9px bars in `bg-base-300` fading to `bg-base-200` on the last row.
-- **Error** (`bg-flame-100`): orange kicker, h4, explanation in `text-flame-800`, a
-  `bg-secondary text-secondary-content` retry button, and a small `foutcode 502 · 10:04`.
-  This is the one place a solid orange button is correct.
-- **No access** (`bg-base-300`): h4, explanation, primary "Terug naar het forum" plus a
-  ghost "Andere account gebruiken". Backs the role guard in `admin/boards.tsx`.
-
-### 10. Search & pagination — `4d`
-Search bar: a 44px input with `border-base-content` plus a primary "Zoeken". Filter
-chips below — the **active filter is orange** with an `✕`, the rest `bg-base-300`.
-Result count and sort sit right-aligned.
-
-Results: avatar, title, a 2-line snippet with `<mark>` highlights (`bg-flame-100
-text-flame-700`), and a meta line.
-
-Pagination on `border-t-2`: ghost "← Vorige", then 34×34 square page cells — current is
-`bg-primary text-primary-content font-extrabold`, others `bg-base-300` — an ellipsis, the
-last page, "Volgende →" on `bg-base-300`, and `pagina 1 van 9` right-aligned.
-
-Note: the backend uses keyset pagination, so numbered pages may not be cheap. If the API
-only exposes cursors, ship Vorige/Volgende and drop the numerals.
-
-### 11. Narrow / mobile — `4e`
-Breakpoint drawn at **390px**.
-
-- Shell collapses to brand + badge + avatar + `☰`.
-- h1 drops 54px → 28px.
-- Category cells stack full width, hairline between.
-- **The postbit stops being two columns**: the author becomes a 30×30 avatar with the
-  name and meta inline above the body.
-- Composer becomes a single-line input pinned above the fold with a "Plaats" button.
-- Every touch target is **≥44px**.
-
-### 12. News app — `5a` — SKETCH
-Second row holds category tabs. A `grid-cols-[1.5fr_1fr]` lead: article on `bg-base-100`
-with an orange "Voorpagina" tag, h1 40px, a 16:8 image, a lede at 16.5px, and a footer
-rule. Right rail on `bg-base-300` — "Ook vandaag" items with orange category kickers,
-then a `border-t-2` block "Nu op het forum" linking into the forum. Below, a 3-up card
-grid with 4:3 images.
-
-### 13. DM app — `5b` — SKETCH
-`grid-cols-[320px_1fr]`, min-height 520px. Left on `bg-base-300`: header with unread
-count and a full-width "Nieuw bericht", then conversation rows — the active one is
-`bg-base-200 border-l-[3px] border-primary`; unread ones carry an orange count badge and
-bold their preview. Right: a conversation header on `bg-base-200` with block/report
-actions, then messages — **incoming** are `bg-base-300` left-aligned, **own** are
-`bg-primary text-primary-content` in a `flex-row-reverse` row with a "gelezen" receipt.
-A date divider centers between days. Composer on `bg-base-300`, `border-t-2`.
-
----
-
-## Interactions & behavior
-
-- **Row hover**: `bg-[#eae9e9]` on light rows; on hover the title turns
-  `text-primary`. Whole rows are links, not just their titles.
-- **Chip hover**: `bg-primary text-primary-content border-primary`.
-- **Focus**: `outline: 2px solid var(--color-primary); outline-offset: 2px` — set
-  globally in the theme file. Never leave the browser default.
-- **Pressed**: one step past the base — `bg-brand-700` for primary.
-- **Transitions**: none beyond color. Nothing slides, scales, or fades. Motion is not
-  part of this system.
-- **Times are relative** everywhere ("20 min geleden", "net", "gisteren"), except the
-  right-hand clock column on the index, which is absolute.
-- **Copy voice**: Dutch, sentence case, conversational, lightly wry. Subforum names stay
-  in their original English ("Web Development", "Self-Hosting"). Never shout in caps
-  except in small uppercase kickers and field labels.
-
-## State
-
-Nothing in the design needs new state beyond what the routes already carry. Two
-additions if you build the proposals: `forgotPassword` (email, submitted, error) and
-promoting `ChangePasswordDialog` to modal open/close.
-
-The admin page's edit panel implies a `selectedBoardId` — currently
-`BoardManagerPage.tsx` should be checked for whether it already has one.
-
-## Design tokens
-
-All tokens live in **`packages/config/theme.css`** (included in this bundle). It is a
-daisyUI 5 `@plugin "daisyui/theme"` block plus a Tailwind v4 `@theme` block, matching the
-repo's Tailwind 4.3 / daisyUI 5.7 setup.
-
-Wire it up — in each app's `src/styles.css`:
-
-```css
-@import "tailwindcss";
-@import "@forum/config/theme.css";
-```
-
-…replacing the current `@plugin "daisyui";` line.
-
-Semantic roles:
-
-| Token | Hex | Use |
-|---|---|---|
-| `primary` | `#0e7f78` | buttons, links, active controls |
-| `primary-content` | `#eef7f6` | on primary |
-| `secondary` | `#e07b1e` | the restricted orange (see above) |
-| `secondary-content` | `#fdf2e4` | on secondary |
-| `accent` | `#2ba39a` | avatars, quote bars |
-| `neutral` | `#201e1d` | the app bar, all body text |
-| `base-100/200/300` | `#ffffff` / `#eef7f6` / `#d7ecea` | surfaces |
-| `error` | `#8f2f14` | destructive only |
-| `warning` | `#e07b1e` | same as secondary |
-| `success` | `#0a6b66` | deep teal, deliberately not green |
-
-Ramps are namespaced `--color-brand-*` (teal), `--color-flame-*` (orange),
-`--color-ink-*` (greys), each 100–900, so they don't collide with Tailwind's built-in
-`teal-*` / `amber-*` utilities.
-
-**`primary` is `brand-600`, not `brand-500`.** `brand-500` (#2ba39a) is the lighter mid
-teal used for avatars and quote bars.
-
-Geometry: all radii **0**. Border width 1px. Depth 0, noise 0.
-
-Two decisions worth reviewing: `error` (#8f2f14) is the only color outside both ramps —
-orange couldn't carry destructive when it already means "active/pinned". And `success` is
-deep teal rather than green, to keep the palette tight. Both are one-line changes.
-
-## Assets
-
-None. Every image in the design is a grey placeholder block. Avatars are letter tiles
-(square, `bg` from the ink or teal ramp, `font-extrabold`, initial in `base-200`) — the
-existing `packages/ui/src/components/Avatar.tsx` should be restyled to match: square,
-not round.
-
-Icons: Lucide, per the design system. The design uses only three glyphs — `☰`, `⠿`
-(drag), `└` (tree) — replace with Lucide `menu`, `grip-vertical`, `corner-down-right`.
-
-## Suggested build order
-
-1. Drop in `theme.css`, verify the existing forum still renders. The token swap alone
-   gets you most of the way.
-2. Build `AppShell` in `packages/ui` from `4a`, then `EmptyState`, `ErrorState`,
-   `Skeleton`, `Pagination`, `Field`, `Tag`. Restyle the existing `Button`, `Badge`,
-   `Avatar`, `Modal` to semantic classes only — no raw hexes anywhere in `packages/ui`.
-3. Screens, forum first: index → topic → profile → admin → auth.
-4. News and dm get proper designs when those apps start.
-
-## Files in this bundle
-
-- `Forum Redesign.dc.html` — the design document. Open in a browser; pan and zoom.
-  Options are labelled with their ids.
-- `support.js` — runtime required by the design document. Not part of the app.
-- `theme.css` — the daisyUI theme. Goes to `packages/config/theme.css`.
-- `screens/` — a PNG of every design, named by id:
-  - `2a-index.png`, `2b-topic.png`
-  - `3a-profile.png`, `3b-admin-boards.png`, `3c-sign-in.png`
-  - `4a-app-shell.png`, `4b-sign-up-forgot-password.png`,
-    `4c-dialog-and-states.png`, `4d-search-pagination.png`, `4e-mobile-390px.png`
-  - `5a-news-sketch.png`, `5b-dm-sketch.png` (sketches — see Fidelity)
-
-  Captured at 1× so pixel measurements read true. Turn 1 is not included; it is
-  superseded.
+# Forum redesign implementation checklist
+
+This document tracks the implementation of the warm teal and orange Modernist
+redesign for `apps/forum` and the shared UI foundation for the future news,
+fotoboek, and dm apps.
+
+The screenshots in [`screens/`](./screens/) are the visual source of truth.
+`Forum Redesign.dc.html` is a static design reference, not production code to
+copy. Recreate it with SolidJS, TanStack Router, Tailwind v4, and daisyUI 5.
+
+## Status legend
+
+- `- [x]` means implemented in the current worktree.
+- `- [ ]` means work remains. Items marked **Partial** describe what already exists and
+  what must still be completed.
+- **Deferred** means deliberately out of the current forum scope, not done.
+
+## Scope and fidelity
+
+- [x] Treat forum screens `2a` through `4e` as high-fidelity references for
+  color, typography, spacing, structure, responsive behavior, and Dutch copy.
+- [x] Treat news `5a` and dm `5b` as low-fidelity direction only.
+- [x] Do not implement superseded turn 1 (`1a` through `1f`).
+- [ ] Finish every existing `apps/forum` route, including category and board
+  listing routes that still use the legacy presentation.
+- [ ] Keep all existing mutations, route guards, server boundaries, and data
+  behavior intact while replacing presentation.
+
+## Current critical path
+
+Complete these phases in order. The shared shell and removal of legacy root
+layout constraints affect every screen and should land before screen-level
+pixel tuning.
+
+1. Integrate `AppShell` in `apps/forum/src/routes/__root.tsx`.
+2. Remove legacy global styling that conflicts with the design system.
+3. Finish and integrate shared system-state components.
+4. Complete desktop routes and all currently inert controls.
+5. Complete the 390px layouts and touch-target pass.
+6. Run visual, accessibility, type, and formatting verification.
+
+## Phase 1: Design system foundations
+
+Reference: all screens, especially [`4a-app-shell.png`](./screens/4a-app-shell.png).
+
+### Theme and typography
+
+- [x] Add the daisyUI 5 theme and Tailwind token ramps in
+  `packages/config/theme.css`.
+- [x] Import `@forum/config/theme.css` from `apps/forum/src/styles.css`.
+- [x] Define the teal `brand-*`, orange `flame-*`, and neutral `ink-*` ramps.
+- [x] Set semantic colors: primary teal `#0e7f78`, restricted secondary orange
+  `#e07b1e`, white/teal surfaces, dark neutral, deep-teal success, and dark-red
+  destructive error.
+- [x] Set every radius, depth, and noise token to zero.
+- [x] Configure Archivo for body/UI copy and Newsreader 600 for headings.
+- [x] Load the required Google Font weights in the root document.
+- [x] Add the global teal `:focus-visible` outline.
+- [ ] Change the root document language from `en` to `nl` so assistive
+  technology applies Dutch pronunciation and language rules.
+- [ ] Remove the unsupported dark-theme toggle and local-storage theme state,
+  or explicitly design and tokenise a dark theme before retaining it. The
+  supplied theme is light-only.
+
+### Visual rules
+
+- [x] Provide semantic strong rules (`2px` base content) and hairlines (`1px`
+  brand 300) in the shared theme.
+- [ ] Use strong rules only between major sections and hairlines between rows
+  and cells across every route.
+- [ ] Remove rounded cards, blurred shadows, gradients, and floating surfaces
+  left in the root layout, category routes, board routes, and global styles.
+- [ ] Remove raw colors from application and shared UI presentation. Known
+  conflicts include the blue root header and `.forum-page-header-bg`.
+- [ ] Remove non-color transitions and collapse animations. The design permits
+  color changes only; nothing should slide, scale, or fade.
+- [ ] Restrict orange to active app navigation, pinned tags, unread counts,
+  category numerals, the active admin branch, news kickers, and search marks.
+  Keep ordinary actions and links teal.
+- [ ] Standardise field labels, metadata, body copy, and post measure/leading to
+  the typography rules visible in the references.
+
+### Shared primitives
+
+- [x] Implement and export `AppShell`, `Avatar`, `Badge`, `Button`, `Field`,
+  `Modal`, `Tag`, `EmptyState`, `ErrorState`, `Skeleton`, and `Pagination` from
+  `packages/ui`.
+- [x] Make avatars square and support letter-tile fallbacks.
+- [x] Implement the modal's only allowed shadow as a hard `6px 6px` offset.
+- [x] Support numbered and opaque-cursor modes in `Pagination`.
+- [ ] Audit every primitive against the screenshots and remove any remaining
+  radius, shadow, transition, or orange-action violations.
+- [ ] Add Lucide for interface icons and replace text glyphs such as the mobile
+  menu, admin grip, and hierarchy branch with `menu`, `grip-vertical`, and
+  `corner-down-right` icons.
+- [ ] Verify shared primitives meet WCAG keyboard, name, contrast, and disabled
+  state requirements.
+
+## Phase 2: Shared app shell - `4a`
+
+Reference: [`4a-app-shell.png`](./screens/4a-app-shell.png).
+
+- [x] Build a reusable 50px neutral `AppShell` with brand, app navigation,
+  account area, unread count, optional secondary row, and mobile menu slots.
+- [ ] **Partial - integrate the shell in the forum root.** Replace the legacy
+  sticky blue two-row header in `apps/forum/src/routes/__root.tsx` with the
+  shared `AppShell` while preserving session, profile-avatar preview, admin
+  navigation, sign-out, and route outlet behavior.
+- [ ] Render app links in this order: `forum`, `nieuws`, `fotoboek`, `dm`; mark
+  forum active with orange text and bold weight.
+- [ ] Implement the signed-in account variant with unread badge, Dutch greeting,
+  and 30px avatar.
+- [ ] Implement the signed-out account variant with teal `inloggen` link and a
+  small primary `Aanmelden` action.
+- [ ] Let each route/app supply its own second row. Use it for forum breadcrumbs;
+  do not hard-code page-specific navigation in `AppShell`.
+- [ ] Remove the root `max-w-7xl px-4 py-2` wrapper and route-level negative
+  margin workarounds after the shell owns page framing.
+- [ ] Replace English root labels and account menu copy with the specified Dutch
+  voice.
+- [ ] Implement the 390px shell as brand, unread badge, avatar/account action,
+  and a labeled menu button with a functional mobile navigation disclosure.
+
+## Phase 3: Shared states and cross-route behavior - `4c`, `4d`
+
+References:
+[`4c-dialog-and-states.png`](./screens/4c-dialog-and-states.png) and
+[`4d-search-pagination.png`](./screens/4d-search-pagination.png).
+
+### System states - `4c`
+
+- [x] Implement the white empty state with title, explanatory copy, and optional
+  primary action.
+- [x] Implement the row skeleton with square avatar blocks and fading final row;
+  do not use a spinner.
+- [x] Implement the orange-tinted error state with optional retry action and
+  error-code metadata.
+- [ ] Add and export a no-access state on `base-300` with `Terug naar het forum`
+  and `Andere account gebruiken` actions.
+- [ ] Replace ad hoc loading copy with `Skeleton` where a page-sized content
+  shape is known, beginning with profile and admin access checks.
+- [ ] Replace ad hoc route/root error cards with `ErrorState`, Dutch copy, and a
+  real retry action where retry is possible.
+- [ ] Use the no-access state for failed admin access rather than silently
+  redirecting every unauthorised user.
+- [ ] Add representative empty, loading, error, and no-access states to route or
+  component tests.
+
+### Search and pagination - `4d`
+
+- [x] Build the reusable pagination presentation.
+- [ ] Implement a functional search route or search results surface. The current
+  root search input is legacy and has no submit behavior.
+- [ ] Add the 44px search field and primary `Zoeken` action.
+- [ ] Add removable filter chips with orange reserved for the active filter.
+- [ ] Add result count and sorting controls.
+- [ ] Add result rows with avatar, linked title, two-line snippet, metadata, and
+  `<mark>` highlights using flame 100/flame 700.
+- [ ] Integrate `Pagination` with search results and topic/category lists where
+  pagination is required.
+- [ ] Prefer previous/next cursor controls when the backend cannot cheaply
+  provide numbered pages; do not manufacture page totals from keyset cursors.
+
+### Global interactions
+
+- [ ] Make every list row a single semantic link where the design presents the
+  whole row as clickable.
+- [ ] Apply light-row hover color and teal title hover consistently.
+- [ ] Apply teal chip hover consistently.
+- [ ] Ensure primary pressed states use brand 700.
+- [ ] Use relative Dutch times everywhere except the index's right-hand clock
+  column.
+- [ ] Keep copy Dutch, sentence case, conversational, and lightly wry. Preserve
+  original English subforum names.
+
+## Phase 4: Forum screens
+
+### Forum index - `2a`
+
+Reference: [`2a-index.png`](./screens/2a-index.png).
+Route: `apps/forum/src/routes/index.tsx`.
+
+- [x] Implement the greeting/hero band, Newsreader heading, lede, and two-action
+  layout.
+- [x] Implement wrapping subforum chips with teal hover.
+- [x] Implement the three-column category grid with orange numerals, metadata,
+  and latest-activity footer.
+- [x] Implement the four-row active-topic section with relative and clock times.
+- [x] Add an empty category state.
+- [ ] **Partial - replace placeholder content with real data.** The greeting's
+  unread count and lede statistics are currently hard-coded.
+- [ ] Wire `Nieuw topic` to a valid creation flow and `Actieve topics` to the
+  active-topic section or route.
+- [ ] Provide real category descriptions instead of slug-specific presentation
+  copy when the read model can supply them.
+- [ ] Show the designed author and reaction counts in active-topic metadata.
+  Current data substitutes a board topic count for the intended reply count.
+- [ ] Verify category cards and topic rows are fully clickable and keyboard
+  accessible.
+- [ ] Pixel-check desktop and 390px layouts after the root shell is integrated.
+
+### Category and board listings
+
+Routes:
+`apps/forum/src/routes/categories/$categorySlug/index.tsx` and
+`apps/forum/src/routes/categories/$categorySlug/subcategories/$boardId/index.tsx`.
+
+- [ ] Replace legacy `card`, rounded, shadow, zebra-table, gradient-header, and
+  English-copy presentation with the shared Modernist system.
+- [ ] Move breadcrumbs into the app shell's forum secondary row.
+- [ ] Restyle `ForumGrid`, `PageHeader`, `TopicsList`, and create-topic controls
+  using the same category/topic-row vocabulary as `2a` and `2b`.
+- [ ] Convert not-found and empty states to shared system-state components with
+  Dutch copy.
+- [ ] Preserve cursor loading and canonical topic navigation behavior.
+- [ ] Verify nested boards at every supported hierarchy depth.
+
+### Topic detail - `2b`
+
+Reference: [`2b-topic.png`](./screens/2b-topic.png).
+Routes: both topic routes under `apps/forum/src/routes/categories/`.
+
+- [x] Implement breadcrumbs, pinned metadata, title, opener identity, and header
+  actions.
+- [x] Implement the responsive postbit structure with author panel and white
+  post body.
+- [x] Implement quote snapshots, inline editing, deletion, and deleted-post
+  presentation.
+- [x] Implement reaction and vote mutations.
+- [x] Implement the reply composer and quote-to-reply flow.
+- [x] Preserve cursor-based reply loading and deduplicated topic view recording.
+- [ ] Move breadcrumbs into the shell's secondary row once shell integration is
+  complete.
+- [ ] Wire `Abonneer`; it is currently an inert button.
+- [ ] Wire `Voorbeeld`; it is currently an inert button.
+- [ ] Add the designed post permalink/copy-link action.
+- [ ] Add the ghost `+ reactie` affordance or document that the fixed quick
+  reaction set intentionally replaces it.
+- [ ] Extend the read model for member-since date, post count, optional tagline,
+  and role so the author column can match the reference without placeholders.
+- [ ] Correct admin role display so it depends on the post author, not whether
+  the signed-in viewer is both author and admin.
+- [ ] Translate server/auth mutation errors before rendering them to users.
+- [ ] Complete the 390px compact author header and composer behavior described
+  in the mobile phase.
+
+### Profile - `3a`
+
+Reference: [`3a-profile.png`](./screens/3a-profile.png).
+Route: `apps/forum/src/routes/profile.tsx`.
+
+- [x] Implement the profile header and save action.
+- [x] Implement the 300px identity sidebar, avatar controls, member metadata,
+  and role tag.
+- [x] Implement the two-column personal details form with the existing profile
+  fields.
+- [x] Implement the responsive photo gallery, 12-photo limit, add slot, removal,
+  and used-place counter.
+- [x] Implement recent activity rows and topic links.
+- [ ] **Partial - replace derived placeholder statistics.** Posts and topics are
+  currently inferred from the limited recent-activity response rather than
+  authoritative totals.
+- [ ] Replace `Laden…` and the signed-out paragraph with shared loading and
+  no-access/auth-required states.
+- [ ] Make `alles bekijken` navigate to a real complete activity view or remove
+  it; it currently jumps to the same short list.
+- [ ] Complete the change-password modal work listed below.
+- [ ] Verify save, avatar, gallery, validation, success, and error flows at
+  desktop and 390px widths.
+
+### Admin board management - `3b`
+
+Reference: [`3b-admin-boards.png`](./screens/3b-admin-boards.png).
+Route: `apps/forum/src/routes/admin/boards.tsx`.
+
+- [x] Preserve the client navigation guard and server-side endpoint guards.
+- [x] Implement the metrics/header layout and two-column hierarchy/editor view.
+- [x] Keep `selectedId` state and re-resolve the selected board after loader
+  invalidation.
+- [x] Implement hierarchy indentation, category numerals, selected branch, and
+  editor/create panel.
+- [x] Preserve create, update, move, and destructive purge behavior.
+- [ ] Wire `Volgorde opslaan`; it is currently inert.
+- [ ] Implement accessible drag/reorder behavior or replace the drag affordance
+  with explicit ordering controls.
+- [ ] Replace text glyphs for the grip and hierarchy branch with Lucide icons.
+- [ ] Supply and display real post counts; the hierarchy currently renders an
+  em dash for every row.
+- [ ] Align the editor fields with the reference: parent selection plus the two
+  square toggle rows, while retaining required domain fields in an appropriate
+  advanced section if they cannot be removed.
+- [ ] Use the shared no-access state for unauthorised users and a skeleton while
+  access is being checked.
+- [ ] Verify that mobile hierarchy controls remain usable without relying on a
+  clipped desktop table.
+
+### Sign in - `3c`
+
+Reference: [`3c-sign-in.png`](./screens/3c-sign-in.png).
+Route: `apps/forum/src/routes/auth/sign-in.tsx`.
+
+- [x] Implement the teal poster/form split, copy, overlapping avatars, and
+  member activity line.
+- [x] Implement email/password submission, loading state, field error styling,
+  and the sign-up callout.
+- [ ] Translate Better Auth error messages into safe Dutch user-facing copy
+  instead of displaying provider messages directly.
+- [ ] Decide whether `Ingelogd blijven` is intentionally omitted or wire it to
+  Better Auth session duration; record the decision in this checklist.
+- [ ] Keep `Wachtwoord vergeten?` non-interactive until the deferred reset flow
+  exists, or hide it so it is not mistaken for a link.
+- [ ] Replace hard-coded recent-member names/counts with real data or explicitly
+  document them as editorial poster copy.
+- [ ] Verify the stacked narrow layout, focus order, autofill, and error
+  announcement.
+
+### Sign up - `4b` top frame
+
+Reference:
+[`4b-sign-up-forgot-password.png`](./screens/4b-sign-up-forgot-password.png).
+Route: `apps/forum/src/routes/auth/sign-up.tsx`.
+
+- [x] Implement the matching teal poster/form split.
+- [x] Keep the form aligned with the existing contract: name, email, and a
+  minimum-eight-character password only.
+- [x] Preserve submission, loading, autocomplete, and sign-in navigation.
+- [ ] Translate Better Auth error messages into safe Dutch user-facing copy.
+- [ ] Replace hard-coded member names/counts with real data or explicitly
+  document them as editorial poster copy.
+- [ ] Verify the stacked narrow layout, focus order, autofill, and error
+  announcement.
+
+## Phase 5: Proposals and supporting UI
+
+### Forgot password - `4b` bottom frame
+
+Reference:
+[`4b-sign-up-forgot-password.png`](./screens/4b-sign-up-forgot-password.png).
+
+- [ ] **Deferred - backend prerequisite.** Add a Better Auth password-reset
+  endpoint with enumeration-safe responses before creating this route.
+- [ ] Add email, submitted, loading, and error state once the backend contract
+  exists.
+- [ ] Implement the email form and post-submit confirmation from the reference.
+- [ ] Turn the sign-in screen's forgot-password text into a real link only after
+  this route exists.
+
+### Change password modal - `4c` top-left
+
+Reference:
+[`4c-dialog-and-states.png`](./screens/4c-dialog-and-states.png).
+
+- [x] Preserve the Better Auth change-password call with
+  `revokeOtherSessions: false`.
+- [x] Build a reusable accessible native-dialog `Modal` with controlled close,
+  Escape, backdrop, title, footer, and offset shadow behavior.
+- [ ] **Partial - promote `ChangePasswordDialog` to the shared modal.** It is
+  currently an English inline card opened from a `details` dropdown.
+- [ ] Stack current, new, and confirm password fields vertically with Dutch
+  labels and errors.
+- [ ] Add primary `Wijzigen`, ghost/surface `Annuleren`, and the footer note
+  `Je blijft ingelogd`.
+- [ ] Close and clear all credential values after success or cancellation and
+  restore focus to the trigger.
+- [ ] Test validation mismatch, minimum length, provider failure, success,
+  Escape, backdrop close, and keyboard focus behavior.
+
+## Phase 6: Narrow/mobile - `4e`
+
+Reference: [`4e-mobile-390px.png`](./screens/4e-mobile-390px.png).
+
+- [ ] Complete and visually compare every high-fidelity screen at 390px.
+- [ ] Collapse the shell to brand, badge, avatar/account, and functional menu.
+- [x] Let the index heading reduce from 54px to 42px on its current narrow
+  breakpoint.
+- [ ] Match the reference's 28px mobile index heading.
+- [x] Stack index category cells and profile/admin columns at narrow widths.
+- [x] Collapse postbits from two columns to an inline compact author header.
+- [ ] Match the reference's 30px post avatar and compact metadata placement.
+- [ ] Replace the mobile reply composer with the compact single-line field and
+  `Plaats` action shown in `4e`, without removing the full desktop composer.
+- [ ] Make every interactive touch target at least 44px, including vote,
+  reaction, photo removal, admin, pagination, and account controls.
+- [ ] Prevent horizontal clipping in category tables, admin hierarchy, auth
+  forms, modal content, long topic titles, and breadcrumbs.
+
+## Phase 7: Deferred sibling apps - `5a`, `5b`
+
+### News - `5a`
+
+Reference: [`5a-news-sketch.png`](./screens/5a-news-sketch.png).
+
+- [ ] **Deferred - no news app exists yet.** Create a proper product design when
+  implementation starts; use this frame only as shell/palette direction.
+- [ ] Reuse `AppShell` with news active and category tabs in the second row.
+- [ ] Validate the lead story, side rail, forum cross-links, and three-card grid
+  against real news data before implementation.
+
+### DM - `5b`
+
+Reference: [`5b-dm-sketch.png`](./screens/5b-dm-sketch.png).
+
+- [ ] **Deferred - no dm app exists yet.** Create a proper product design when
+  implementation starts; use this frame only as shell/palette direction.
+- [ ] Reuse `AppShell` with dm active and no second row.
+- [ ] Validate conversation states, unread counts, moderation actions,
+  receipts, date dividers, and composer behavior against the future messaging
+  contract before implementation.
+
+### Fotoboek
+
+- [ ] **Deferred - no fotoboek screen or app exists in this bundle.** Reuse the
+  shell and theme, but design its routes before building them.
+
+## Phase 8: Verification and completion criteria
+
+### Automated checks
+
+- [ ] Run `pnpm exec tsc -b` after implementation changes.
+- [ ] Run `pnpm check` after implementation changes.
+- [ ] Run the relevant unit/integration tests for auth, profile, forum reads,
+  topic interactions, and board management.
+- [ ] Add or update Playwright coverage for shell navigation, auth, index,
+  topic/reply interactions, profile editing, admin access, and mobile behavior.
+
+### Visual and accessibility checks
+
+- [ ] Compare every high-fidelity screen at its desktop reference size.
+- [ ] Compare every high-fidelity screen at 390px.
+- [ ] Verify zero unintended radius, shadow, gradient, or motion.
+- [ ] Verify orange is used only in its restricted roles.
+- [ ] Verify heading/body fonts and all font weights load correctly.
+- [ ] Verify keyboard focus order and visible focus on every route.
+- [ ] Verify landmarks, heading order, labels, error announcements, dialog
+  behavior, and current-page/current-item semantics.
+- [ ] Verify color contrast and 200% zoom/reflow.
+- [ ] Verify all interactive controls perform an action; remove or disable any
+  remaining visual-only controls.
+
+### Definition of done
+
+- [ ] All forum items above are checked except explicitly deferred sibling apps
+  and the backend-gated forgot-password proposal.
+- [ ] No existing forum route presents the legacy blue/rounded/shadow design.
+- [ ] Shared shell and state components are integrated, not merely exported.
+- [ ] Desktop and 390px screenshots pass visual review.
+- [ ] Type, formatting, unit/integration, and end-to-end checks pass.
+
+## Reference files
+
+- `Forum Redesign.dc.html`: pannable/zoomable static design document.
+- `support.js`: design-document runtime, not application code.
+- `theme.css`: original handoff theme source; implemented in
+  `packages/config/theme.css`.
+- `screens/2a-index.png`
+- `screens/2b-topic.png`
+- `screens/3a-profile.png`
+- `screens/3b-admin-boards.png`
+- `screens/3c-sign-in.png`
+- `screens/4a-app-shell.png`
+- `screens/4b-sign-up-forgot-password.png`
+- `screens/4c-dialog-and-states.png`
+- `screens/4d-search-pagination.png`
+- `screens/4e-mobile-390px.png`
+- `screens/5a-news-sketch.png`
+- `screens/5b-dm-sketch.png`
+
+Screens are captured at 1x, so pixel measurements read directly. Turn 1 is not
+included because it is superseded.

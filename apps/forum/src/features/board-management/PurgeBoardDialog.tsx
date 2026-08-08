@@ -1,3 +1,4 @@
+import { Button, Field } from "@forum/ui";
 import { createSignal, Show } from "solid-js";
 import type { BoardTreeNode } from "@/features/forum-read/api";
 import { fetchPurgeImpact, type PurgeImpact } from "./api";
@@ -9,10 +10,8 @@ type PurgeBoardDialogProps = {
 };
 
 /*
- * Recursive purge is a confirmed, race-checked command (plan section 5.3):
- * the operator must SEE the impact, then retype the board name exactly.
- * The submitted counts are sent back so the server can reject the purge
- * with PURGE_IMPACT_CHANGED if anything changed since the preview.
+ * Purge remains a previewed, exact-name-confirmed, race-checked command. The
+ * lighter treatment does not weaken any part of that security boundary.
  */
 export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
   const [impact, setImpact] = createSignal<PurgeImpact | null>(null);
@@ -30,7 +29,9 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
       setImpact(await fetchPurgeImpact(props.board.id));
     } catch (error) {
       setPreviewError(
-        error instanceof Error ? error.message : "Could not load impact",
+        error instanceof Error
+          ? error.message
+          : "Impact kon niet worden geladen",
       );
     } finally {
       setLoading(false);
@@ -38,67 +39,68 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
   };
 
   return (
-    <section class="space-y-3 rounded-lg border border-error/40 bg-error/5 p-3">
-      <h3 class="font-bold text-error">Delete board and all its content</h3>
-
+    <section class="mt-5 border-t border-brand-300 pt-4">
       <button
         type="button"
-        class="btn btn-outline btn-error btn-sm"
+        class="min-h-9 text-[12.5px] font-medium text-flame-700 hover:underline"
         onClick={loadImpact}
         disabled={props.disabled || loading()}
       >
-        {loading() ? "Calculating…" : "Preview impact"}
+        {loading() ? "Impact berekenen…" : "Dit forum verwijderen →"}
       </button>
 
       <Show when={previewError()}>
         {(message) => (
-          <div class="alert alert-error py-2 text-sm" role="alert">
-            <span>{message()}</span>
+          <div class="mt-3 text-sm text-error" role="alert">
+            {message()}
           </div>
         )}
       </Show>
 
       <Show when={impact()}>
         {(current) => (
-          <div class="space-y-3">
-            <ul class="grid grid-cols-2 gap-x-4 text-sm sm:grid-cols-3">
+          <div class="mt-3 space-y-3 border-l-[3px] border-error bg-error/10 p-3">
+            <h3 class="font-bold text-error">Forum en inhoud verwijderen</h3>
+            <ul class="grid grid-cols-2 gap-x-3 gap-y-1 text-[12.5px] text-brand-800">
               <li>
-                Boards: <strong>{current().counts.boards}</strong>
+                Forums: <strong>{current().counts.boards}</strong>
               </li>
               <li>
                 Topics: <strong>{current().counts.topics}</strong>
               </li>
               <li>
-                Posts: <strong>{current().counts.posts}</strong>
+                Berichten: <strong>{current().counts.posts}</strong>
               </li>
               <li>
-                Reactions: <strong>{current().counts.reactions}</strong>
+                Reacties: <strong>{current().counts.reactions}</strong>
               </li>
               <li>
-                Votes: <strong>{current().counts.votes}</strong>
+                Stemmen: <strong>{current().counts.votes}</strong>
               </li>
               <li>
-                Views: <strong>{current().counts.topicViews}</strong>
+                Weergaven: <strong>{current().counts.topicViews}</strong>
               </li>
             </ul>
 
-            <label class="form-control gap-1">
-              <span class="label-text text-xs font-semibold">
-                Type “{current().boardName}” to confirm (case-sensitive)
-              </span>
+            <Field
+              label={`Typ “${current().boardName}” om te bevestigen`}
+              for="purge-confirmation"
+            >
               <input
+                id="purge-confirmation"
                 type="text"
-                class="input input-bordered input-sm w-full"
+                class="input h-[38px]"
                 value={confirmation()}
                 onInput={(event) => setConfirmation(event.currentTarget.value)}
                 disabled={props.disabled}
-                aria-label="Confirm board name"
+                aria-label="Bevestig forumnaam"
               />
-            </label>
+            </Field>
 
-            <button
+            <Button
               type="button"
-              class="btn btn-error btn-sm"
+              variant="error"
+              size="sm"
               disabled={
                 props.disabled || confirmation() !== current().boardName
               }
@@ -112,8 +114,8 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
                 }
               }}
             >
-              Permanently delete
-            </button>
+              Definitief verwijderen
+            </Button>
           </div>
         )}
       </Show>
