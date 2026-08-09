@@ -22,7 +22,8 @@ export async function resetForumTest(): Promise<void> {
   const sql = connect(loadTestTarget());
   try {
     await sql.unsafe(
-      `TRUNCATE TABLE votes, reactions, topic_views, posts, topics, boards,
+      `TRUNCATE TABLE notifications, topic_subscriptions, votes, reactions,
+       topic_views, posts, topics, boards,
        sessions, accounts, users
        RESTART IDENTITY CASCADE`,
     );
@@ -67,9 +68,21 @@ export async function seedBoards(
 
 export async function signUp(page: Page, name: string): Promise<void> {
   await page.goto("/auth/sign-up");
-  await fillWhenReady(page.getByLabel("Naam"), name);
-  await fillWhenReady(page.getByLabel("E-mailadres"), `${name}@example.test`);
-  await fillWhenReady(page.getByLabel("Wachtwoord"), "test-password-123");
+  const nameField = page.getByLabel("Naam");
+  const emailField = page.getByLabel("E-mailadres");
+  const passwordField = page.getByLabel("Wachtwoord");
+  const email = `${name}@example.test`;
+  const password = "test-password-123";
+  // Verify the form as one hydrated unit. Checking fields independently leaves
+  // time for an early controlled value to be replaced while later fields fill.
+  await expect(async () => {
+    await nameField.fill(name);
+    await emailField.fill(email);
+    await passwordField.fill(password);
+    await expect(nameField).toHaveValue(name, { timeout: 250 });
+    await expect(emailField).toHaveValue(email, { timeout: 250 });
+    await expect(passwordField).toHaveValue(password, { timeout: 250 });
+  }).toPass({ timeout: 15_000 });
   await page.getByRole("button", { name: "Account aanmaken" }).click();
   await page.waitForURL("/");
 }
@@ -80,15 +93,17 @@ export async function createTopicViaUi(
   title: string,
   content: string,
 ): Promise<void> {
-  await page.getByRole("button", { name: "Nieuw Topic" }).click();
+  await page.getByRole("button", { name: "Nieuw topic" }).click();
   await fillWhenReady(
-    page.getByPlaceholder("Start with a clear and specific title"),
+    page.getByPlaceholder("Waar wil je het over hebben?"),
     title,
   );
   await fillWhenReady(
-    page.getByPlaceholder("Write your first post..."),
+    page.getByPlaceholder(
+      "Geef genoeg context om het gesprek op weg te helpen.",
+    ),
     content,
   );
-  await page.getByRole("button", { name: "Create Topic" }).click();
+  await page.getByRole("button", { name: "Topic plaatsen" }).click();
   await page.waitForURL(/\/topics\//);
 }

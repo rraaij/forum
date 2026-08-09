@@ -18,19 +18,22 @@ const ACCEPTED_IMAGE_TYPES = new Set([
 
 export function readImageFile(file: File): Promise<string> {
   if (!ACCEPTED_IMAGE_TYPES.has(file.type)) {
-    return Promise.reject(new Error("Choose a JPEG, PNG, WebP, or GIF image."));
+    return Promise.reject(
+      new Error("Kies een JPEG-, PNG-, WebP- of GIF-afbeelding."),
+    );
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    return Promise.reject(new Error(`${file.name} is larger than 2 MB.`));
+    return Promise.reject(new Error(`${file.name} is groter dan 2 MB.`));
   }
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === "string") resolve(reader.result);
-      else reject(new Error(`${file.name} could not be read.`));
+      else reject(new Error(`${file.name} kon niet worden gelezen.`));
     };
-    reader.onerror = () => reject(new Error(`${file.name} could not be read.`));
+    reader.onerror = () =>
+      reject(new Error(`${file.name} kon niet worden gelezen.`));
     reader.readAsDataURL(file);
   });
 }

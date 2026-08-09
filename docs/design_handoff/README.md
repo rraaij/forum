@@ -21,23 +21,36 @@ copy. Recreate it with SolidJS, TanStack Router, Tailwind v4, and daisyUI 5.
   color, typography, spacing, structure, responsive behavior, and Dutch copy.
 - [x] Treat news `5a` and dm `5b` as low-fidelity direction only.
 - [x] Do not implement superseded turn 1 (`1a` through `1f`).
-- [ ] Finish every existing `apps/forum` route, including category and board
+- [x] Finish every existing `apps/forum` route, including category and board
   listing routes that still use the legacy presentation.
-- [ ] Keep all existing mutations, route guards, server boundaries, and data
+- [x] Keep all existing mutations, route guards, server boundaries, and data
   behavior intact while replacing presentation.
 
-## Current critical path
+## Implementation order
 
-Complete these phases in order. The shared shell and removal of legacy root
-layout constraints affect every screen and should land before screen-level
-pixel tuning.
+Execute this queue in order. The detailed sections below are acceptance criteria
+grouped by design surface; their section numbers are not a second implementation
+sequence.
 
-1. Integrate `AppShell` in `apps/forum/src/routes/__root.tsx`.
-2. Remove legacy global styling that conflicts with the design system.
-3. Finish and integrate shared system-state components.
-4. Complete desktop routes and all currently inert controls.
-5. Complete the 390px layouts and touch-target pass.
-6. Run visual, accessibility, type, and formatting verification.
+1. Integrate `AppShell` in `apps/forum/src/routes/__root.tsx`, including the
+   light-only document setup, Dutch root copy, signed-in/signed-out variants,
+   and functional mobile navigation.
+2. Remove legacy global styling that conflicts with the design system, then
+   audit shared primitives and icons. The shell must land first because it
+   removes most route-wide legacy classes and framing workarounds.
+3. Finish and integrate shared empty, loading, error, and no-access states so
+   routes can use them while their layouts are completed.
+4. Complete existing routes in dependency order: index; category/board listings;
+   topic detail; profile and change-password modal; admin; sign in/sign up.
+   Finish desktop and 390px behavior together for each route rather than
+   postponing responsive work.
+5. Implement the new search/results surface and connect cursor-compatible
+   pagination after the existing read routes share their final row patterns.
+6. Verify behavior, accessibility, visual fidelity, TypeScript, Biome, and
+   relevant automated tests after every route slice, followed by one final
+   cross-route pass.
+7. Keep forgot password blocked on its backend prerequisite, and keep the news,
+   dm, and fotoboek apps deferred until their product work starts.
 
 ## Phase 1: Design system foundations
 
@@ -49,35 +62,40 @@ Reference: all screens, especially [`4a-app-shell.png`](./screens/4a-app-shell.p
   `packages/config/theme.css`.
 - [x] Import `@forum/config/theme.css` from `apps/forum/src/styles.css`.
 - [x] Define the teal `brand-*`, orange `flame-*`, and neutral `ink-*` ramps.
-- [x] Set semantic colors: primary teal `#0e7f78`, restricted secondary orange
-  `#e07b1e`, white/teal surfaces, dark neutral, deep-teal success, and dark-red
-  destructive error.
+- [x] Set semantic colors: contrast-adjusted primary teal `#0c746e`, restricted
+  secondary orange `#e07b1e` with dark content, white/teal surfaces, dark
+  neutral, deep-teal success, and dark-red destructive error.
 - [x] Set every radius, depth, and noise token to zero.
 - [x] Configure Archivo for body/UI copy and Newsreader 600 for headings.
 - [x] Load the required Google Font weights in the root document.
 - [x] Add the global teal `:focus-visible` outline.
-- [ ] Change the root document language from `en` to `nl` so assistive
+- [x] Change the root document language from `en` to `nl` so assistive
   technology applies Dutch pronunciation and language rules.
-- [ ] Remove the unsupported dark-theme toggle and local-storage theme state,
-  or explicitly design and tokenise a dark theme before retaining it. The
-  supplied theme is light-only.
+- [x] Remove the unsupported dark-theme toggle and local-storage theme state.
+  The supplied theme is light-only.
 
 ### Visual rules
 
 - [x] Provide semantic strong rules (`2px` base content) and hairlines (`1px`
   brand 300) in the shared theme.
-- [ ] Use strong rules only between major sections and hairlines between rows
+- [x] Remove the page-wide decorative gradients and unused category-collapse
+  animation from `apps/forum/src/styles.css`.
+- [x] Replace the temporary global listing-header image treatment with a flat
+  semantic neutral surface. Route-owned listing cards remain part of their
+  scheduled redesign.
+- [x] Use strong rules only between major sections and hairlines between rows
   and cells across every route.
-- [ ] Remove rounded cards, blurred shadows, gradients, and floating surfaces
-  left in the root layout, category routes, board routes, and global styles.
-- [ ] Remove raw colors from application and shared UI presentation. Known
-  conflicts include the blue root header and `.forum-page-header-bg`.
-- [ ] Remove non-color transitions and collapse animations. The design permits
+- [x] Remove rounded cards, blurred shadows, gradients, and floating surfaces
+  from routes and global styles; retain only the modal's specified hard shadow.
+- [x] Remove raw colors from application and shared UI presentation; semantic
+  color values now live in the shared theme tokens.
+- [x] Remove non-color transitions and collapse animations. The design permits
   color changes only; nothing should slide, scale, or fade.
-- [ ] Restrict orange to active app navigation, pinned tags, unread counts,
-  category numerals, the active admin branch, news kickers, and search marks.
-  Keep ordinary actions and links teal.
-- [ ] Standardise field labels, metadata, body copy, and post measure/leading to
+- [x] Restrict orange to active app navigation, pinned tags, unread counts,
+  category numerals, the active admin branch, orange-tinted error panels, active
+  search filters, news kickers, and search marks. Keep ordinary actions and
+  links teal.
+- [x] Standardise field labels, metadata, body copy, and post measure/leading to
   the typography rules visible in the references.
 
 ### Shared primitives
@@ -88,12 +106,12 @@ Reference: all screens, especially [`4a-app-shell.png`](./screens/4a-app-shell.p
 - [x] Make avatars square and support letter-tile fallbacks.
 - [x] Implement the modal's only allowed shadow as a hard `6px 6px` offset.
 - [x] Support numbered and opaque-cursor modes in `Pagination`.
-- [ ] Audit every primitive against the screenshots and remove any remaining
+- [x] Audit every primitive against the screenshots and remove any remaining
   radius, shadow, transition, or orange-action violations.
-- [ ] Add Lucide for interface icons and replace text glyphs such as the mobile
+- [x] Add Lucide for interface icons and replace text glyphs such as the mobile
   menu, admin grip, and hierarchy branch with `menu`, `grip-vertical`, and
   `corner-down-right` icons.
-- [ ] Verify shared primitives meet WCAG keyboard, name, contrast, and disabled
+- [x] Verify shared primitives meet WCAG keyboard, name, contrast, and disabled
   state requirements.
 
 ## Phase 2: Shared app shell - `4a`
@@ -102,23 +120,23 @@ Reference: [`4a-app-shell.png`](./screens/4a-app-shell.png).
 
 - [x] Build a reusable 50px neutral `AppShell` with brand, app navigation,
   account area, unread count, optional secondary row, and mobile menu slots.
-- [ ] **Partial - integrate the shell in the forum root.** Replace the legacy
+- [x] Integrate the shell in the forum root. Replace the legacy
   sticky blue two-row header in `apps/forum/src/routes/__root.tsx` with the
   shared `AppShell` while preserving session, profile-avatar preview, admin
   navigation, sign-out, and route outlet behavior.
-- [ ] Render app links in this order: `forum`, `nieuws`, `fotoboek`, `dm`; mark
+- [x] Render app links in this order: `forum`, `nieuws`, `fotoboek`, `dm`; mark
   forum active with orange text and bold weight.
-- [ ] Implement the signed-in account variant with unread badge, Dutch greeting,
+- [x] Implement the signed-in account variant with unread badge, Dutch greeting,
   and 30px avatar.
-- [ ] Implement the signed-out account variant with teal `inloggen` link and a
+- [x] Implement the signed-out account variant with teal `inloggen` link and a
   small primary `Aanmelden` action.
-- [ ] Let each route/app supply its own second row. Use it for forum breadcrumbs;
-  do not hard-code page-specific navigation in `AppShell`.
-- [ ] Remove the root `max-w-7xl px-4 py-2` wrapper and route-level negative
+- [x] Render forum breadcrumbs in the shared second row from typed matched
+  loader data, without an extra request, unsafe cast, or hydration-only portal.
+- [x] Remove the root `max-w-7xl px-4 py-2` wrapper and route-level negative
   margin workarounds after the shell owns page framing.
-- [ ] Replace English root labels and account menu copy with the specified Dutch
+- [x] Replace English root labels and account menu copy with the specified Dutch
   voice.
-- [ ] Implement the 390px shell as brand, unread badge, avatar/account action,
+- [x] Implement the 390px shell as brand, unread badge, avatar/account action,
   and a labeled menu button with a functional mobile navigation disclosure.
 
 ## Phase 3: Shared states and cross-route behavior - `4c`, `4d`
@@ -135,42 +153,41 @@ References:
   do not use a spinner.
 - [x] Implement the orange-tinted error state with optional retry action and
   error-code metadata.
-- [ ] Add and export a no-access state on `base-300` with `Terug naar het forum`
+- [x] Add and export a no-access state on `base-300` with `Terug naar het forum`
   and `Andere account gebruiken` actions.
-- [ ] Replace ad hoc loading copy with `Skeleton` where a page-sized content
+- [x] Replace ad hoc loading copy with `Skeleton` where a page-sized content
   shape is known, beginning with profile and admin access checks.
-- [ ] Replace ad hoc route/root error cards with `ErrorState`, Dutch copy, and a
+- [x] Replace ad hoc route/root error cards with `ErrorState`, Dutch copy, and a
   real retry action where retry is possible.
-- [ ] Use the no-access state for failed admin access rather than silently
+- [x] Use the no-access state for failed admin access rather than silently
   redirecting every unauthorised user.
-- [ ] Add representative empty, loading, error, and no-access states to route or
+- [x] Add representative empty, loading, error, and no-access states to route or
   component tests.
 
 ### Search and pagination - `4d`
 
 - [x] Build the reusable pagination presentation.
-- [ ] Implement a functional search route or search results surface. The current
-  root search input is legacy and has no submit behavior.
-- [ ] Add the 44px search field and primary `Zoeken` action.
-- [ ] Add removable filter chips with orange reserved for the active filter.
-- [ ] Add result count and sorting controls.
-- [ ] Add result rows with avatar, linked title, two-line snippet, metadata, and
+- [x] Implement a functional search route and connect it from the app shell.
+- [x] Add the 44px search field and primary `Zoeken` action.
+- [x] Add removable filter chips with orange reserved for the active filter.
+- [x] Add result count and sorting controls.
+- [x] Add result rows with avatar, linked title, two-line snippet, metadata, and
   `<mark>` highlights using flame 100/flame 700.
-- [ ] Integrate `Pagination` with search results and topic/category lists where
-  pagination is required.
-- [ ] Prefer previous/next cursor controls when the backend cannot cheaply
+- [x] Integrate `Pagination` with search results using an opaque cursor and a
+  bounded URL-backed previous-page trail.
+- [x] Prefer previous/next cursor controls when the backend cannot cheaply
   provide numbered pages; do not manufacture page totals from keyset cursors.
 
 ### Global interactions
 
-- [ ] Make every list row a single semantic link where the design presents the
+- [x] Make every list row a single semantic link where the design presents the
   whole row as clickable.
-- [ ] Apply light-row hover color and teal title hover consistently.
-- [ ] Apply teal chip hover consistently.
-- [ ] Ensure primary pressed states use brand 700.
-- [ ] Use relative Dutch times everywhere except the index's right-hand clock
+- [x] Apply light-row hover color and teal title hover consistently.
+- [x] Apply teal chip hover consistently.
+- [x] Ensure primary pressed states use brand 700.
+- [x] Use relative Dutch times everywhere except the index's right-hand clock
   column.
-- [ ] Keep copy Dutch, sentence case, conversational, and lightly wry. Preserve
+- [x] Keep copy Dutch, sentence case, conversational, and lightly wry. Preserve
   original English subforum names.
 
 ## Phase 4: Forum screens
@@ -187,17 +204,21 @@ Route: `apps/forum/src/routes/index.tsx`.
   and latest-activity footer.
 - [x] Implement the four-row active-topic section with relative and clock times.
 - [x] Add an empty category state.
-- [ ] **Partial - replace placeholder content with real data.** The greeting's
-  unread count and lede statistics are currently hard-coded.
-- [ ] Wire `Nieuw topic` to a valid creation flow and `Actieve topics` to the
+- [x] Replace hard-coded greeting and lede statistics with counts derived from
+  the forum-index response.
+- [ ] **Deferred - backend prerequisite.** Add a personalised unread-reaction
+  count once the product has a
+  per-user last-visit/unread contract; do not infer unread state from recent
+  activity.
+- [x] Wire `Nieuw topic` to a valid creation-capable category and `Actieve topics` to the
   active-topic section or route.
-- [ ] Provide real category descriptions instead of slug-specific presentation
+- [x] Provide real category descriptions instead of slug-specific presentation
   copy when the read model can supply them.
-- [ ] Show the designed author and reaction counts in active-topic metadata.
-  Current data substitutes a board topic count for the intended reply count.
-- [ ] Verify category cards and topic rows are fully clickable and keyboard
+- [x] Show the topic starter and authoritative reply count in active-topic
+  metadata without adding a request or database query.
+- [x] Verify category cards and topic rows are fully clickable and keyboard
   accessible.
-- [ ] Pixel-check desktop and 390px layouts after the root shell is integrated.
+- [x] Pixel-check desktop and 390px layouts after the root shell is integrated.
 
 ### Category and board listings
 
@@ -205,15 +226,15 @@ Routes:
 `apps/forum/src/routes/categories/$categorySlug/index.tsx` and
 `apps/forum/src/routes/categories/$categorySlug/subcategories/$boardId/index.tsx`.
 
-- [ ] Replace legacy `card`, rounded, shadow, zebra-table, gradient-header, and
+- [x] Replace legacy `card`, rounded, shadow, zebra-table, gradient-header, and
   English-copy presentation with the shared Modernist system.
-- [ ] Move breadcrumbs into the app shell's forum secondary row.
-- [ ] Restyle `ForumGrid`, `PageHeader`, `TopicsList`, and create-topic controls
+- [x] Move breadcrumbs into the app shell's forum secondary row.
+- [x] Restyle `ForumGrid`, `PageHeader`, `TopicsList`, and create-topic controls
   using the same category/topic-row vocabulary as `2a` and `2b`.
-- [ ] Convert not-found and empty states to shared system-state components with
+- [x] Convert not-found and empty states to shared system-state components with
   Dutch copy.
-- [ ] Preserve cursor loading and canonical topic navigation behavior.
-- [ ] Verify nested boards at every supported hierarchy depth.
+- [x] Preserve cursor loading and canonical topic navigation behavior.
+- [x] Verify nested boards at every supported hierarchy depth.
 
 ### Topic detail - `2b`
 
@@ -229,19 +250,22 @@ Routes: both topic routes under `apps/forum/src/routes/categories/`.
 - [x] Implement reaction and vote mutations.
 - [x] Implement the reply composer and quote-to-reply flow.
 - [x] Preserve cursor-based reply loading and deduplicated topic view recording.
-- [ ] Move breadcrumbs into the shell's secondary row once shell integration is
+- [x] Move breadcrumbs into the shell's secondary row once shell integration is
   complete.
-- [ ] Wire `Abonneer`; it is currently an inert button.
-- [ ] Wire `Voorbeeld`; it is currently an inert button.
-- [ ] Add the designed post permalink/copy-link action.
-- [ ] Add the ghost `+ reactie` affordance or document that the fixed quick
+- [x] Wire `Abonneer` to durable in-app reply notifications, with creator
+  auto-subscription, self-reply suppression, an unread inbox, and exact-reply
+  navigation.
+- [x] Wire `Voorbeeld` as a safe plain-text draft preview.
+- [x] Add the designed post permalink/copy-link action.
+- [x] Add the ghost `+ reactie` affordance or document that the fixed quick
   reaction set intentionally replaces it.
-- [ ] Extend the read model for member-since date, post count, optional tagline,
+- [x] Extend the read model for member-since date, lifetime post count, profile
+  tagline,
   and role so the author column can match the reference without placeholders.
-- [ ] Correct admin role display so it depends on the post author, not whether
+- [x] Correct admin role display so it depends on the post author, not whether
   the signed-in viewer is both author and admin.
-- [ ] Translate server/auth mutation errors before rendering them to users.
-- [ ] Complete the 390px compact author header and composer behavior described
+- [x] Translate server/auth mutation errors before rendering them to users.
+- [x] Complete the 390px compact author header and composer behavior described
   in the mobile phase.
 
 ### Profile - `3a`
@@ -257,15 +281,15 @@ Route: `apps/forum/src/routes/profile.tsx`.
 - [x] Implement the responsive photo gallery, 12-photo limit, add slot, removal,
   and used-place counter.
 - [x] Implement recent activity rows and topic links.
-- [ ] **Partial - replace derived placeholder statistics.** Posts and topics are
-  currently inferred from the limited recent-activity response rather than
-  authoritative totals.
-- [ ] Replace `Laden…` and the signed-out paragraph with shared loading and
+- [x] Show authoritative retained-row totals from the complete activity
+  response: posts include opening and soft-deleted posts, while destructive
+  purges remove content from the totals.
+- [x] Replace `Laden…` and the signed-out paragraph with shared loading and
   no-access/auth-required states.
-- [ ] Make `alles bekijken` navigate to a real complete activity view or remove
-  it; it currently jumps to the same short list.
-- [ ] Complete the change-password modal work listed below.
-- [ ] Verify save, avatar, gallery, validation, success, and error flows at
+- [x] Remove the inert `alles bekijken` link and keep this summary aligned with
+  the reference's three most recent activity rows.
+- [x] Complete the change-password modal work listed below.
+- [x] Verify save, avatar, gallery, validation, success, and error flows at
   desktop and 390px widths.
 
 ### Admin board management - `3b`
@@ -280,18 +304,19 @@ Route: `apps/forum/src/routes/admin/boards.tsx`.
 - [x] Implement hierarchy indentation, category numerals, selected branch, and
   editor/create panel.
 - [x] Preserve create, update, move, and destructive purge behavior.
-- [ ] Wire `Volgorde opslaan`; it is currently inert.
-- [ ] Implement accessible drag/reorder behavior or replace the drag affordance
+- [x] Wire `Volgorde opslaan` to persist complete sibling groups atomically.
+- [x] Implement accessible drag/reorder behavior or replace the drag affordance
   with explicit ordering controls.
-- [ ] Replace text glyphs for the grip and hierarchy branch with Lucide icons.
-- [ ] Supply and display real post counts; the hierarchy currently renders an
-  em dash for every row.
-- [ ] Align the editor fields with the reference: parent selection plus the two
+- [x] Replace text glyphs for the grip and hierarchy branch with Lucide icons.
+- [x] Supply and display real recursive post counts for every hierarchy row.
+- [x] Align the editor fields with the reference: parent selection plus the two
   square toggle rows, while retaining required domain fields in an appropriate
-  advanced section if they cannot be removed.
-- [ ] Use the shared no-access state for unauthorised users and a skeleton while
+  advanced section.
+- [x] Persist and enforce both board policies: guest-hidden subtrees return 404
+  to anonymous viewers, and closed topic creation still permits staff.
+- [x] Use the shared no-access state for unauthorised users and a skeleton while
   access is being checked.
-- [ ] Verify that mobile hierarchy controls remain usable without relying on a
+- [x] Verify that mobile hierarchy controls remain usable without relying on a
   clipped desktop table.
 
 ### Sign in - `3c`
@@ -303,15 +328,15 @@ Route: `apps/forum/src/routes/auth/sign-in.tsx`.
   member activity line.
 - [x] Implement email/password submission, loading state, field error styling,
   and the sign-up callout.
-- [ ] Translate Better Auth error messages into safe Dutch user-facing copy
+- [x] Translate Better Auth error messages into safe Dutch user-facing copy
   instead of displaying provider messages directly.
-- [ ] Decide whether `Ingelogd blijven` is intentionally omitted or wire it to
-  Better Auth session duration; record the decision in this checklist.
-- [ ] Keep `Wachtwoord vergeten?` non-interactive until the deferred reset flow
-  exists, or hide it so it is not mistaken for a link.
-- [ ] Replace hard-coded recent-member names/counts with real data or explicitly
-  document them as editorial poster copy.
-- [ ] Verify the stacked narrow layout, focus order, autofill, and error
+- [x] Wire `Ingelogd blijven` to Better Auth's `rememberMe` option, defaulting
+  it on while allowing a browser-session-only cookie when unchecked.
+- [x] Hide `Wachtwoord vergeten?` until the deferred enumeration-safe reset
+  flow exists so it is not mistaken for an available action.
+- [x] Document the hard-coded recent-member names/counts as editorial poster
+  copy rather than live forum metrics.
+- [x] Verify the stacked narrow layout, focus order, autofill, and error
   announcement.
 
 ### Sign up - `4b` top frame
@@ -324,10 +349,10 @@ Route: `apps/forum/src/routes/auth/sign-up.tsx`.
 - [x] Keep the form aligned with the existing contract: name, email, and a
   minimum-eight-character password only.
 - [x] Preserve submission, loading, autocomplete, and sign-in navigation.
-- [ ] Translate Better Auth error messages into safe Dutch user-facing copy.
-- [ ] Replace hard-coded member names/counts with real data or explicitly
-  document them as editorial poster copy.
-- [ ] Verify the stacked narrow layout, focus order, autofill, and error
+- [x] Translate Better Auth error messages into safe Dutch user-facing copy.
+- [x] Document hard-coded member names/counts as editorial poster copy rather
+  than live forum metrics.
+- [x] Verify the stacked narrow layout, focus order, autofill, and error
   announcement.
 
 ## Phase 5: Proposals and supporting UI
@@ -354,34 +379,35 @@ Reference:
   `revokeOtherSessions: false`.
 - [x] Build a reusable accessible native-dialog `Modal` with controlled close,
   Escape, backdrop, title, footer, and offset shadow behavior.
-- [ ] **Partial - promote `ChangePasswordDialog` to the shared modal.** It is
-  currently an English inline card opened from a `details` dropdown.
-- [ ] Stack current, new, and confirm password fields vertically with Dutch
+- [x] Promote `ChangePasswordDialog` to the shared controlled modal.
+- [x] Stack current, new, and confirm password fields vertically with Dutch
   labels and errors.
-- [ ] Add primary `Wijzigen`, ghost/surface `Annuleren`, and the footer note
+- [x] Add primary `Wijzigen`, ghost/surface `Annuleren`, and the footer note
   `Je blijft ingelogd`.
-- [ ] Close and clear all credential values after success or cancellation and
+- [x] Close and clear all credential values after success or cancellation and
   restore focus to the trigger.
-- [ ] Test validation mismatch, minimum length, provider failure, success,
+- [x] Test validation mismatch, minimum length, provider failure, success,
   Escape, backdrop close, and keyboard focus behavior.
 
 ## Phase 6: Narrow/mobile - `4e`
 
 Reference: [`4e-mobile-390px.png`](./screens/4e-mobile-390px.png).
 
-- [ ] Complete and visually compare every high-fidelity screen at 390px.
-- [ ] Collapse the shell to brand, badge, avatar/account, and functional menu.
+- [x] Complete and visually compare every high-fidelity screen at 390px. Keep
+  shipped breadcrumbs, subscription, permalink/edit controls, and 44px targets
+  as documented functional additions where the static mobile frame omits them.
+- [x] Collapse the shell to brand, badge, avatar/account, and functional menu.
 - [x] Let the index heading reduce from 54px to 42px on its current narrow
   breakpoint.
-- [ ] Match the reference's 28px mobile index heading.
+- [x] Match the reference's 28px mobile index heading.
 - [x] Stack index category cells and profile/admin columns at narrow widths.
 - [x] Collapse postbits from two columns to an inline compact author header.
-- [ ] Match the reference's 30px post avatar and compact metadata placement.
-- [ ] Replace the mobile reply composer with the compact single-line field and
+- [x] Match the reference's 30px post avatar and compact metadata placement.
+- [x] Replace the mobile reply composer with the compact single-line field and
   `Plaats` action shown in `4e`, without removing the full desktop composer.
-- [ ] Make every interactive touch target at least 44px, including vote,
+- [x] Make every interactive touch target at least 44px, including vote,
   reaction, photo removal, admin, pagination, and account controls.
-- [ ] Prevent horizontal clipping in category tables, admin hierarchy, auth
+- [x] Prevent horizontal clipping in category tables, admin hierarchy, auth
   forms, modal content, long topic titles, and breadcrumbs.
 
 ## Phase 7: Deferred sibling apps - `5a`, `5b`
@@ -416,35 +442,35 @@ Reference: [`5b-dm-sketch.png`](./screens/5b-dm-sketch.png).
 
 ### Automated checks
 
-- [ ] Run `pnpm exec tsc -b` after implementation changes.
-- [ ] Run `pnpm check` after implementation changes.
-- [ ] Run the relevant unit/integration tests for auth, profile, forum reads,
+- [x] Run `pnpm exec tsc -b` after implementation changes.
+- [x] Run `pnpm check` after implementation changes.
+- [x] Run the relevant unit/integration tests for auth, profile, forum reads,
   topic interactions, and board management.
-- [ ] Add or update Playwright coverage for shell navigation, auth, index,
+- [x] Add or update Playwright coverage for shell navigation, auth, index,
   topic/reply interactions, profile editing, admin access, and mobile behavior.
 
 ### Visual and accessibility checks
 
-- [ ] Compare every high-fidelity screen at its desktop reference size.
-- [ ] Compare every high-fidelity screen at 390px.
-- [ ] Verify zero unintended radius, shadow, gradient, or motion.
-- [ ] Verify orange is used only in its restricted roles.
-- [ ] Verify heading/body fonts and all font weights load correctly.
-- [ ] Verify keyboard focus order and visible focus on every route.
-- [ ] Verify landmarks, heading order, labels, error announcements, dialog
+- [x] Compare every high-fidelity screen at its desktop reference size.
+- [x] Compare every high-fidelity screen at 390px.
+- [x] Verify zero unintended radius, shadow, gradient, or motion.
+- [x] Verify orange is used only in its restricted roles.
+- [x] Verify heading/body fonts and required weights load correctly.
+- [x] Verify keyboard focus order and visible focus on every route.
+- [x] Verify landmarks, heading order, labels, error announcements, dialog
   behavior, and current-page/current-item semantics.
-- [ ] Verify color contrast and 200% zoom/reflow.
-- [ ] Verify all interactive controls perform an action; remove or disable any
+- [x] Verify color contrast and 200% zoom/reflow.
+- [x] Verify all interactive controls perform an action; remove or disable any
   remaining visual-only controls.
 
 ### Definition of done
 
-- [ ] All forum items above are checked except explicitly deferred sibling apps
+- [x] All forum items above are checked except explicitly deferred sibling apps
   and the backend-gated forgot-password proposal.
-- [ ] No existing forum route presents the legacy blue/rounded/shadow design.
-- [ ] Shared shell and state components are integrated, not merely exported.
-- [ ] Desktop and 390px screenshots pass visual review.
-- [ ] Type, formatting, unit/integration, and end-to-end checks pass.
+- [x] No existing forum route presents the legacy blue/rounded/shadow design.
+- [x] Shared shell and state components are integrated, not merely exported.
+- [x] Desktop and 390px screenshots pass visual review.
+- [x] Type, formatting, unit/integration, and end-to-end checks pass.
 
 ## Reference files
 

@@ -1,3 +1,4 @@
+import { ArrowLeft, ArrowRight } from "lucide-solid";
 import type { JSX } from "solid-js";
 import { createMemo, For, Show } from "solid-js";
 
@@ -70,29 +71,30 @@ export function Pagination(props: PaginationProps) {
   // Explicit availability props support opaque cursor pagination. Numbered
   // pages infer availability from their current position when totals exist.
   const canGoPrevious = () =>
-    props.hasPrevious ??
-    (props.currentPage !== undefined
-      ? props.currentPage > 1
-      : Boolean(props.onPrevious));
+    Boolean(props.onPrevious) &&
+    (props.hasPrevious ??
+      (props.currentPage !== undefined ? props.currentPage > 1 : true));
   const canGoNext = () =>
-    props.hasNext ??
-    (props.currentPage !== undefined && props.pageCount !== undefined
-      ? props.currentPage < props.pageCount
-      : Boolean(props.onNext));
+    Boolean(props.onNext) &&
+    (props.hasNext ??
+      (props.currentPage !== undefined && props.pageCount !== undefined
+        ? props.currentPage < props.pageCount
+        : true));
 
   return (
     <nav
       aria-label={props.ariaLabel ?? "Paginering"}
       aria-busy={props.busy || undefined}
-      class={`flex flex-wrap items-center gap-1 border-t-2 border-base-content py-4 ${props.class ?? ""}`}
+      class={`flex flex-wrap items-center gap-1 border-t-2 border-base-content py-4 sm:pt-[18px] sm:pb-6 ${props.class ?? ""}`}
     >
       <button
         type="button"
-        class="min-h-11 px-3 text-sm font-semibold text-base-content transition-colors hover:bg-base-300 disabled:opacity-40 sm:min-h-[34px]"
+        class="inline-flex min-h-11 items-center gap-2 border border-brand-300 px-3 text-sm font-semibold text-base-content transition-colors hover:bg-base-300 disabled:pointer-events-none disabled:opacity-40 sm:min-h-[34px]"
         disabled={!canGoPrevious() || props.busy}
         onClick={() => props.onPrevious?.()}
       >
-        ← {props.previousLabel ?? "Vorige"}
+        <ArrowLeft aria-hidden="true" size={16} strokeWidth={2} />
+        {props.previousLabel ?? "Vorige"}
       </button>
 
       <For each={pageItems()}>
@@ -101,7 +103,7 @@ export function Pagination(props: PaginationProps) {
             when={item !== "ellipsis" && item}
             fallback={
               <span
-                class="inline-flex size-11 items-center justify-center text-brand-700 sm:size-[34px]"
+                class="inline-flex size-11 items-center justify-center text-brand-700"
                 aria-hidden="true"
               >
                 …
@@ -113,7 +115,7 @@ export function Pagination(props: PaginationProps) {
               return (
                 <button
                   type="button"
-                  class="inline-flex size-11 items-center justify-center rounded-none border text-sm transition-colors sm:size-[34px]"
+                  class="inline-flex size-11 items-center justify-center rounded-none border text-sm transition-colors disabled:pointer-events-none sm:size-[34px]"
                   classList={{
                     "border-primary bg-primary font-extrabold text-primary-content":
                       isCurrent(),
@@ -135,11 +137,12 @@ export function Pagination(props: PaginationProps) {
 
       <button
         type="button"
-        class="min-h-11 bg-base-300 px-3 text-sm font-semibold text-base-content transition-colors hover:bg-primary hover:text-primary-content disabled:opacity-40 sm:min-h-[34px]"
+        class="inline-flex min-h-11 items-center gap-2 bg-base-300 px-3 text-sm font-semibold text-base-content transition-colors hover:bg-primary hover:text-primary-content disabled:pointer-events-none disabled:opacity-40 sm:min-h-[34px]"
         disabled={!canGoNext() || props.busy}
         onClick={() => props.onNext?.()}
       >
-        {props.nextLabel ?? "Volgende"} →
+        {props.nextLabel ?? "Volgende"}
+        <ArrowRight aria-hidden="true" size={16} strokeWidth={2} />
       </button>
 
       <Show when={props.summary}>

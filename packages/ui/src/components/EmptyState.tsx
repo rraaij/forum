@@ -1,11 +1,13 @@
 import type { JSX } from "solid-js";
-import { Show, splitProps } from "solid-js";
+import { children, Show, splitProps } from "solid-js";
+import { StateHeading, type StateHeadingLevel } from "./StateHeading";
 
 export type EmptyStateProps = Omit<JSX.HTMLAttributes<HTMLElement>, "title"> & {
   kicker?: JSX.Element;
   title: JSX.Element;
   description: JSX.Element;
   action?: JSX.Element;
+  headingLevel?: StateHeadingLevel;
 };
 
 export function EmptyState(props: EmptyStateProps) {
@@ -14,8 +16,12 @@ export function EmptyState(props: EmptyStateProps) {
     "title",
     "description",
     "action",
+    "headingLevel",
     "class",
   ]);
+  // JSX-valued props are getters in Solid. Resolve the optional subtree once
+  // so Show's condition and content cannot create and detach separate nodes.
+  const action = children(() => local.action);
 
   return (
     <section
@@ -27,12 +33,17 @@ export function EmptyState(props: EmptyStateProps) {
           {local.kicker}
         </p>
       </Show>
-      <h4 class="text-[21px] leading-tight font-semibold">{local.title}</h4>
-      <p class="mt-2 max-w-[42ch] leading-relaxed text-brand-800">
+      <StateHeading
+        level={local.headingLevel}
+        class="text-[21px] leading-tight font-semibold"
+      >
+        {local.title}
+      </StateHeading>
+      <p class="mt-2 max-w-[42ch] text-[14.5px] leading-[1.55] text-brand-800">
         {local.description}
       </p>
-      <Show when={local.action}>
-        <div class="mt-4">{local.action}</div>
+      <Show when={action()}>
+        <div class="mt-4">{action()}</div>
       </Show>
     </section>
   );

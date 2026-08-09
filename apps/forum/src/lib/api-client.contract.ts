@@ -53,7 +53,18 @@ type ForumIndexResponse = InferResponseType<
 >;
 export type ForumIndexShape = Assert<
   ForumIndexResponse extends {
-    categories: Array<{ id: string; totalTopicCount: number }>;
+    categories: Array<{
+      id: string;
+      totalTopicCount: number;
+      latestActivity: {
+        replyCount: number;
+        author: {
+          name: string | null;
+          displayName: string | null;
+          image: string | null;
+        };
+      } | null;
+    }>;
   }
     ? true
     : false

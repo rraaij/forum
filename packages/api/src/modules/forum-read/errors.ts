@@ -6,6 +6,9 @@ export const categoryNotFound = () =>
 export const forumTopicNotFound = () =>
   notFoundError("TOPIC_NOT_FOUND", "Topic not found");
 
+export const forumReplyNotFound = () =>
+  notFoundError("POST_NOT_FOUND", "Reply not found in this topic");
+
 /*
  * A board that exists but does not descend from the requested category slug
  * is presented as absent, not as a redirect (plan section 5.2).

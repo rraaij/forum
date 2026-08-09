@@ -1,5 +1,5 @@
 import { Avatar, Field, Tag } from "@forum/ui";
-import { Show } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import type { ProfileActivity } from "@/features/profile-activity/api";
 import { useSession } from "@/lib/auth-client";
 import type { EditableProfile } from "./api";
@@ -29,10 +29,11 @@ export function ProfileForm(props: ProfileFormProps) {
   const memberSince = () => {
     const createdAt = user()?.createdAt;
     if (!createdAt) return "onbekend";
-    return new Date(createdAt).toLocaleDateString("nl-NL", {
+    return new Intl.DateTimeFormat("nl-NL", {
       month: "long",
       year: "numeric",
-    });
+      timeZone: "Europe/Amsterdam",
+    }).format(new Date(createdAt));
   };
 
   const roleLabel = () => {
@@ -41,6 +42,18 @@ export function ProfileForm(props: ProfileFormProps) {
     if (role === "moderator") return "moderator";
     return "lid";
   };
+
+  createEffect(() => {
+    const field = props.editor.errorField();
+    if (!field) return;
+    requestAnimationFrame(() =>
+      document
+        .getElementById(
+          field === "website" ? "profile-website" : "profile-date-of-birth",
+        )
+        ?.focus(),
+    );
+  });
 
   return (
     <>
@@ -60,28 +73,28 @@ export function ProfileForm(props: ProfileFormProps) {
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
           <label
-            class="btn btn-outline btn-sm rounded-none border-brand-500 font-bold shadow-none"
-            for="profile-avatar"
-            aria-disabled={props.editor.savingAvatar()}
+            class="btn relative min-h-11 cursor-pointer overflow-hidden rounded-none border-brand-500 font-bold shadow-none focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary"
+            classList={{ "opacity-40": props.editor.savingAvatar() }}
           >
-            Avatar kiezen
+            <span>Avatar kiezen</span>
+            <input
+              id="profile-avatar"
+              name="avatar"
+              type="file"
+              class="absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] cursor-pointer opacity-0 disabled:cursor-not-allowed"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              disabled={props.editor.savingAvatar()}
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                event.currentTarget.value = "";
+                if (file) void props.editor.chooseAvatar(file);
+              }}
+            />
           </label>
-          <input
-            id="profile-avatar"
-            type="file"
-            class="hidden"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            disabled={props.editor.savingAvatar()}
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0];
-              event.currentTarget.value = "";
-              if (file) void props.editor.chooseAvatar(file);
-            }}
-          />
           <Show when={fields().image()}>
             <button
               type="button"
-              class="min-h-9 px-3 text-sm font-bold text-brand-700 hover:text-primary disabled:opacity-40"
+              class="min-h-11 px-3 text-sm font-bold text-brand-700 hover:text-primary disabled:opacity-40"
               disabled={props.editor.savingAvatar()}
               onClick={() => void props.editor.removeAvatar()}
             >
@@ -90,7 +103,7 @@ export function ProfileForm(props: ProfileFormProps) {
           </Show>
         </div>
 
-        <dl class="mt-6 space-y-3 border-t border-brand-300 pt-4 text-[13px] text-brand-800">
+        <dl class="mt-6 space-y-3 border-t border-brand-300 pt-4 text-[13.5px] text-brand-800">
           <div class="flex items-center justify-between gap-4">
             <dt>lid sinds</dt>
             <dd class="font-bold text-base-content">{memberSince()}</dd>
@@ -110,20 +123,32 @@ export function ProfileForm(props: ProfileFormProps) {
           <div class="flex items-center justify-between gap-4">
             <dt>rol</dt>
             <dd>
-              <Tag variant="secondary">{roleLabel()}</Tag>
+              <Tag>{roleLabel()}</Tag>
             </dd>
           </div>
         </dl>
       </aside>
 
-      <section class="border-b border-brand-300 bg-base-100 px-7 py-6 sm:px-[30px]">
-        <h2 class="text-[18px] font-semibold">Over jou</h2>
+      <form
+        id="profile-form"
+        aria-labelledby="profile-form-heading"
+        class="border-b border-brand-300 bg-base-100 px-7 py-6 sm:px-[30px]"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void props.editor.save();
+        }}
+      >
+        <h2 id="profile-form-heading" class="text-[18px] font-semibold">
+          Over jou
+        </h2>
         <div class="mt-4 grid gap-4 sm:grid-cols-2 sm:gap-x-5">
           <Field label="Weergavenaam" for="profile-display-name">
             <input
               id="profile-display-name"
+              name="displayName"
               type="text"
-              class="input h-[38px]"
+              autocomplete="nickname"
+              class="input min-h-11 bg-ink-100 md:min-h-[38px]"
               value={fields().displayName()}
               onInput={(event) =>
                 fields().setDisplayName(event.currentTarget.value)
@@ -132,24 +157,43 @@ export function ProfileForm(props: ProfileFormProps) {
             />
           </Field>
 
-          <Field label="Geboortedatum" for="profile-date-of-birth">
+          <Field
+            label="Geboortedatum"
+            for="profile-date-of-birth"
+            error={
+              props.editor.errorField() === "dateOfBirth"
+                ? props.editor.error()
+                : undefined
+            }
+            errorId="profile-date-of-birth-error"
+          >
             <input
               id="profile-date-of-birth"
+              name="dateOfBirth"
               type="date"
-              class="input h-[38px]"
+              autocomplete="bday"
+              class="input min-h-11 bg-ink-100 md:min-h-[38px]"
               value={fields().dateOfBirth()}
               onInput={(event) =>
                 fields().setDateOfBirth(event.currentTarget.value)
               }
               disabled={props.editor.saving()}
+              aria-invalid={props.editor.errorField() === "dateOfBirth"}
+              aria-describedby={
+                props.editor.errorField() === "dateOfBirth"
+                  ? "profile-date-of-birth-error"
+                  : undefined
+              }
             />
           </Field>
 
           <Field label="Woonplaats" for="profile-location">
             <input
               id="profile-location"
+              name="location"
               type="text"
-              class="input h-[38px]"
+              autocomplete="address-level2"
+              class="input min-h-11 bg-ink-100 md:min-h-[38px]"
               value={fields().location()}
               onInput={(event) =>
                 fields().setLocation(event.currentTarget.value)
@@ -158,24 +202,44 @@ export function ProfileForm(props: ProfileFormProps) {
             />
           </Field>
 
-          <Field label="Website" for="profile-website">
+          <Field
+            label="Website"
+            for="profile-website"
+            error={
+              props.editor.errorField() === "website"
+                ? props.editor.error()
+                : undefined
+            }
+            errorId="profile-website-error"
+          >
             <input
               id="profile-website"
+              name="website"
               type="url"
-              class="input h-[38px]"
+              autocomplete="url"
+              spellcheck={false}
+              class="input min-h-11 bg-ink-100 md:min-h-[38px]"
               placeholder="https://voorbeeld.nl"
               value={fields().website()}
               onInput={(event) =>
                 fields().setWebsite(event.currentTarget.value)
               }
               disabled={props.editor.saving()}
+              aria-invalid={props.editor.errorField() === "website"}
+              aria-describedby={
+                props.editor.errorField() === "website"
+                  ? "profile-website-error"
+                  : undefined
+              }
             />
           </Field>
 
           <Field label="Over mij" for="profile-about" class="sm:col-span-2">
             <textarea
               id="profile-about"
-              class="textarea min-h-[76px]"
+              name="profileText"
+              class="textarea min-h-[76px] bg-ink-100"
+              spellcheck={true}
               value={fields().profileText()}
               onInput={(event) =>
                 fields().setProfileText(event.currentTarget.value)
@@ -184,7 +248,7 @@ export function ProfileForm(props: ProfileFormProps) {
             />
           </Field>
         </div>
-      </section>
+      </form>
     </>
   );
 }

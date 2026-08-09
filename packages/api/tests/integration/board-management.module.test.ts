@@ -199,6 +199,37 @@ describe("createBoard", () => {
       ),
     ).toBe("PARENT_BOARD_NOT_FOUND");
   });
+
+  it("persists and updates board access policies", async () => {
+    const { boardId } = await boardManagement.createBoard({
+      parentId: null,
+      name: "Members",
+      slug: "members",
+      abbreviation: "MEM",
+      isGuestVisible: false,
+      allowNewTopics: false,
+    });
+    let [row] = await testSql()`
+      SELECT is_guest_visible, allow_new_topics FROM boards WHERE id = ${boardId}
+    `;
+    expect(row).toEqual({
+      is_guest_visible: false,
+      allow_new_topics: false,
+    });
+
+    await boardManagement.updateBoard({
+      boardId,
+      isGuestVisible: true,
+      allowNewTopics: true,
+    });
+    [row] = await testSql()`
+      SELECT is_guest_visible, allow_new_topics FROM boards WHERE id = ${boardId}
+    `;
+    expect(row).toEqual({
+      is_guest_visible: true,
+      allow_new_topics: true,
+    });
+  });
 });
 
 describe("moveBoard", () => {
@@ -399,6 +430,65 @@ describe("moveBoard", () => {
       SELECT count(*)::int AS count FROM boards
     `;
     expect(rows[0].reachable).toBe(count);
+  });
+});
+
+describe("reorderBoardGroups", () => {
+  it("reorders multiple complete sibling groups in one transaction", async () => {
+    const alpha = await createRoot("Alpha");
+    const beta = await createRoot("Beta");
+    const { boardId: one } = await boardManagement.createBoard({
+      parentId: alpha,
+      name: "One",
+      slug: "one",
+      abbreviation: "ONE",
+    });
+    const { boardId: two } = await boardManagement.createBoard({
+      parentId: alpha,
+      name: "Two",
+      slug: "two",
+      abbreviation: "TWO",
+    });
+
+    await expect(
+      boardManagement.reorderBoardGroups({
+        groups: [
+          { parentId: null, boardIds: [beta, alpha] },
+          { parentId: alpha, boardIds: [two, one] },
+        ],
+      }),
+    ).resolves.toEqual({ groups: 2, boards: 4 });
+
+    const rows = await testSql()`
+      SELECT id, parent_id, sort_order FROM boards
+      ORDER BY parent_id NULLS FIRST, sort_order
+    `;
+    expect(rows).toEqual([
+      { id: beta, parent_id: null, sort_order: 0 },
+      { id: alpha, parent_id: null, sort_order: 1 },
+      { id: two, parent_id: alpha, sort_order: 0 },
+      { id: one, parent_id: alpha, sort_order: 1 },
+    ]);
+  });
+
+  it("rejects a stale sibling set without changing any order", async () => {
+    const alpha = await createRoot("Alpha");
+    const beta = await createRoot("Beta");
+    expect(
+      await code(
+        boardManagement.reorderBoardGroups({
+          groups: [{ parentId: null, boardIds: [beta] }],
+        }),
+      ),
+    ).toBe("BOARD_ORDER_CHANGED");
+
+    const rows = await testSql()`
+      SELECT id, sort_order FROM boards ORDER BY name
+    `;
+    expect(rows).toEqual([
+      { id: alpha, sort_order: 0 },
+      { id: beta, sort_order: 0 },
+    ]);
   });
 });
 

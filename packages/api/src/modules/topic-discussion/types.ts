@@ -7,6 +7,7 @@ import type { TopicRouteParams } from "../shared/route-params";
 
 export interface CreateTopicInput {
   actorId: string;
+  actorRole?: string;
   boardId: string;
   title: string;
   content: string;

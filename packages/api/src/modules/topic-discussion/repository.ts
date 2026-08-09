@@ -6,7 +6,14 @@
  * commands touch the database.
  */
 
-import { posts, topics, topicViews, users } from "@forum/db/schema";
+import {
+  notifications,
+  posts,
+  topicSubscriptions,
+  topics,
+  topicViews,
+  users,
+} from "@forum/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { Database } from "../../db";
 import type { HierarchyBoardRow } from "../shared/board-hierarchy";
@@ -39,7 +46,9 @@ export interface PostRecord {
 
 export interface TopicDiscussionTx {
   /** Root-first policy is derived from this transaction's ancestry snapshot. */
-  boardAncestry(boardId: string): Promise<HierarchyBoardRow[]>;
+  boardAncestry(
+    boardId: string,
+  ): Promise<Array<HierarchyBoardRow & { allowNewTopics: boolean }>>;
   topicSlugTaken(slug: string): Promise<boolean>;
   insertTopic(values: {
     boardId: string;
@@ -54,6 +63,7 @@ export interface TopicDiscussionTx {
     content: string;
     now: Date;
   }): Promise<string>;
+  subscribeAuthor(topicId: string, userId: string, now: Date): Promise<void>;
   /** SELECT ... FOR UPDATE: serializes replies/deletes per topic. */
   lockTopic(topicId: string): Promise<LockedTopic | null>;
   findQuotablePost(postId: string): Promise<QuotablePost | null>;
@@ -65,6 +75,12 @@ export interface TopicDiscussionTx {
     now: Date;
   }): Promise<string>;
   bumpTopicActivity(topicId: string, now: Date): Promise<void>;
+  notifySubscribers(values: {
+    topicId: string;
+    postId: string;
+    replyingUserId: string;
+    now: Date;
+  }): Promise<void>;
   findPost(postId: string): Promise<PostRecord | null>;
   updatePostContent(postId: string, content: string, now: Date): Promise<void>;
   /** True only for the one active-to-deleted state transition. */
@@ -124,11 +140,11 @@ export function createDrizzleTopicDiscussionStore(
              */
             const rows = await tx.execute(sql`
               WITH RECURSIVE ancestry AS (
-                SELECT id, parent_id, name, slug, sort_order
+                SELECT id, parent_id, name, slug, sort_order, allow_new_topics
                 FROM boards
                 WHERE id = ${boardId}
                 UNION ALL
-                SELECT b.id, b.parent_id, b.name, b.slug, b.sort_order
+                SELECT b.id, b.parent_id, b.name, b.slug, b.sort_order, b.allow_new_topics
                 FROM boards b
                 JOIN ancestry a ON b.id = a.parent_id
               )
@@ -137,10 +153,13 @@ export function createDrizzleTopicDiscussionStore(
                 parent_id AS "parentId",
                 name,
                 slug,
-                sort_order AS "sortOrder"
+                sort_order AS "sortOrder",
+                allow_new_topics AS "allowNewTopics"
               FROM ancestry
             `);
-            return rows as unknown as HierarchyBoardRow[];
+            return rows as unknown as Array<
+              HierarchyBoardRow & { allowNewTopics: boolean }
+            >;
           },
 
           async topicSlugTaken(slug) {
@@ -187,6 +206,13 @@ export function createDrizzleTopicDiscussionStore(
               })
               .returning({ id: posts.id });
             return row.id;
+          },
+
+          async subscribeAuthor(topicId, userId, now) {
+            await tx
+              .insert(topicSubscriptions)
+              .values({ topicId, userId, createdAt: now })
+              .onConflictDoNothing();
           },
 
           async lockTopic(topicId) {
@@ -249,6 +275,31 @@ export function createDrizzleTopicDiscussionStore(
                 lastActivityAt: now,
               })
               .where(eq(topics.id, topicId));
+          },
+
+          async notifySubscribers({ topicId, postId, replyingUserId, now }) {
+            /*
+             * Set-based fan-out is part of the reply transaction. Self-replies
+             * are suppressed and the unique index makes retries for one post
+             * harmless without hiding duplicate reply submissions.
+             */
+            await tx.execute(sql`
+              INSERT INTO ${notifications} (
+                recipient_id,
+                kind,
+                post_id,
+                created_at
+              )
+              SELECT
+                ${topicSubscriptions.userId},
+                'topic_reply',
+                ${postId}::uuid,
+                ${now.toISOString()}::timestamp
+              FROM ${topicSubscriptions}
+              WHERE ${topicSubscriptions.topicId} = ${topicId}::uuid
+                AND ${topicSubscriptions.userId} <> ${replyingUserId}
+              ON CONFLICT (recipient_id, kind, post_id) DO NOTHING
+            `);
           },
 
           async findPost(postId) {

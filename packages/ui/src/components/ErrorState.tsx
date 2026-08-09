@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js";
-import { Show, splitProps } from "solid-js";
+import { children, Show, splitProps } from "solid-js";
+import { StateHeading, type StateHeadingLevel } from "./StateHeading";
 
 export type ErrorStateProps = Omit<JSX.HTMLAttributes<HTMLElement>, "title"> & {
   kicker?: JSX.Element;
@@ -7,6 +8,7 @@ export type ErrorStateProps = Omit<JSX.HTMLAttributes<HTMLElement>, "title"> & {
   description: JSX.Element;
   action?: JSX.Element;
   code?: JSX.Element;
+  headingLevel?: StateHeadingLevel;
 };
 
 export function ErrorState(props: ErrorStateProps) {
@@ -16,8 +18,13 @@ export function ErrorState(props: ErrorStateProps) {
     "description",
     "action",
     "code",
+    "headingLevel",
     "class",
   ]);
+  // Resolve JSX slots once so repeated Show checks retain the same subtrees
+  // during server rendering and client hydration.
+  const action = children(() => local.action);
+  const code = children(() => local.code);
 
   return (
     <section
@@ -28,15 +35,20 @@ export function ErrorState(props: ErrorStateProps) {
       <p class="mb-3 text-[11.5px] font-bold tracking-[0.06em] text-flame-700 uppercase">
         {local.kicker ?? "Fout"}
       </p>
-      <h4 class="text-[21px] leading-tight font-semibold">{local.title}</h4>
-      <p class="mt-2 max-w-[42ch] leading-relaxed text-flame-800">
+      <StateHeading
+        level={local.headingLevel}
+        class="text-[21px] leading-tight font-semibold"
+      >
+        {local.title}
+      </StateHeading>
+      <p class="mt-2 max-w-[44ch] text-[14.5px] leading-[1.55] text-flame-800">
         {local.description}
       </p>
-      <Show when={local.action || local.code}>
+      <Show when={action() || code()}>
         <div class="mt-4 flex flex-wrap items-center gap-3">
-          {local.action}
-          <Show when={local.code}>
-            <p class="text-[12.5px] text-flame-700">{local.code}</p>
+          {action()}
+          <Show when={code()}>
+            <p class="text-[12.5px] text-flame-700">{code()}</p>
           </Show>
         </div>
       </Show>

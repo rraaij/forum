@@ -17,6 +17,8 @@ const boardFields = {
   description: z.string().max(BOARD_DESCRIPTION_MAX).nullish(),
   icon: z.string().max(BOARD_ICON_MAX).nullish(),
   sortOrder: z.number().int().min(0).optional(),
+  isGuestVisible: z.boolean().optional(),
+  allowNewTopics: z.boolean().optional(),
 };
 
 // POST /api/admin/boards — parentId must be explicit: null means root.
@@ -32,6 +34,17 @@ export const updateBoardBodySchema = z.object(boardFields).partial();
 export const moveBoardBodySchema = z.object({
   newParentId: uuidSchema.nullable(),
   sortOrder: z.number().int().min(0),
+});
+
+export const reorderBoardGroupsBodySchema = z.object({
+  groups: z
+    .array(
+      z.object({
+        parentId: uuidSchema.nullable(),
+        boardIds: z.array(uuidSchema).min(1),
+      }),
+    )
+    .min(1),
 });
 
 const impactCountSchema = z.number().int().min(0);

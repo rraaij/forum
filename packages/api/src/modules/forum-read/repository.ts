@@ -7,7 +7,7 @@
  */
 
 import { boards, posts, topics, users } from "@forum/db/schema";
-import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import type { Database } from "../../db";
 import type { ReplyCursor, TopicCursor } from "../shared/pagination";
 
@@ -20,6 +20,8 @@ export interface BoardRow {
   description: string | null;
   icon: string | null;
   sortOrder: number;
+  isGuestVisible: boolean;
+  allowNewTopics: boolean;
 }
 
 export interface BoardActivityRow {
@@ -28,6 +30,11 @@ export interface BoardActivityRow {
   topicTitle: string;
   topicSlug: string;
   at: Date;
+  replyCount: number | null;
+  authorId: string;
+  authorName: string | null;
+  authorDisplayName: string | null;
+  authorImage: string | null;
 }
 
 export interface TopicPageRow {
@@ -63,6 +70,15 @@ export interface PostRow {
   authorName: string | null;
   authorDisplayName: string | null;
   authorImage: string | null;
+  authorCreatedAt: Date | null;
+  authorProfileText: string | null;
+  authorRole: string | null;
+}
+
+export interface ReplyTarget {
+  id: string;
+  createdAt: Date;
+  startIndex: number;
 }
 
 const topicAuthorColumns = {
@@ -76,6 +92,8 @@ export interface ForumReadTx {
   allBoards(): Promise<BoardRow[]>;
   /** Direct (non-recursive) topic counts per board, one grouped query. */
   directTopicCounts(): Promise<Map<string, number>>;
+  /** Direct retained post counts per board, one grouped query. */
+  directPostCounts(): Promise<Map<string, number>>;
   /** Latest direct topic activity per board, one DISTINCT ON query. */
   latestActivityByBoard(): Promise<Map<string, BoardActivityRow>>;
   topicPage(
@@ -89,10 +107,17 @@ export interface ForumReadTx {
     topicId: string,
     cursor: ReplyCursor | null,
     limitPlusOne: number,
+    inclusive?: boolean,
   ): Promise<PostRow[]>;
+  replyTarget(topicId: string, replyId: string): Promise<ReplyTarget | null>;
+  /** Lifetime post totals for all authors on the current page, one query. */
+  postCountsByAuthor(authorIds: string[]): Promise<Map<string, number>>;
 }
 
-type ForumReadExecutor = Pick<Database, "select" | "selectDistinctOn">;
+type ForumReadExecutor = Pick<
+  Database,
+  "execute" | "select" | "selectDistinctOn"
+>;
 
 function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
   return {
@@ -107,6 +132,8 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
           description: boards.description,
           icon: boards.icon,
           sortOrder: boards.sortOrder,
+          isGuestVisible: boards.isGuestVisible,
+          allowNewTopics: boards.allowNewTopics,
         })
         .from(boards);
     },
@@ -127,6 +154,23 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
       return map;
     },
 
+    async directPostCounts() {
+      const rows = await db
+        .select({
+          boardId: topics.boardId,
+          postCount: sql<number>`count(${posts.id})::int`,
+        })
+        .from(posts)
+        .innerJoin(topics, eq(posts.topicId, topics.id))
+        .where(isNotNull(topics.boardId))
+        .groupBy(topics.boardId);
+      const map = new Map<string, number>();
+      for (const row of rows) {
+        if (row.boardId) map.set(row.boardId, row.postCount);
+      }
+      return map;
+    },
+
     async latestActivityByBoard() {
       const rows = await db
         .selectDistinctOn([topics.boardId], {
@@ -135,8 +179,11 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
           topicTitle: topics.title,
           topicSlug: topics.slug,
           at: topics.lastActivityAt,
+          replyCount: topics.replyCount,
+          ...topicAuthorColumns,
         })
         .from(topics)
+        .leftJoin(users, eq(topics.authorId, users.id))
         .where(isNotNull(topics.boardId))
         .orderBy(topics.boardId, desc(topics.lastActivityAt), desc(topics.id));
       const map = new Map<string, BoardActivityRow>();
@@ -148,6 +195,11 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
             topicTitle: row.topicTitle,
             topicSlug: row.topicSlug,
             at: row.at,
+            replyCount: row.replyCount,
+            authorId: row.authorId,
+            authorName: row.authorName,
+            authorDisplayName: row.authorDisplayName,
+            authorImage: row.authorImage,
           });
         }
       }
@@ -227,6 +279,9 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
           authorName: users.name,
           authorDisplayName: users.displayName,
           authorImage: users.image,
+          authorCreatedAt: users.createdAt,
+          authorProfileText: users.profileText,
+          authorRole: users.role,
         })
         .from(posts)
         .leftJoin(users, eq(posts.authorId, users.id))
@@ -235,9 +290,11 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
       return rows[0] ?? null;
     },
 
-    async replyPage(topicId, cursor, limitPlusOne) {
+    async replyPage(topicId, cursor, limitPlusOne, inclusive = false) {
       const seek = cursor
-        ? sql`(${posts.createdAt}, ${posts.id}) > (cast(${cursor.createdAt} as timestamp), cast(${cursor.id} as uuid))`
+        ? inclusive
+          ? sql`(${posts.createdAt}, ${posts.id}) >= (cast(${cursor.createdAt} as timestamp), cast(${cursor.id} as uuid))`
+          : sql`(${posts.createdAt}, ${posts.id}) > (cast(${cursor.createdAt} as timestamp), cast(${cursor.id} as uuid))`
         : undefined;
       return db
         .select({
@@ -253,12 +310,60 @@ function createForumReadTx(db: ForumReadExecutor): ForumReadTx {
           authorName: users.name,
           authorDisplayName: users.displayName,
           authorImage: users.image,
+          authorCreatedAt: users.createdAt,
+          authorProfileText: users.profileText,
+          authorRole: users.role,
         })
         .from(posts)
         .leftJoin(users, eq(posts.authorId, users.id))
         .where(and(eq(posts.topicId, topicId), eq(posts.kind, "reply"), seek))
         .orderBy(asc(posts.createdAt), asc(posts.id))
         .limit(limitPlusOne);
+    },
+
+    async replyTarget(topicId, replyId) {
+      const rows = await db.execute(sql`
+        SELECT
+          target.id,
+          target.created_at AS "createdAt",
+          count(previous.id)::int AS "startIndex"
+        FROM posts target
+        LEFT JOIN posts previous
+          ON previous.topic_id = target.topic_id
+          AND previous.kind = 'reply'
+          AND (previous.created_at, previous.id) < (target.created_at, target.id)
+        WHERE target.id = ${replyId}::uuid
+          AND target.topic_id = ${topicId}::uuid
+          AND target.kind = 'reply'
+        GROUP BY target.id, target.created_at
+      `);
+      const row = rows[0] as
+        | { id: string; createdAt: string | Date; startIndex: number }
+        | undefined;
+      return row
+        ? {
+            id: row.id,
+            createdAt:
+              row.createdAt instanceof Date
+                ? row.createdAt
+                : new Date(`${row.createdAt}Z`),
+            startIndex: row.startIndex,
+          }
+        : null;
+    },
+
+    async postCountsByAuthor(authorIds) {
+      if (authorIds.length === 0) return new Map();
+
+      const rows = await db
+        .select({
+          authorId: posts.authorId,
+          postCount: sql<number>`count(*)::int`,
+        })
+        .from(posts)
+        .where(inArray(posts.authorId, authorIds))
+        .groupBy(posts.authorId);
+      return new Map(rows.map((row) => [row.authorId, row.postCount]));
     },
   };
 }

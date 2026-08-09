@@ -11,6 +11,7 @@ import { apiClient } from "@/lib/api-client";
 const purgeImpactGet =
   apiClient.api.admin.boards[":boardId"]["purge-impact"].$get;
 const boardsPost = apiClient.api.admin.boards.$post;
+const boardsOrderPut = apiClient.api.admin.boards.order.$put;
 const boardPatch = apiClient.api.admin.boards[":boardId"].$patch;
 const boardMovePost = apiClient.api.admin.boards[":boardId"].move.$post;
 const boardPurgePost = apiClient.api.admin.boards[":boardId"].purge.$post;
@@ -19,6 +20,7 @@ export type PurgeImpact = InferResponseType<typeof purgeImpactGet, 200>;
 export type PurgeImpactCounts = InferResponseType<typeof boardPurgePost, 200>;
 type CreateBoardRequest = InferRequestType<typeof boardsPost>;
 type UpdateBoardRequest = InferRequestType<typeof boardPatch>;
+type ReorderBoardsRequest = InferRequestType<typeof boardsOrderPut>;
 type MoveBoardRequest = InferRequestType<typeof boardMovePost>;
 type PurgeImpactRequest = InferRequestType<typeof purgeImpactGet>;
 type PurgeBoardRequest = InferRequestType<typeof boardPurgePost>;
@@ -40,6 +42,14 @@ export async function updateBoard(
 ): Promise<void> {
   const res = await boardPatch({ param: { boardId }, json: input });
   if (res.status !== 204) throw await toApiError(res);
+}
+
+export async function reorderBoardGroups(
+  groups: ReorderBoardsRequest["json"]["groups"],
+): Promise<InferResponseType<typeof boardsOrderPut, 200>> {
+  const res = await boardsOrderPut({ json: { groups } });
+  if (res.status !== 200) throw await toApiError(res);
+  return res.json();
 }
 
 export async function moveBoard(

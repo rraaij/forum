@@ -38,6 +38,7 @@ export function createTopicRoutes(discussion: TopicDiscussion) {
           try {
             const result = await discussion.createTopic({
               actorId: user.id,
+              actorRole: user.role,
               ...c.req.valid("json"),
             });
             return c.json(result, 201);

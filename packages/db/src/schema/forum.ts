@@ -42,6 +42,8 @@ export const boards = pgTable(
     description: text("description"),
     icon: text("icon"),
     sortOrder: integer("sort_order").notNull().default(0),
+    isGuestVisible: boolean("is_guest_visible").notNull().default(true),
+    allowNewTopics: boolean("allow_new_topics").notNull().default(true),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
@@ -132,6 +134,12 @@ export const topics = pgTable(
     // case-insensitive; the module reports a typed TOPIC_SLUG_CONFLICT and
     // this index is the authority behind it.
     uniqueIndex("topics_slug_unique_idx").on(sql`lower(${table.slug})`),
+    // The neutral configuration preserves Dutch and technical identifiers;
+    // the query uses this exact expression so PostgreSQL can use the GIN index.
+    index("topics_search_idx").using(
+      "gin",
+      sql`to_tsvector('simple', ${table.title})`,
+    ),
     check("topics_reply_count_check", sql`${table.replyCount} >= 0`),
   ],
 );
@@ -158,6 +166,9 @@ export const posts = pgTable(
   (table) => [
     index("posts_topic_idx").on(table.topicId),
     index("posts_author_idx").on(table.authorId),
+    index("posts_search_active_idx")
+      .using("gin", sql`to_tsvector('simple', ${table.content})`)
+      .where(sql`${table.isDeleted} = false`),
     // At most one opening post per topic (plan section 4.3).
     uniqueIndex("posts_topic_opening_unique_idx")
       .on(table.topicId)

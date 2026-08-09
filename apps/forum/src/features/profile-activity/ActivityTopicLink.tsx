@@ -1,3 +1,4 @@
+import { Tag } from "@forum/ui";
 import { Link } from "@tanstack/solid-router";
 import { createSignal, Show } from "solid-js";
 import { Portal } from "solid-js/web";
@@ -52,15 +53,19 @@ export function ActivityTopicLink(props: { activity: ProfileActivityItem }) {
            * while activity was being read), so there is no canonical URL.
            * The row stays in the author's record, presented without a link.
            */
-          <button type="button" class="font-semibold" {...previewHandlers()}>
+          <span
+            class="inline-flex min-h-11 min-w-0 items-center font-semibold transition-colors [overflow-wrap:anywhere] group-hover:text-primary"
+            tabindex="0"
+            {...previewHandlers()}
+          >
             {props.activity.topicTitle}
-          </button>
+          </span>
         }
       >
         {(routeParams) => (
           <Link
             {...topicLinkProps(routeParams())}
-            class="font-semibold text-info hover:underline"
+            class="inline-flex min-h-11 min-w-0 items-center font-semibold text-base-content transition-colors [overflow-wrap:anywhere] group-hover:text-primary hover:underline"
             {...previewHandlers()}
           >
             {props.activity.topicTitle}
@@ -79,7 +84,7 @@ export function ActivityTopicLink(props: { activity: ProfileActivityItem }) {
             <aside
               id={`post-preview-${props.activity.postId}`}
               role="tooltip"
-              class="pointer-events-none fixed z-50 w-96 max-w-[calc(100vw-1.5rem)] rounded-sm border border-base-content/15 bg-base-100 p-4 text-left shadow-2xl"
+              class="pointer-events-none fixed z-50 w-96 max-w-[calc(100vw-1.5rem)] border-2 border-base-content bg-base-100 p-4 text-left"
               style={{
                 top: `${position().top}px`,
                 left: `${position().left}px`,
@@ -87,21 +92,19 @@ export function ActivityTopicLink(props: { activity: ProfileActivityItem }) {
             >
               <div class="mb-2 flex items-center justify-between gap-3">
                 <strong class="text-sm">{props.activity.topicTitle}</strong>
-                <span class="badge badge-ghost badge-sm">
-                  {props.activity.postKind === "opening"
-                    ? "Opening post"
-                    : "Reply"}
-                </span>
+                <Tag>
+                  {props.activity.postKind === "opening" ? "Topic" : "Reactie"}
+                </Tag>
               </div>
               <p
                 classList={{
-                  "max-h-72 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed": true,
-                  "italic text-base-content/55": props.activity.isDeleted,
-                  "text-base-content/80": !props.activity.isDeleted,
+                  "max-h-72 overflow-y-auto whitespace-pre-wrap text-[14px] leading-[1.55]": true,
+                  "italic text-brand-700": props.activity.isDeleted,
+                  "text-brand-800": !props.activity.isDeleted,
                 }}
               >
                 {props.activity.isDeleted
-                  ? "This post has been deleted."
+                  ? "Dit bericht is verwijderd."
                   : props.activity.postContent}
               </p>
             </aside>

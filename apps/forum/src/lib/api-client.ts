@@ -6,6 +6,8 @@
  */
 
 import type { AppType } from "@forum/api/app";
+import { createIsomorphicFn } from "@tanstack/solid-start";
+import { getRequestHeader } from "@tanstack/solid-start/server";
 import { hc } from "hono/client";
 
 /*
@@ -18,8 +20,24 @@ const API_ORIGIN =
     ? (import.meta.env.VITE_API_URL ?? "http://localhost:4000")
     : "";
 
+/*
+ * Browser fetch attaches cookies through `credentials`. During SSR there is no
+ * browser cookie jar, so forward only the current request's Cookie header.
+ * This keeps viewer-aware loaders correct without exposing session data to the
+ * client bundle or turning the API response into shared cacheable content.
+ */
+const sessionFetch = createIsomorphicFn()
+  .server((input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    const cookie = getRequestHeader("cookie");
+    if (cookie) headers.set("cookie", cookie);
+    return fetch(input, { ...init, headers });
+  })
+  .client((input: RequestInfo | URL, init?: RequestInit) => fetch(input, init));
+
 export const apiClient = hc<AppType>(API_ORIGIN, {
   init: { credentials: "include" },
+  fetch: sessionFetch,
 });
 
 export type ApiClient = typeof apiClient;

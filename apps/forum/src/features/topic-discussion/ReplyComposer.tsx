@@ -1,6 +1,7 @@
 import { Avatar, Button } from "@forum/ui";
 import { createSignal, Show } from "solid-js";
 import type { PostView } from "@/features/forum-read/api";
+import { userFacingError } from "@/lib/user-facing-error";
 import { replyToTopic } from "./api";
 import { QuoteSnapshot } from "./QuoteSnapshot";
 
@@ -23,6 +24,7 @@ export function ReplyComposer(props: ReplyComposerProps) {
   const [content, setContent] = createSignal("");
   const [posting, setPosting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+  const [showPreview, setShowPreview] = createSignal(false);
   let field: HTMLTextAreaElement | undefined;
 
   props.registerFocus?.(() => field?.focus());
@@ -32,6 +34,7 @@ export function ReplyComposer(props: ReplyComposerProps) {
     const trimmed = content().trim();
     if (!trimmed) {
       setError("Schrijf eerst een reactie.");
+      field?.focus();
       return;
     }
 
@@ -44,13 +47,15 @@ export function ReplyComposer(props: ReplyComposerProps) {
         quotedPostId: props.quotedPost?.id,
       });
       setContent("");
+      setShowPreview(false);
       props.onRemoveQuote();
       await props.onPosted();
     } catch (submitError) {
       setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "De reactie kon niet worden geplaatst.",
+        userFacingError(
+          submitError,
+          "De reactie kon niet worden geplaatst. Probeer het nog eens.",
+        ),
       );
     } finally {
       setPosting(false);
@@ -58,8 +63,8 @@ export function ReplyComposer(props: ReplyComposerProps) {
   };
 
   return (
-    <section class="border-t-2 border-base-content bg-base-300 px-6 py-6 sm:px-10">
-      <div class="mb-3 flex items-center gap-3">
+    <section class="bg-base-300 px-4 py-4 sm:px-10 sm:py-6">
+      <div class="mb-3 hidden items-center gap-3 sm:flex">
         <Avatar src={props.userImage} name={props.userName} size="sm" alt="" />
         <h2 class="text-[18px] font-semibold">
           Wat denk jij, {props.userName}?
@@ -94,28 +99,67 @@ export function ReplyComposer(props: ReplyComposerProps) {
               </div>
             )}
           </Show>
-          <textarea
-            ref={(element) => {
-              field = element;
-            }}
-            class="textarea min-h-[104px] w-full resize-y rounded-none border-0 bg-base-100 focus:outline-none"
-            placeholder="Typ je reactie… quoten kan met de knop bij een post."
-            value={content()}
-            onInput={(event) => {
-              setContent(event.currentTarget.value);
-              setError(null);
-            }}
-            disabled={posting()}
-            required
-          />
+          <div class="flex items-stretch sm:block">
+            <textarea
+              ref={(element) => {
+                field = element;
+              }}
+              name="content"
+              aria-label="Jouw reactie"
+              class="textarea min-h-11 flex-1 resize-none rounded-none border-0 bg-base-100 px-3 py-3 sm:min-h-[104px] sm:w-full sm:resize-y"
+              placeholder="Typ je reactie… quoten kan met de knop bij een post."
+              spellcheck={true}
+              value={content()}
+              onInput={(event) => {
+                setContent(event.currentTarget.value);
+                setError(null);
+                setShowPreview(false);
+              }}
+              disabled={posting()}
+              required
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              class="m-1 min-h-11 shrink-0 sm:hidden"
+              loading={posting()}
+            >
+              {posting() ? "Plaatsen…" : "Plaats"}
+            </Button>
+          </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <Button type="submit" variant="primary" loading={posting()}>
+        <Show when={showPreview()}>
+          <div
+            class="border-l-[3px] border-primary bg-base-100 px-4 py-3"
+            aria-live="polite"
+          >
+            <p class="mb-1 text-[12.5px] font-bold text-brand-700">Voorbeeld</p>
+            {/* Posts are plain text today; never turn a draft into unsanitized HTML. */}
+            <p class="max-w-[70ch] whitespace-pre-wrap text-[15px] leading-[1.6] md:text-base md:leading-[1.68]">
+              {content().trim() ||
+                "Je voorbeeld verschijnt zodra je iets schrijft."}
+            </p>
+          </div>
+        </Show>
+
+        <div class="hidden flex-wrap items-center gap-2 sm:flex">
+          <Button
+            type="submit"
+            variant="primary"
+            class="sm:min-h-9"
+            loading={posting()}
+          >
             {posting() ? "Reactie plaatsen…" : "Plaats reactie"}
           </Button>
-          <Button type="button" variant="surface">
-            Voorbeeld
+          <Button
+            type="button"
+            variant="surface"
+            class="sm:min-h-9"
+            aria-pressed={showPreview()}
+            onClick={() => setShowPreview((visible) => !visible)}
+          >
+            {showPreview() ? "Voorbeeld sluiten" : "Voorbeeld"}
           </Button>
           <p class="ml-auto text-[12.5px] text-brand-700">
             Wees aardig. Dat scheelt iedereen tijd.

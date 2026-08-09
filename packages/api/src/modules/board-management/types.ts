@@ -13,6 +13,8 @@ export interface CreateBoardInput {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  isGuestVisible?: boolean;
+  allowNewTopics?: boolean;
 }
 
 export interface UpdateBoardInput {
@@ -23,12 +25,22 @@ export interface UpdateBoardInput {
   description?: string | null;
   icon?: string | null;
   sortOrder?: number;
+  isGuestVisible?: boolean;
+  allowNewTopics?: boolean;
 }
 
 export interface MoveBoardInput {
   boardId: string;
   newParentId: string | null;
   sortOrder: number;
+}
+
+export interface ReorderBoardGroupsInput {
+  groups: Array<{
+    parentId: string | null;
+    /** Complete sibling order, first to last. */
+    boardIds: string[];
+  }>;
 }
 
 export interface BoardPurgeImpactCounts {
@@ -57,6 +69,9 @@ export interface BoardManagement {
   createBoard(input: CreateBoardInput): Promise<{ boardId: string }>;
   updateBoard(input: UpdateBoardInput): Promise<void>;
   moveBoard(input: MoveBoardInput): Promise<void>;
+  reorderBoardGroups(
+    input: ReorderBoardGroupsInput,
+  ): Promise<{ groups: number; boards: number }>;
   previewRecursivePurge(boardId: string): Promise<BoardPurgeImpact>;
   purgeBoardTree(input: PurgeBoardTreeInput): Promise<BoardPurgeImpactCounts>;
 }

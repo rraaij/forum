@@ -13,5 +13,8 @@
     "@forum/config": "workspace:*",
     "solid-js": "^1.9.14",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "lucide-solid": "^1.31.0"
   }
 }

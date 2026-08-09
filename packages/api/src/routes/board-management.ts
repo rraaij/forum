@@ -13,6 +13,7 @@ import {
   createBoardBodySchema,
   moveBoardBodySchema,
   purgeBoardBodySchema,
+  reorderBoardGroupsBodySchema,
   updateBoardBodySchema,
 } from "../transport/schemas";
 import {
@@ -34,6 +35,19 @@ export function createAdminBoardRoutes(boards: BoardManagement) {
         async (c) => {
           try {
             return c.json(await boards.createBoard(c.req.valid("json")), 201);
+          } catch (error) {
+            if (isDomainError(error)) return respondWithDomainError(c, error);
+            throw error;
+          }
+        },
+      )
+      .put(
+        "/order",
+        transportBodyLimit(),
+        transportValidator("json", reorderBoardGroupsBodySchema),
+        async (c) => {
+          try {
+            return c.json(await boards.reorderBoardGroups(c.req.valid("json")));
           } catch (error) {
             if (isDomainError(error)) return respondWithDomainError(c, error);
             throw error;

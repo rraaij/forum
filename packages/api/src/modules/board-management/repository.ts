@@ -20,6 +20,8 @@ export interface BoardRecord extends BoardNode {
   slug: string;
   abbreviation: string;
   sortOrder: number;
+  isGuestVisible: boolean;
+  allowNewTopics: boolean;
 }
 
 export type IdentifierField = "name" | "slug" | "abbreviation";
@@ -42,6 +44,8 @@ export interface BoardManagementTx {
     description: string | null;
     icon: string | null;
     sortOrder: number;
+    isGuestVisible: boolean;
+    allowNewTopics: boolean;
     now: Date;
   }): Promise<string>;
   updateBoard(
@@ -53,6 +57,8 @@ export interface BoardManagementTx {
       description: string | null;
       icon: string | null;
       sortOrder: number;
+      isGuestVisible: boolean;
+      allowNewTopics: boolean;
     }>,
     now: Date,
   ): Promise<void>;
@@ -60,6 +66,10 @@ export interface BoardManagementTx {
     boardId: string,
     newParentId: string | null,
     sortOrder: number,
+    now: Date,
+  ): Promise<void>;
+  reorderBoardGroups(
+    groups: Array<{ boardIds: string[] }>,
     now: Date,
   ): Promise<void>;
   /** Locks every Board row in the purge subtree before its impact recount. */
@@ -94,6 +104,8 @@ export function createDrizzleBoardManagementStore(
                 slug: boards.slug,
                 abbreviation: boards.abbreviation,
                 sortOrder: boards.sortOrder,
+                isGuestVisible: boards.isGuestVisible,
+                allowNewTopics: boards.allowNewTopics,
               })
               .from(boards);
             return new Map(rows.map((row) => [row.id, row]));
@@ -108,6 +120,8 @@ export function createDrizzleBoardManagementStore(
                 slug: boards.slug,
                 abbreviation: boards.abbreviation,
                 sortOrder: boards.sortOrder,
+                isGuestVisible: boards.isGuestVisible,
+                allowNewTopics: boards.allowNewTopics,
               })
               .from(boards)
               .where(eq(boards.id, boardId))
@@ -161,6 +175,8 @@ export function createDrizzleBoardManagementStore(
                 description: values.description,
                 icon: values.icon,
                 sortOrder: values.sortOrder,
+                isGuestVisible: values.isGuestVisible,
+                allowNewTopics: values.allowNewTopics,
                 createdAt: values.now,
                 updatedAt: values.now,
               })
@@ -180,6 +196,19 @@ export function createDrizzleBoardManagementStore(
               .update(boards)
               .set({ parentId: newParentId, sortOrder, updatedAt: now })
               .where(eq(boards.id, boardId));
+          },
+
+          async reorderBoardGroups(groups, now) {
+            // Dense sibling positions make the resulting order deterministic;
+            // equal legacy values remain valid until a group is explicitly saved.
+            for (const group of groups) {
+              for (const [sortOrder, boardId] of group.boardIds.entries()) {
+                await tx
+                  .update(boards)
+                  .set({ sortOrder, updatedAt: now })
+                  .where(eq(boards.id, boardId));
+              }
+            }
           },
 
           async lockSubtree(boardId) {

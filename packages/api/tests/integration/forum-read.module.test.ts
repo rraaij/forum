@@ -82,6 +82,11 @@ describe("forum index", () => {
 
   it("nests a five-level tree with recursive counts and rolled-up activity", async () => {
     const tree = await buildDeepTree();
+    await testSql()`
+      UPDATE users
+      SET display_name = 'Reader Display', image = 'https://example.test/reader.png'
+      WHERE id = ${authorId}
+    `;
     await discussion.createTopic({
       actorId: authorId,
       boardId: tree.a,
@@ -106,6 +111,12 @@ describe("forum index", () => {
       title: "On echo two",
       content: "x",
     });
+    const replierId = await insertUser("replier");
+    await discussion.replyToTopic({
+      actorId: replierId,
+      topicId: newest.topicId,
+      content: "Latest reply",
+    });
 
     const index = await readModel.getForumIndex();
     const alpha = index.categories.find((cat) => cat.name === "Alpha");
@@ -113,6 +124,8 @@ describe("forum index", () => {
     if (!alpha) return;
     expect(alpha.directTopicCount).toBe(1);
     expect(alpha.totalTopicCount).toBe(4);
+    expect(alpha.directPostCount).toBe(1);
+    expect(alpha.totalPostCount).toBe(5);
     // Five levels: Alpha > Bravo > Charlie > Delta > Echo.
     const bravo = alpha.children.find((child) => child.name === "Bravo");
     const charlie = bravo?.children[0];
@@ -121,14 +134,24 @@ describe("forum index", () => {
     expect(echo?.name).toBe("Echo");
     expect(charlie?.totalTopicCount).toBe(3);
     expect(echo?.totalTopicCount).toBe(2);
+    expect(charlie?.totalPostCount).toBe(4);
+    expect(echo?.totalPostCount).toBe(3);
     // Latest activity rolls up to the root and carries canonical params.
     expect(alpha.latestActivity?.topicTitle).toBe("On echo two");
+    expect(alpha.latestActivity?.replyCount).toBe(1);
+    expect(alpha.latestActivity?.author).toEqual({
+      id: authorId,
+      name: "reader",
+      displayName: "Reader Display",
+      image: "https://example.test/reader.png",
+    });
     expect(alpha.latestActivity?.routeParams).toEqual({
       kind: "boardTopic",
       categorySlug: "alpha",
       boardId: tree.e,
       topicSlug: newest.slug,
     });
+    expect(echo?.latestActivity).toEqual(alpha.latestActivity);
   });
 
   it("orders siblings by sortOrder then name", async () => {
@@ -142,6 +165,64 @@ describe("forum index", () => {
       "Zeta",
       "First",
     ]);
+  });
+
+  it("hides guest-invisible subtrees and their counts from anonymous reads", async () => {
+    const root = await insertBoard("Visible");
+    const hidden = await insertBoard("Members", root);
+    const descendant = await insertBoard("Inherited Hidden", hidden);
+    await testSql()`
+      UPDATE boards SET is_guest_visible = false WHERE id = ${hidden}
+    `;
+    const created = await discussion.createTopic({
+      actorId: authorId,
+      boardId: descendant,
+      title: "Members topic",
+      content: "opening",
+    });
+
+    const anonymous = await readModel.getForumIndex();
+    expect(anonymous.categories[0]?.children).toHaveLength(0);
+    expect(anonymous.categories[0]?.totalTopicCount).toBe(0);
+    expect(anonymous.categories[0]?.totalPostCount).toBe(0);
+
+    const member = await readModel.getForumIndex({
+      viewer: { isAuthenticated: true },
+    });
+    expect(member.categories[0]?.children[0]?.name).toBe("Members");
+    expect(member.categories[0]?.totalTopicCount).toBe(1);
+    expect(member.categories[0]?.totalPostCount).toBe(1);
+
+    expect(
+      await code(
+        readModel.getBoardPage({
+          categorySlug: "visible",
+          boardId: descendant,
+          topics: {},
+        }),
+      ),
+    ).toBe("BOARD_NOT_FOUND");
+    await expect(
+      readModel.getBoardPage({
+        categorySlug: "visible",
+        boardId: descendant,
+        topics: {},
+        viewer: { isAuthenticated: true },
+      }),
+    ).resolves.toMatchObject({ board: { id: descendant } });
+
+    expect(
+      await code(
+        readModel.getTopicPage({ topicSlug: created.slug, replies: {} }),
+      ),
+    ).toBe("TOPIC_NOT_FOUND");
+    await expect(
+      readModel.getTopicPage({
+        topicSlug: created.slug,
+        replies: {},
+        viewer: { isAuthenticated: true },
+      }),
+    ).resolves.toMatchObject({ topic: { id: created.topicId } });
   });
 });
 
@@ -371,6 +452,13 @@ describe("topic page", () => {
       actor: { id: authorId, role: "user" },
       postId,
     });
+    await testSql()`
+      UPDATE users
+      SET profile_text = 'Ik test in productie, maar met gevoel',
+          role = 'admin',
+          created_at = '2021-04-03T10:00:00.000Z'
+      WHERE id = ${authorId}
+    `;
 
     const page = await readModel.getTopicPage({
       topicSlug: "DEEP-DISCUSSION",
@@ -378,12 +466,21 @@ describe("topic page", () => {
     });
     expect(page.openingPost.kind).toBe("opening");
     expect(page.openingPost.content).toBe("the opening");
+    expect(page.openingPost.author).toMatchObject({
+      memberSince: "2021-04-03T10:00:00.000Z",
+      postCount: 3,
+      role: "admin",
+      tagline: "Ik test in productie, maar met gevoel",
+    });
     expect(page.topic.replyCount).toBe(1);
     // Active and deleted replies, in (createdAt, id) order.
     expect(page.replies.items.map((reply) => reply.isDeleted)).toEqual([
       false,
       true,
     ]);
+    expect(
+      page.replies.items.every((reply) => reply.author.postCount === 3),
+    ).toBe(true);
     expect(page.routeParams).toEqual({
       kind: "boardTopic",
       categorySlug: "alpha",
@@ -432,6 +529,37 @@ describe("topic page", () => {
       replies: {},
     });
     expect(after.replies.items[0].quote?.content).toBe("the source post");
+  });
+
+  it("loads the exact reply and preserves its global reply number", async () => {
+    const boardId = await insertBoard("Targeted");
+    const { topicId, slug } = await discussion.createTopic({
+      actorId: authorId,
+      boardId,
+      title: "Targeted replies",
+      content: "opening",
+    });
+    const replyIds: string[] = [];
+    for (let index = 0; index < 30; index += 1) {
+      const reply = await discussion.replyToTopic({
+        actorId: authorId,
+        topicId,
+        content: `reply ${index + 1}`,
+      });
+      replyIds.push(reply.postId);
+    }
+
+    const targetReplyId = replyIds[27] ?? "";
+    const page = await readModel.getTopicPage({
+      topicSlug: slug,
+      replies: { targetReplyId, limit: 2 },
+    });
+    expect(page.replyStartIndex).toBe(27);
+    expect(page.replies.items.map((reply) => reply.id)).toEqual([
+      targetReplyId,
+      replyIds[28],
+    ]);
+    expect(page.replies.nextCursor).not.toBeNull();
   });
 
   it("pages replies without duplicating or skipping late inserts", async () => {
@@ -645,11 +773,11 @@ describe("query budget", () => {
 
     counter.count = 0;
     await counted.getForumIndex();
-    expect(counter.count).toBeLessThanOrEqual(4);
+    expect(counter.count).toBeLessThanOrEqual(5);
 
     counter.count = 0;
     await counted.getCategoryPage({ categorySlug: "alpha", topics: {} });
-    expect(counter.count).toBeLessThanOrEqual(5);
+    expect(counter.count).toBeLessThanOrEqual(6);
 
     counter.count = 0;
     await counted.getBoardPage({
@@ -657,10 +785,11 @@ describe("query budget", () => {
       boardId: tree.e,
       topics: {},
     });
-    expect(counter.count).toBeLessThanOrEqual(5);
+    expect(counter.count).toBeLessThanOrEqual(6);
 
     counter.count = 0;
     await counted.getTopicPage({ topicSlug: created.slug, replies: {} });
-    expect(counter.count).toBeLessThanOrEqual(7);
+    // One grouped author-count query enriches every loaded post without N+1.
+    expect(counter.count).toBeLessThanOrEqual(9);
   });
 });

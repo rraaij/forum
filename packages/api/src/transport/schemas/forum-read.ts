@@ -28,7 +28,13 @@ export const topicPageParamsSchema = z.object({
   topicSlug: slugSegmentSchema,
 });
 
-export const replyPageRequestQuerySchema = z.object({
-  replyCursor: cursorSchema.optional(),
-  replyLimit: pageLimitSchema.optional(),
-});
+export const replyPageRequestQuerySchema = z
+  .object({
+    replyCursor: cursorSchema.optional(),
+    replyLimit: pageLimitSchema.optional(),
+    targetReplyId: uuidSchema.optional(),
+  })
+  .refine((query) => !(query.replyCursor && query.targetReplyId), {
+    message: "replyCursor and targetReplyId cannot be combined",
+    path: ["targetReplyId"],
+  });

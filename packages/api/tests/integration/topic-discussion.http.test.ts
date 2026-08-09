@@ -7,7 +7,7 @@
 
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../../src/app";
-import { signUpUser, type TestUser } from "../helpers/auth";
+import { makeAdmin, signUpUser, type TestUser } from "../helpers/auth";
 import { closeTestSql, testSql, truncateAll } from "../helpers/db";
 import { insertBoard } from "../helpers/fixtures";
 
@@ -154,6 +154,26 @@ describe("replacement topic routes", () => {
     );
     expect(conflict.status).toBe(409);
     expect((await conflict.json()).error.code).toBe("TOPIC_SLUG_CONFLICT");
+  });
+
+  it("blocks members but lets staff create topics on a restricted board", async () => {
+    await testSql()`
+      UPDATE boards SET allow_new_topics = false WHERE id = ${boardId}
+    `;
+    const input = { boardId, title: "Restricted", content: "opening" };
+    const blocked = await app.request(
+      "/api/topics",
+      json("POST", input, user.cookie),
+    );
+    expect(blocked.status).toBe(403);
+    expect((await blocked.json()).error.code).toBe("NEW_TOPICS_DISABLED");
+
+    await makeAdmin(user.id);
+    const allowed = await app.request(
+      "/api/topics",
+      json("POST", input, user.cookie),
+    );
+    expect(allowed.status).toBe(201);
   });
 
   it("replies via the nested route and maps locked topics to 403", async () => {

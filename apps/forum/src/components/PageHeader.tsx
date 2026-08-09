@@ -1,4 +1,3 @@
-import { Avatar } from "@forum/ui";
 import { For, Show } from "solid-js";
 import type { CreatedTopic } from "@/features/topic-discussion/api";
 import { CreateTopicPanel } from "@/features/topic-discussion/CreateTopicPanel";
@@ -12,94 +11,50 @@ type ForumPageHeaderProps = {
   forumCode: string;
   title: string;
   description: string;
-  author?: {
-    name: string | null;
-    image: string | null;
-    createdAt: string;
-  };
   stats?: HeaderStat[];
-  tags?: string[];
   createTopic?: {
     boardId: string;
+    allowNewTopics: boolean;
     onCreated: (topic: CreatedTopic) => void | Promise<void>;
   };
 };
 
 export default function PageHeader(props: ForumPageHeaderProps) {
   return (
-    // This hero is intentionally "forum-old-school": heavy overlay, condensed meta row, and section chips.
-    <section class="forum-page-header card overflow-hidden border border-base-content/10 bg-base-100 shadow-xl">
-      {/* Layered background gives a similar mood to the supplied page-header reference. */}
-      <div class="forum-page-header-bg relative p-6 sm:p-8">
-        {/* Darkening overlay keeps text readable in both light and dark themes. */}
-        <div class="absolute inset-0 bg-linear-to-r from-black/75 via-black/55 to-black/25" />
-
-        {/* This content layer stays above the background and overlay. */}
-        <div class="relative z-10 flex flex-col gap-4 text-slate-100">
-          {/* Top meta row keeps the compact forum-code pattern visible on every page. */}
-          <div class="flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-200/80">
-            <span>{props.forumCode}</span>
-            <Show when={props.stats?.length}>
-              <div class="flex flex-wrap items-center gap-2">
-                <For each={props.stats}>
-                  {(stat) => (
-                    <span class="rounded bg-black/35 px-2 py-1">
-                      {stat.label}: {stat.value}
-                    </span>
-                  )}
-                </For>
-              </div>
-            </Show>
-          </div>
-
-          {/* Main title and summary are the key orientation points for the visitor. */}
-          <div class="space-y-2">
-            <Show when={props.author}>
-              {(author) => (
-                /*
-                 * Topic pages can identify their creator without requiring a
-                 * separate header component. Board pages simply omit this
-                 * optional block and retain their existing compact layout.
-                 */
-                <div class="flex items-center gap-2 pt-1 text-sm text-slate-100/90">
-                  <Avatar
-                    src={author().image}
-                    name={author().name}
-                    size="sm"
-                    class="rounded-full ring-1 ring-white/60 ring-offset-1 ring-offset-black/20"
-                  />
-                  <span>
-                    <strong class="font-semibold text-white">
-                      {author().name ?? "-- Anonymous --"}
-                    </strong>
-                    <span class="ml-2 text-slate-200/75">
-                      {author().createdAt}
-                    </span>
-                  </span>
-                </div>
+    <header class="border-b-2 border-base-content bg-base-200 px-4 py-6 sm:px-10 sm:py-8">
+      <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,420px)] lg:items-end">
+        <div>
+          <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12.5px] text-brand-700">
+            <span class="font-extrabold tracking-[0.06em] uppercase">
+              {props.forumCode}
+            </span>
+            <For each={props.stats}>
+              {(stat) => (
+                <span>
+                  <span aria-hidden="true">· </span>
+                  {stat.value} {stat.label}
+                </span>
               )}
-            </Show>
-            <h1 class="text-3xl font-black tracking-tight text-white sm:text-4xl">
-              {props.title}
-            </h1>
-            <p class="max-w-4xl whitespace-pre-wrap text-sm leading-relaxed text-slate-100/85 sm:text-base">
-              {props.description}
-            </p>
+            </For>
           </div>
-
-          <Show when={props.createTopic}>
-            {(createTopic) => (
-              // The creation action sits at the bottom of the board header so
-              // its destination remains visually tied to the current board.
-              <CreateTopicPanel
-                boardId={createTopic().boardId}
-                onCreated={createTopic().onCreated}
-                class="border-t border-white/20 pt-4 text-base-content"
-              />
-            )}
-          </Show>
+          <h1 class="mt-2 min-w-0 text-[32px] leading-[1.02] font-semibold tracking-[-0.02em] text-wrap-balance [overflow-wrap:anywhere] sm:text-[42px]">
+            {props.title}
+          </h1>
+          <p class="mt-3 max-w-[62ch] whitespace-pre-wrap text-[14px] leading-[1.55] text-brand-800 sm:text-[15px] sm:leading-[1.6]">
+            {props.description}
+          </p>
         </div>
+
+        <Show when={props.createTopic}>
+          {(createTopic) => (
+            <CreateTopicPanel
+              boardId={createTopic().boardId}
+              allowNewTopics={createTopic().allowNewTopics}
+              onCreated={createTopic().onCreated}
+            />
+          )}
+        </Show>
       </div>
-    </section>
+    </header>
   );
 }

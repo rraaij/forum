@@ -19,6 +19,14 @@ export interface AuthorSummary {
   image: string | null;
 }
 
+export interface PostAuthorSummary extends AuthorSummary {
+  memberSince: string | null;
+  /** Lifetime participation includes soft-deleted posts. */
+  postCount: number;
+  tagline: string | null;
+  role: string;
+}
+
 export interface BoardSummary {
   id: string;
   parentId: string | null;
@@ -28,14 +36,22 @@ export interface BoardSummary {
   description: string | null;
   icon: string | null;
   sortOrder: number;
+  isGuestVisible: boolean;
+  allowNewTopics: boolean;
   /** Topics directly on this board. */
   directTopicCount: number;
   /** Topics on this board and every descendant. */
   totalTopicCount: number;
+  /** Retained posts directly in topics on this board. */
+  directPostCount: number;
+  /** Retained posts on this board and every descendant. */
+  totalPostCount: number;
   latestActivity: {
     topicId: string;
     topicTitle: string;
     at: string;
+    replyCount: number;
+    author: AuthorSummary;
     routeParams: TopicRouteParams;
   } | null;
 }
@@ -66,7 +82,7 @@ export interface PostView {
   deletedAt: string | null;
   editedAt: string | null;
   createdAt: string;
-  author: AuthorSummary;
+  author: PostAuthorSummary;
   quote: QuoteSnapshotV1 | null;
 }
 
@@ -106,22 +122,31 @@ export interface TopicPageReadModel {
   breadcrumbs: BreadcrumbItem[];
   /** Explicit opening post; it never consumes reply-page capacity. */
   openingPost: PostView;
+  /** Number of replies preceding the first loaded row. */
+  replyStartIndex: number;
   replies: Page<PostView>;
 }
 
 export interface ForumReadModel {
-  getForumIndex(): Promise<ForumIndexReadModel>;
+  getForumIndex(input?: { viewer?: ForumViewer }): Promise<ForumIndexReadModel>;
   getCategoryPage(input: {
     categorySlug: string;
     topics: PageRequest;
+    viewer?: ForumViewer;
   }): Promise<CategoryPageReadModel>;
   getBoardPage(input: {
     categorySlug: string;
     boardId: string;
     topics: PageRequest;
+    viewer?: ForumViewer;
   }): Promise<BoardPageReadModel>;
   getTopicPage(input: {
     topicSlug: string;
-    replies: PageRequest;
+    replies: PageRequest & { targetReplyId?: string };
+    viewer?: ForumViewer;
   }): Promise<TopicPageReadModel>;
+}
+
+export interface ForumViewer {
+  isAuthenticated: boolean;
 }

@@ -49,6 +49,7 @@ afterAll(async () => {
 describe("non-admins cannot invoke any board command", () => {
   it.each([
     ["POST", "/api/admin/boards", {}],
+    ["PUT", "/api/admin/boards/order", { groups: [] }],
     ["PATCH", "/api/admin/boards/6f6dcbcf-2f3e-4c39-9a4a-111111111111", {}],
     [
       "POST",
@@ -164,6 +165,39 @@ describe("board commands", () => {
     );
     expect(cycle.status).toBe(409);
     expect((await cycle.json()).error.code).toBe("BOARD_CYCLE");
+  });
+
+  it("atomically saves complete sibling order groups", async () => {
+    const { boardId: alpha } = await createBoard({
+      parentId: null,
+      name: "Alpha",
+      slug: "alpha",
+      abbreviation: "ALP",
+    });
+    const { boardId: beta } = await createBoard({
+      parentId: null,
+      name: "Beta",
+      slug: "beta",
+      abbreviation: "BET",
+    });
+
+    const response = await app.request(
+      "/api/admin/boards/order",
+      json(
+        "PUT",
+        { groups: [{ parentId: null, boardIds: [beta, alpha] }] },
+        admin.cookie,
+      ),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ groups: 1, boards: 2 });
+    const rows = await testSql()`
+      SELECT id, sort_order FROM boards ORDER BY sort_order
+    `;
+    expect(rows).toEqual([
+      { id: beta, sort_order: 0 },
+      { id: alpha, sort_order: 1 },
+    ]);
   });
 
   it("previews impact and purges only with an exact name and fresh counts", async () => {

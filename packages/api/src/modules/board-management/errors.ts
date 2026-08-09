@@ -17,6 +17,12 @@ export const boardCycle = () =>
     "A board cannot become its own ancestor or parent",
   );
 
+export const boardOrderChanged = () =>
+  conflictError(
+    "BOARD_ORDER_CHANGED",
+    "The sibling set changed while its order was being edited; reload and try again",
+  );
+
 /** Sibling uniqueness errors identify the conflicting field. */
 export const siblingConflict = (field: "name" | "slug" | "abbreviation") =>
   conflictError(

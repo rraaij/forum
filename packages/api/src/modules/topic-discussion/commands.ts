@@ -18,6 +18,7 @@ import {
   boardNotFound,
   deletedPostImmutable,
   deletedPostUnquotable,
+  newTopicsDisabled,
   notPostAuthor,
   openingPostUndeletable,
   postNotFound,
@@ -74,11 +75,18 @@ export function createTopicDiscussion(
       const now = new Date();
 
       return store.transaction(async (tx) => {
-        const hierarchy = buildBoardHierarchy(
-          await tx.boardAncestry(input.boardId),
-        );
+        const ancestry = await tx.boardAncestry(input.boardId);
+        const hierarchy = buildBoardHierarchy(ancestry);
         const routeParams = hierarchy.topicRouteParams(input.boardId, slug);
         if (!routeParams) throw boardNotFound();
+        const board = ancestry.find(
+          (candidate) => candidate.id === input.boardId,
+        );
+        const isStaff =
+          input.actorRole === "admin" || input.actorRole === "moderator";
+        if (board && !board.allowNewTopics && !isStaff) {
+          throw newTopicsDisabled();
+        }
         if (await tx.topicSlugTaken(slug)) throw topicSlugConflict(slug);
 
         const topicId = await tx.insertTopic({
@@ -94,6 +102,8 @@ export function createTopicDiscussion(
           content,
           now,
         });
+        // Topic creators start subscribed; other participants opt in manually.
+        await tx.subscribeAuthor(topicId, input.actorId, now);
 
         return { topicId, slug, routeParams };
       });
@@ -126,6 +136,12 @@ export function createTopicDiscussion(
           now,
         });
         await tx.bumpTopicActivity(topic.id, now);
+        await tx.notifySubscribers({
+          topicId: topic.id,
+          postId,
+          replyingUserId: input.actorId,
+          now,
+        });
 
         return { postId };
       });

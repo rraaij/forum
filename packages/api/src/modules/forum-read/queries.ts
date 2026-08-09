@@ -9,6 +9,8 @@ import {
   type BoardHierarchy,
   buildBoardHierarchy,
 } from "../shared/board-hierarchy";
+import { visibleBoards } from "../shared/board-visibility";
+import { validationError } from "../shared/errors";
 import {
   DEFAULT_PAGE_LIMIT,
   decodeReplyCursor,
@@ -27,6 +29,7 @@ import type { TopicRouteParams } from "../shared/route-params";
 import {
   boardAncestryMismatch,
   categoryNotFound,
+  forumReplyNotFound,
   forumTopicNotFound,
 } from "./errors";
 import type {
@@ -45,6 +48,8 @@ import type {
   CategoryPageReadModel,
   ForumIndexReadModel,
   ForumReadModel,
+  ForumViewer,
+  PostAuthorSummary,
   PostView,
   TopicListItem,
   TopicPageReadModel,
@@ -54,38 +59,52 @@ interface BoardsContext {
   /** Ancestry, breadcrumbs and route params (shared mapper). */
   hierarchy: BoardHierarchy<BoardRow>;
   /** Direct + descendant topic count per board. */
-  subtreeCounts: Map<string, number>;
+  subtreeTopicCounts: Map<string, number>;
+  subtreePostCounts: Map<string, number>;
   /** Newest activity in the board's subtree. */
   subtreeLatest: Map<string, BoardActivityRow>;
-  directCounts: Map<string, number>;
+  directTopicCounts: Map<string, number>;
+  directPostCounts: Map<string, number>;
 }
 
 function buildContext(
   rows: BoardRow[],
-  directCounts: Map<string, number>,
+  directTopicCounts: Map<string, number>,
+  directPostCounts: Map<string, number>,
   latest: Map<string, BoardActivityRow>,
 ): BoardsContext {
   const hierarchy = buildBoardHierarchy(rows);
-  const subtreeCounts = new Map<string, number>();
+  const subtreeTopicCounts = new Map<string, number>();
+  const subtreePostCounts = new Map<string, number>();
   const subtreeLatest = new Map<string, BoardActivityRow>();
 
   const visit = (row: BoardRow): void => {
-    let count = directCounts.get(row.id) ?? 0;
+    let topicCount = directTopicCounts.get(row.id) ?? 0;
+    let postCount = directPostCounts.get(row.id) ?? 0;
     let newest = latest.get(row.id);
     for (const child of hierarchy.childrenOf.get(row.id) ?? []) {
       visit(child);
-      count += subtreeCounts.get(child.id) ?? 0;
+      topicCount += subtreeTopicCounts.get(child.id) ?? 0;
+      postCount += subtreePostCounts.get(child.id) ?? 0;
       const childLatest = subtreeLatest.get(child.id);
       if (childLatest && (!newest || childLatest.at > newest.at)) {
         newest = childLatest;
       }
     }
-    subtreeCounts.set(row.id, count);
+    subtreeTopicCounts.set(row.id, topicCount);
+    subtreePostCounts.set(row.id, postCount);
     if (newest) subtreeLatest.set(row.id, newest);
   };
   for (const root of hierarchy.roots) visit(root);
 
-  return { hierarchy, subtreeCounts, subtreeLatest, directCounts };
+  return {
+    hierarchy,
+    subtreeTopicCounts,
+    subtreePostCounts,
+    subtreeLatest,
+    directTopicCounts,
+    directPostCounts,
+  };
 }
 
 function boardSummary(ctx: BoardsContext, row: BoardRow): BoardSummary {
@@ -102,14 +121,20 @@ function boardSummary(ctx: BoardsContext, row: BoardRow): BoardSummary {
     description: row.description,
     icon: row.icon,
     sortOrder: row.sortOrder,
-    directTopicCount: ctx.directCounts.get(row.id) ?? 0,
-    totalTopicCount: ctx.subtreeCounts.get(row.id) ?? 0,
+    isGuestVisible: row.isGuestVisible,
+    allowNewTopics: row.allowNewTopics,
+    directTopicCount: ctx.directTopicCounts.get(row.id) ?? 0,
+    totalTopicCount: ctx.subtreeTopicCounts.get(row.id) ?? 0,
+    directPostCount: ctx.directPostCounts.get(row.id) ?? 0,
+    totalPostCount: ctx.subtreePostCounts.get(row.id) ?? 0,
     latestActivity:
       newest && activityRoute
         ? {
             topicId: newest.topicId,
             topicTitle: newest.topicTitle,
             at: newest.at.toISOString(),
+            replyCount: newest.replyCount ?? 0,
+            author: author(newest),
             routeParams: activityRoute,
           }
         : null,
@@ -158,7 +183,20 @@ function topicListItem(
   };
 }
 
-function postView(row: PostRow): PostView {
+function postAuthor(
+  row: PostRow,
+  postCounts: Map<string, number>,
+): PostAuthorSummary {
+  return {
+    ...author(row),
+    memberSince: row.authorCreatedAt?.toISOString() ?? null,
+    postCount: postCounts.get(row.authorId) ?? 0,
+    tagline: row.authorProfileText,
+    role: row.authorRole ?? "user",
+  };
+}
+
+function postView(row: PostRow, postCounts: Map<string, number>): PostView {
   const parsedQuote = quoteSnapshotV1Schema.safeParse(row.quoteSnapshot);
   return {
     id: row.id,
@@ -168,17 +206,26 @@ function postView(row: PostRow): PostView {
     deletedAt: row.deletedAt?.toISOString() ?? null,
     editedAt: row.editedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
-    author: author(row),
+    author: postAuthor(row, postCounts),
     quote: parsedQuote.success ? (parsedQuote.data as QuoteSnapshotV1) : null,
   };
 }
 
-async function loadContext(tx: ForumReadTx): Promise<BoardsContext> {
-  // Three fixed queries regardless of hierarchy size or depth.
+async function loadContext(
+  tx: ForumReadTx,
+  viewer?: ForumViewer,
+): Promise<BoardsContext> {
+  // Four fixed queries regardless of hierarchy size or depth.
   const rows = await tx.allBoards();
-  const counts = await tx.directTopicCounts();
+  const topicCounts = await tx.directTopicCounts();
+  const postCounts = await tx.directPostCounts();
   const latest = await tx.latestActivityByBoard();
-  return buildContext(rows, counts, latest);
+  return buildContext(
+    visibleBoards(rows, viewer?.isAuthenticated ?? false),
+    topicCounts,
+    postCounts,
+    latest,
+  );
 }
 
 async function topicPageFor(
@@ -212,9 +259,9 @@ async function topicPageFor(
 
 export function createForumReadModel(store: ForumReadStore): ForumReadModel {
   return {
-    async getForumIndex(): Promise<ForumIndexReadModel> {
+    async getForumIndex(input): Promise<ForumIndexReadModel> {
       return store.transaction(async (tx) => {
-        const ctx = await loadContext(tx);
+        const ctx = await loadContext(tx, input?.viewer);
         return {
           categories: ctx.hierarchy.roots.map((root) => boardTree(ctx, root)),
         };
@@ -223,7 +270,7 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
 
     async getCategoryPage(input): Promise<CategoryPageReadModel> {
       return store.transaction(async (tx) => {
-        const ctx = await loadContext(tx);
+        const ctx = await loadContext(tx, input.viewer);
         const category = ctx.hierarchy.roots.find(
           (row) => row.slug.toLowerCase() === input.categorySlug.toLowerCase(),
         );
@@ -241,7 +288,7 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
 
     async getBoardPage(input): Promise<BoardPageReadModel> {
       return store.transaction(async (tx) => {
-        const ctx = await loadContext(tx);
+        const ctx = await loadContext(tx, input.viewer);
         const board = ctx.hierarchy.byId.get(input.boardId);
         const root = board ? ctx.hierarchy.rootOf(board.id) : undefined;
         // A root board is addressed by the category path, never this one; a
@@ -270,7 +317,7 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
         const header = await tx.topicHeaderBySlug(input.topicSlug);
         if (!header) throw forumTopicNotFound();
 
-        const ctx = await loadContext(tx);
+        const ctx = await loadContext(tx, input.viewer);
         const routeParams = ctx.hierarchy.topicRouteParams(
           header.boardId,
           header.slug,
@@ -283,12 +330,39 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
         const limit = normalizePageLimit(
           input.replies.limit ?? DEFAULT_PAGE_LIMIT,
         );
+        if (input.replies.cursor && input.replies.targetReplyId) {
+          throw validationError(
+            "INVALID_REPLY_PAGE_REQUEST",
+            "reply cursor and target reply cannot be combined",
+            "targetReplyId",
+          );
+        }
         const cursor = input.replies.cursor
           ? decodeReplyCursor(input.replies.cursor)
           : null;
-        const rows = await tx.replyPage(header.id, cursor, limit + 1);
+        const target = input.replies.targetReplyId
+          ? await tx.replyTarget(header.id, input.replies.targetReplyId)
+          : null;
+        if (input.replies.targetReplyId && !target) throw forumReplyNotFound();
+        const pageCursor = target
+          ? {
+              version: 1 as const,
+              createdAt: target.createdAt.toISOString(),
+              id: target.id,
+            }
+          : cursor;
+        const rows = await tx.replyPage(
+          header.id,
+          pageCursor,
+          limit + 1,
+          Boolean(target),
+        );
         const pageRows = rows.slice(0, limit);
         const last = pageRows.at(-1);
+        const authorIds = [
+          ...new Set([opening, ...pageRows].map((post) => post.authorId)),
+        ];
+        const postCounts = await tx.postCountsByAuthor(authorIds);
 
         return {
           topic: {
@@ -305,9 +379,10 @@ export function createForumReadModel(store: ForumReadStore): ForumReadModel {
           },
           routeParams,
           breadcrumbs: ctx.hierarchy.breadcrumbs(header.boardId),
-          openingPost: postView(opening),
+          openingPost: postView(opening, postCounts),
+          replyStartIndex: target?.startIndex ?? 0,
           replies: {
-            items: pageRows.map(postView),
+            items: pageRows.map((post) => postView(post, postCounts)),
             nextCursor:
               rows.length > limit && last
                 ? encodeReplyCursor({

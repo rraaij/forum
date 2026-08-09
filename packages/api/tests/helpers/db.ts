@@ -79,7 +79,8 @@ export async function closeTestSql(): Promise<void> {
 // create their own users through the real sign-up endpoint.
 export async function truncateAll(): Promise<void> {
   await testSql().unsafe(
-    `TRUNCATE TABLE votes, reactions, topic_views, posts, topics, boards,
+    `TRUNCATE TABLE notifications, topic_subscriptions, votes, reactions,
+     topic_views, posts, topics, boards,
      sessions, accounts, users
      RESTART IDENTITY CASCADE`,
   );

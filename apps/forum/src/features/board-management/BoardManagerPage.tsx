@@ -7,6 +7,7 @@ import {
   moveBoard,
   type PurgeImpact,
   purgeBoard,
+  reorderBoardGroups,
   updateBoard,
 } from "./api";
 import { BoardForm } from "./BoardForm";
@@ -40,13 +41,49 @@ function countDescendants(nodes: BoardTreeNode[]): number {
   );
 }
 
+type DraftOrderGroup = {
+  parentId: string | null;
+  boardIds: string[];
+};
+
+const orderKey = (parentId: string | null) => parentId ?? "root";
+
+function applyDraftOrder(
+  nodes: BoardTreeNode[],
+  parentId: string | null,
+  groups: Map<string, DraftOrderGroup>,
+): BoardTreeNode[] {
+  const draft = groups.get(orderKey(parentId));
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const ordered = draft
+    ? [
+        ...draft.boardIds.flatMap((id) => {
+          const node = byId.get(id);
+          return node ? [node] : [];
+        }),
+        ...nodes.filter((node) => !draft.boardIds.includes(node.id)),
+      ]
+    : nodes;
+  return ordered.map((node) => ({
+    ...node,
+    children: applyDraftOrder(node.children, node.id, groups),
+  }));
+}
+
 export function BoardManagerPage(props: BoardManagerPageProps) {
   const manager = createBoardManager();
   const [selectedId, setSelectedId] = createSignal<string | null>(null);
   const [creatingUnder, setCreatingUnder] = createSignal<string | null>(null);
   const [showCreate, setShowCreate] = createSignal(false);
+  const [draftOrderGroups, setDraftOrderGroups] = createSignal(
+    new Map<string, DraftOrderGroup>(),
+  );
+  const [orderAnnouncement, setOrderAnnouncement] = createSignal("");
 
   const boards = () => props.index().categories;
+  const draftBoards = createMemo(() =>
+    applyDraftOrder(boards(), null, draftOrderGroups()),
+  );
   const subforumCount = createMemo(() => countDescendants(boards()));
   const topicCount = createMemo(() =>
     boards().reduce((total, board) => total + board.totalTopicCount, 0),
@@ -56,7 +93,43 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
   // invalidation instead of holding a stale copy of the selected board.
   const selected = () => {
     const id = selectedId();
-    return id ? findBoard(boards(), id) : null;
+    return id ? findBoard(draftBoards(), id) : null;
+  };
+
+  const moveInDraft = (board: BoardTreeNode, direction: -1 | 1) => {
+    const parentId = board.parentId;
+    const siblings = parentId
+      ? (findBoard(draftBoards(), parentId)?.children ?? [])
+      : draftBoards();
+    const boardIds = siblings.map((sibling) => sibling.id);
+    const currentIndex = boardIds.indexOf(board.id);
+    const nextIndex = currentIndex + direction;
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= boardIds.length)
+      return;
+    [boardIds[currentIndex], boardIds[nextIndex]] = [
+      boardIds[nextIndex],
+      boardIds[currentIndex],
+    ];
+    setDraftOrderGroups((current) => {
+      const next = new Map(current);
+      next.set(orderKey(parentId), { parentId, boardIds });
+      return next;
+    });
+    setOrderAnnouncement(
+      `${board.name} staat nu op positie ${nextIndex + 1} van ${boardIds.length}.`,
+    );
+  };
+
+  const saveOrder = async () => {
+    const groups = [...draftOrderGroups().values()];
+    if (groups.length === 0) return;
+    const result = await manager.run(
+      "reorder",
+      () => reorderBoardGroups(groups),
+      ({ boards: reordered }) =>
+        `${reordered} forum(s) in de nieuwe volgorde opgeslagen`,
+    );
+    if (result) setDraftOrderGroups(new Map());
   };
 
   const openCreate = (parentId: string | null) => {
@@ -109,7 +182,7 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
   };
 
   return (
-    <div class="-mx-4 -my-2 bg-base-200 text-base-content">
+    <div class="bg-base-200 text-base-content">
       <header class="flex flex-wrap items-end justify-between gap-5 border-b-2 border-base-content px-6 py-7 sm:px-10">
         <div>
           <p class="text-[13.5px] text-brand-700">
@@ -126,8 +199,20 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <Button variant="surface">Volgorde opslaan</Button>
-          <Button variant="primary" onClick={() => openCreate(null)}>
+          <Button
+            variant="surface"
+            class="min-h-11"
+            loading={manager.isPending("reorder")}
+            disabled={draftOrderGroups().size === 0}
+            onClick={() => void saveOrder()}
+          >
+            Volgorde opslaan
+          </Button>
+          <Button
+            variant="primary"
+            class="min-h-11"
+            onClick={() => openCreate(null)}
+          >
             Nieuw forum
           </Button>
         </div>
@@ -143,6 +228,9 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
           </div>
         )}
       </Show>
+      <p class="sr-only" aria-live="polite">
+        {orderAnnouncement()}
+      </p>
       <Show when={manager.lastResult()}>
         {(message) => (
           <div
@@ -156,7 +244,7 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
 
       <div class="grid min-h-[520px] lg:grid-cols-[minmax(0,1fr)_340px]">
         <section class="min-w-0 bg-base-100" aria-label="Forumhiërarchie">
-          <div class="grid grid-cols-[minmax(0,1fr)_70px_70px_90px] border-b border-brand-300 px-0 py-3 text-[11.5px] font-bold tracking-[0.06em] text-brand-700 uppercase">
+          <div class="hidden grid-cols-[minmax(0,1fr)_70px_70px_150px] border-b border-brand-300 px-0 py-3 text-[11.5px] font-bold tracking-[0.06em] text-brand-700 uppercase sm:grid">
             <span class="pl-[30px]">Naam</span>
             <span class="text-right">Topics</span>
             <span class="text-right">Posts</span>
@@ -175,13 +263,14 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
             }
           >
             <BoardTree
-              nodes={boards()}
+              nodes={draftBoards()}
               selectedId={selectedId()}
               onSelect={(board) => {
                 setSelectedId(board.id);
                 setShowCreate(false);
                 manager.clearMessages();
               }}
+              onMove={moveInDraft}
             />
           </Show>
         </section>
@@ -194,13 +283,13 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
                 when={selected()}
                 fallback={
                   <div class="pt-1">
-                    <p class="text-[11.5px] font-bold tracking-[0.06em] text-flame-700 uppercase">
+                    <p class="text-[11.5px] font-bold tracking-[0.06em] text-primary uppercase">
                       Bewerken
                     </p>
-                    <h2 class="mt-1 text-[22px] font-semibold">
+                    <h2 class="mt-1 min-w-0 text-[22px] font-semibold [overflow-wrap:anywhere]">
                       Kies een forum
                     </h2>
-                    <p class="mt-3 text-sm leading-relaxed text-brand-800">
+                    <p class="mt-3 text-sm leading-[1.55] text-brand-800">
                       Selecteer links een forum om het te bewerken, verplaatsen
                       of verwijderen.
                     </p>
@@ -230,9 +319,12 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
                             description: board().description,
                             icon: board().icon,
                             sortOrder: board().sortOrder,
+                            isGuestVisible: board().isGuestVisible,
+                            allowNewTopics: board().allowNewTopics,
                           }}
                           disabled={manager.isPending("update")}
                           onSubmit={handleUpdate}
+                          onCancel={() => setSelectedId(null)}
                         />
                       </Show>
                     </div>
@@ -241,7 +333,7 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
                       <Show when={board().id} keyed>
                         <MoveBoardForm
                           board={board()}
-                          allBoards={boards()}
+                          allBoards={draftBoards()}
                           disabled={manager.isPending("move")}
                           onMove={handleMove}
                         />
@@ -251,8 +343,7 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
                     <div class="mt-5 border-t border-brand-300 pt-4">
                       <Button
                         variant="surface"
-                        size="sm"
-                        class="w-full"
+                        class="min-h-11 w-full"
                         onClick={() => openCreate(board().id)}
                       >
                         Subforum toevoegen
@@ -272,7 +363,7 @@ export function BoardManagerPage(props: BoardManagerPageProps) {
             }
           >
             <div>
-              <p class="text-[11.5px] font-bold tracking-[0.06em] text-flame-700 uppercase">
+              <p class="text-[11.5px] font-bold tracking-[0.06em] text-primary uppercase">
                 Nieuw forum
               </p>
               <div class="mt-1">

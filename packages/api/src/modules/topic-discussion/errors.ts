@@ -12,6 +12,12 @@ export const boardNotFound = () =>
 export const topicLocked = () =>
   forbiddenError("TOPIC_LOCKED", "Topic is locked");
 
+export const newTopicsDisabled = () =>
+  forbiddenError(
+    "NEW_TOPICS_DISABLED",
+    "New topics are disabled in this board",
+  );
+
 export const notPostAuthor = () =>
   forbiddenError("NOT_POST_AUTHOR", "Only the author may modify this post");
 

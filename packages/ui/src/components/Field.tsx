@@ -30,7 +30,7 @@ export function Field(props: ParentProps<FieldProps>) {
   return (
     <div
       {...rest}
-      class={`grid gap-1.5 [&_.input]:w-full [&_.input]:rounded-none [&_.input]:border-brand-300 [&_.input]:bg-base-100 [&_.select]:w-full [&_.select]:rounded-none [&_.select]:border-brand-300 [&_.select]:bg-base-100 [&_.textarea]:w-full [&_.textarea]:rounded-none [&_.textarea]:border-brand-300 [&_.textarea]:bg-base-100 ${local.class ?? ""}`}
+      class={`grid gap-1.5 [&_.input]:w-full [&_.input]:rounded-none [&_.input]:border-brand-300 [&_.input]:bg-base-100 [&_.input]:text-[15px] [&_.select]:w-full [&_.select]:rounded-none [&_.select]:border-brand-300 [&_.select]:bg-base-100 [&_.select]:text-[15px] [&_.textarea]:w-full [&_.textarea]:rounded-none [&_.textarea]:border-brand-300 [&_.textarea]:bg-base-100 [&_.textarea]:text-[15px] ${local.class ?? ""}`}
       data-invalid={local.error ? "true" : undefined}
     >
       <label
@@ -46,7 +46,7 @@ export function Field(props: ParentProps<FieldProps>) {
       </label>
       {local.children}
       <Show when={local.hint && !local.error}>
-        <p id={hintId()} class="text-[12px] text-brand-700">
+        <p id={hintId()} class="text-[12.5px] text-brand-700">
           {local.hint}
         </p>
       </Show>

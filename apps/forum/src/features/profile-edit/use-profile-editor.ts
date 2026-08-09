@@ -1,6 +1,8 @@
 import { createSignal } from "solid-js";
+import { ApiError } from "@/lib/api";
 import { useSession } from "@/lib/auth-client";
 import { setProfileAvatarPreview } from "@/lib/profile-avatar";
+import { userFacingError } from "@/lib/user-facing-error";
 import { type EditableProfile, saveAvatar, saveProfile } from "./api";
 import { MAX_PHOTOS, readImageFile } from "./image-file-policy";
 
@@ -36,11 +38,31 @@ export function createProfileEditor(initial: () => EditableProfile) {
   const [saving, setSaving] = createSignal(false);
   const [savingAvatar, setSavingAvatar] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+  const [errorField, setErrorField] = createSignal<
+    "dateOfBirth" | "website" | null
+  >(null);
   const [success, setSuccess] = createSignal<string | null>(null);
 
   const clearMessages = () => {
     setError(null);
+    setErrorField(null);
     setSuccess(null);
+  };
+
+  const profileError = (error: unknown, fallback: string) => {
+    if (
+      error instanceof ApiError &&
+      (error.code === "INVALID_INPUT" || error.code === "INVALID_PROFILE_FIELD")
+    ) {
+      if (error.field === "website") {
+        return "Website moet een geldig adres zijn dat begint met http:// of https://.";
+      }
+      if (error.field === "dateOfBirth") {
+        return "Controleer je geboortedatum.";
+      }
+      return "Controleer je profielgegevens en probeer het opnieuw.";
+    }
+    return userFacingError(error, fallback);
   };
 
   /** Refreshes only what the rest of the UI mirrors: the session. */
@@ -61,13 +83,13 @@ export function createProfileEditor(initial: () => EditableProfile) {
       const saved = await saveAvatar(dataUrl);
       setImage(saved.image);
       await refreshSessionDerivedUi();
-      setSuccess("Avatar updated.");
+      setSuccess("Avatar bijgewerkt.");
     } catch (avatarError) {
       setProfileAvatarPreview(undefined);
       setError(
         avatarError instanceof Error
           ? avatarError.message
-          : "The avatar could not be saved.",
+          : "De avatar kon niet worden opgeslagen.",
       );
     } finally {
       setSavingAvatar(false);
@@ -82,13 +104,11 @@ export function createProfileEditor(initial: () => EditableProfile) {
       await saveAvatar(null);
       setImage(null);
       await refreshSessionDerivedUi();
-      setSuccess("Avatar removed.");
+      setSuccess("Avatar verwijderd.");
     } catch (avatarError) {
       setProfileAvatarPreview(undefined);
       setError(
-        avatarError instanceof Error
-          ? avatarError.message
-          : "The avatar could not be removed.",
+        profileError(avatarError, "De avatar kon niet worden verwijderd."),
       );
     } finally {
       setSavingAvatar(false);
@@ -99,7 +119,7 @@ export function createProfileEditor(initial: () => EditableProfile) {
     clearMessages();
     const availableSlots = MAX_PHOTOS - photoUrls().length;
     if (availableSlots <= 0) {
-      setError(`A profile can contain up to ${MAX_PHOTOS} photos.`);
+      setError(`Een profiel kan maximaal ${MAX_PHOTOS} foto's bevatten.`);
       return;
     }
     try {
@@ -111,7 +131,7 @@ export function createProfileEditor(initial: () => EditableProfile) {
       setError(
         photoError instanceof Error
           ? photoError.message
-          : "The photo could not be read.",
+          : "De foto kon niet worden gelezen.",
       );
     }
   };
@@ -140,12 +160,16 @@ export function createProfileEditor(initial: () => EditableProfile) {
       setImage(saved.image);
       setPhotoUrls(saved.photoUrls ?? []);
       await refreshSessionDerivedUi();
-      setSuccess("Profile saved.");
+      setSuccess("Profiel opgeslagen.");
     } catch (saveError) {
+      setErrorField(
+        saveError instanceof ApiError &&
+          (saveError.field === "website" || saveError.field === "dateOfBirth")
+          ? saveError.field
+          : null,
+      );
       setError(
-        saveError instanceof Error
-          ? saveError.message
-          : "The profile could not be saved.",
+        profileError(saveError, "Het profiel kon niet worden opgeslagen."),
       );
     } finally {
       setSaving(false);
@@ -170,6 +194,7 @@ export function createProfileEditor(initial: () => EditableProfile) {
     saving,
     savingAvatar,
     error,
+    errorField,
     success,
     clearMessages,
     chooseAvatar,

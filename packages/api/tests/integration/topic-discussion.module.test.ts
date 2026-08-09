@@ -196,6 +196,33 @@ describe("createTopic", () => {
     ).toBe("BOARD_NOT_FOUND");
   });
 
+  it("blocks regular topic creation when disabled but allows staff", async () => {
+    await testSql()`
+      UPDATE boards SET allow_new_topics = false WHERE id = ${boardId}
+    `;
+    expect(
+      await code(
+        discussion.createTopic({
+          actorId: authorId,
+          actorRole: "user",
+          boardId,
+          title: "Closed",
+          content: "nope",
+        }),
+      ),
+    ).toBe("NEW_TOPICS_DISABLED");
+
+    await expect(
+      discussion.createTopic({
+        actorId: authorId,
+        actorRole: "admin",
+        boardId,
+        title: "Staff topic",
+        content: "allowed",
+      }),
+    ).resolves.toMatchObject({ slug: "staff-topic" });
+  });
+
   it("returns the typed conflict on a global case-insensitive slug collision", async () => {
     await discussion.createTopic({
       actorId: authorId,
@@ -291,6 +318,10 @@ describe("replyToTopic", () => {
     expect(new Date(topic.last_activity_at).getTime()).toBe(
       new Date(post.created_at).getTime(),
     );
+    const [{ count: selfNotifications }] = await testSql()`
+      SELECT count(*)::int AS count FROM notifications
+    `;
+    expect(selfNotifications).toBe(0);
   });
 
   it("keeps the counter exact under parallel replies", async () => {
@@ -313,6 +344,16 @@ describe("replyToTopic", () => {
     ).rejects.toThrow(/injected failure/);
     const { posts: postCount } = await counts();
     expect(postCount).toBe(1); // only the opening post
+    expect((await topicRow(topicId)).reply_count).toBe(0);
+  });
+
+  it("rolls back the reply and counter when notification fan-out fails", async () => {
+    const failing = createTopicDiscussion(storeFailingAt("notifySubscribers"));
+    await expect(
+      failing.replyToTopic({ actorId: authorId, topicId, content: "doomed" }),
+    ).rejects.toThrow(/injected failure/);
+    const { posts: postCount } = await counts();
+    expect(postCount).toBe(1);
     expect((await topicRow(topicId)).reply_count).toBe(0);
   });
 

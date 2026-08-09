@@ -20,16 +20,16 @@ export interface ButtonProps
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "btn-primary",
-  // Secondary is intentionally reserved for the few orange actions named in
-  // the handoff, notably retrying a failed request.
+  primary: "btn-primary active:border-brand-700 active:bg-brand-700",
+  // Secondary is reserved for semantic orange states such as active filters;
+  // ordinary actions, including retries, use the primary teal treatment.
   secondary: "btn-secondary",
   accent: "btn-accent",
   ghost: "btn-ghost",
   link: "btn-link",
   error: "btn-error",
   surface:
-    "border-brand-300 bg-base-300 text-base-content hover:border-primary hover:bg-primary hover:text-primary-content",
+    "border-brand-300 bg-base-300 text-base-content hover:border-primary hover:bg-primary hover:text-primary-content active:border-brand-700 active:bg-brand-700 active:text-primary-content",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -52,7 +52,9 @@ export function Button(props: ParentProps<ButtonProps>) {
   ]);
 
   const classes = () => {
-    const parts = ["btn rounded-none font-bold shadow-none transition-colors"];
+    const parts = [
+      "btn min-h-11 rounded-none font-bold shadow-none transition-colors",
+    ];
     if (local.variant) parts.push(variantClasses[local.variant]);
     if (local.size) parts.push(sizeClasses[local.size]);
     if (local.outline) parts.push("btn-outline");

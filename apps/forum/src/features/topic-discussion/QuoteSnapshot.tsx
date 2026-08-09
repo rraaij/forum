@@ -1,3 +1,4 @@
+import { X } from "lucide-solid";
 import { Show } from "solid-js";
 
 /*
@@ -18,18 +19,18 @@ export function QuoteSnapshot(props: QuoteSnapshotProps) {
         {(onRemove) => (
           <button
             type="button"
-            class="absolute top-1 right-1 min-h-8 min-w-8 text-sm font-bold text-brand-700 hover:text-primary"
+            class="absolute top-1 right-1 min-h-11 min-w-11 text-sm font-bold text-brand-700 hover:text-primary"
             onClick={onRemove()}
             aria-label="Quote verwijderen"
           >
-            ×
+            <X aria-hidden="true" class="mx-auto size-4" strokeWidth={2} />
           </button>
         )}
       </Show>
-      <p class="pr-7 text-[12.5px] font-bold text-base-content">
-        {props.authorName} schreef:
+      <p class="pr-7 text-[11.5px] text-base-content md:text-[13px]">
+        <strong class="font-bold">{props.authorName}</strong> schreef:
       </p>
-      <p class="mt-1 max-w-[70ch] whitespace-pre-wrap text-sm leading-relaxed">
+      <p class="mt-1 max-w-[70ch] whitespace-pre-wrap text-[13.5px] leading-[1.5] [overflow-wrap:anywhere] md:text-sm md:leading-[1.55]">
         {props.content}
       </p>
     </blockquote>

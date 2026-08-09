@@ -32,18 +32,19 @@
   --color-base-content: #201e1d;
 
   /* Primary — teal. Buttons, links, active form controls. */
-  --color-primary: #0e7f78;
-  --color-primary-content: #eef7f6;
+  /* Slightly deeper than the original swatch so links also pass on base-300. */
+  --color-primary: #0c746e;
+  --color-primary-content: #ffffff;
 
   /* Secondary — orange. ONLY for: active nav marker, pinned/sticky tags,
-   * unread counts, category numerals, active hierarchy branch. Never a
-   * general-purpose button color. */
+   * unread counts, category numerals, active hierarchy branch, and active
+   * search filters. Never a general-purpose button color. */
   --color-secondary: #e07b1e;
-  --color-secondary-content: #fdf2e4;
+  --color-secondary-content: #3f2306;
 
   /* Accent — mid teal. Avatars, quote bars, subtle emphasis. */
   --color-accent: #2ba39a;
-  --color-accent-content: #06413f;
+  --color-accent-content: #201e1d;
 
   /* Neutral — the dark bar at the top of every app. */
   --color-neutral: #201e1d;
@@ -54,7 +55,7 @@
    * outside both ramps, deliberately dark enough not to be mistaken for
    * the orange accent. */
   --color-info: #2ba39a;
-  --color-info-content: #06413f;
+  --color-info-content: #201e1d;
   --color-success: #0a6b66;
   --color-success-content: #eef7f6;
   --color-warning: #e07b1e;
@@ -81,9 +82,8 @@
  * The ramps use their own namespaces (brand / flame / ink) so they never
  * collide with Tailwind's built-in teal-* and amber-* utilities.
  *
- * NOTE: --color-primary is #0e7f78, which is brand-600 — NOT brand-500.
- * Reaching for the 500 step by habit gets you the lighter mid-teal used
- * for avatars and quote bars.
+ * NOTE: semantic primary is a contrast-adjusted deep teal. Brand-600 retains
+ * the original design swatch; brand-500 remains the lighter avatar/quote teal.
  *
  * They are here for the handful of places a semantic role is not enough — a hairline rule between rows, a tinted quote block, an inline
  * <mark>. Reach for a semantic class first; use a ramp step only when
@@ -98,7 +98,7 @@
   --font-heading: var(--font-serif);
   --font-body: var(--font-sans);
 
-  /* Teal — brand. brand-600 is the primary. */
+  /* Teal — brand. Semantic primary sits between brand-600 and brand-700. */
   --color-brand-100: #eef7f6;
   --color-brand-200: #d7ecea;
   --color-brand-300: #b0dbd7;
@@ -147,7 +147,18 @@
     color: var(--color-base-content);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  a,
+  button,
+  summary {
+    touch-action: manipulation;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-heading);
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -163,4 +174,44 @@
     background: var(--color-brand-200);
     color: var(--color-brand-900);
   }
+}
+
+/*
+ * DaisyUI adds tactile movement and gradient-drawn select arrows by default.
+ * This design permits color changes only, so native controls change state
+ * without translating, sliding, fading, or introducing decorative gradients.
+ */
+@layer components {
+  .btn,
+  .btn:active {
+    transform: none;
+    translate: none;
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill, stroke;
+  }
+
+  .checkbox,
+  .checkbox::before,
+  .toggle,
+  .toggle::before {
+    transition: none;
+  }
+
+  .select {
+    appearance: auto;
+  }
+}
+
+/* DaisyUI emits its select gradients after named layers; keep this final. */
+.select.select,
+.select.select:open {
+  appearance: auto;
+  background-image: none;
+}
+
+.checkbox.checkbox,
+.checkbox.checkbox::before,
+.toggle.toggle,
+.toggle.toggle::before {
+  transition: none;
 }

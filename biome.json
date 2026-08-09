@@ -24,7 +24,9 @@
       "!apps/forum/.tsc-out",
       "!**/.turbo/**/*",
       "!**/test-results/**/*",
-      "!**/playwright-report/**/*"
+      "!**/playwright-report/**/*",
+      "!docs/design_handoff/Forum Redesign.dc.html",
+      "!docs/design_handoff/support.js"
     ]
   },
   "formatter": {

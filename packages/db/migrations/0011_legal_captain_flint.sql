@@ -1,0 +1,2 @@
+CREATE INDEX "posts_search_active_idx" ON "posts" USING gin (to_tsvector('simple', "content")) WHERE "posts"."is_deleted" = false;--> statement-breakpoint
+CREATE INDEX "topics_search_idx" ON "topics" USING gin (to_tsvector('simple', "title"));

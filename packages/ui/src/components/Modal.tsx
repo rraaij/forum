@@ -53,20 +53,20 @@ export function Modal(props: ParentProps<ModalProps>) {
       ref={dialogRef}
       // Keep a viewport gutter around wide dialogs, especially on phones where
       // a consumer may request `w-full` for the modal panel.
-      class="modal p-4 sm:p-6"
+      class="modal overscroll-contain p-4 transition-none sm:p-6"
       onClick={handleBackdropClick}
       onCancel={handleCancel}
       aria-labelledby={props.title ? titleId : undefined}
       aria-label={props.title ? undefined : props.ariaLabel}
     >
       <div
-        class={`modal-box rounded-none border-2 border-base-content bg-base-100 p-0 shadow-[6px_6px_0] shadow-base-content/10 ${props.class ?? ""}`}
+        class={`modal-box min-w-0 rounded-none border-2 border-base-content bg-base-100 p-0 shadow-[6px_6px_0] shadow-base-content/10 transition-none ${props.class ?? ""}`}
       >
         <div class="px-6 py-5">
           <Show when={props.title}>
             <h2
               id={titleId}
-              class="mb-5 text-[22px] leading-tight font-semibold"
+              class="mb-5 min-w-0 text-[22px] leading-tight font-semibold [overflow-wrap:anywhere]"
             >
               {props.title}
             </h2>
@@ -75,7 +75,9 @@ export function Modal(props: ParentProps<ModalProps>) {
         </div>
         <Show when={props.footer || props.footerNote}>
           <footer class="flex flex-wrap items-center gap-2 border-t border-brand-300 px-6 py-[14px]">
-            <div class="flex flex-wrap items-center gap-2">{props.footer}</div>
+            <div class="min-w-0 flex flex-wrap items-center gap-2">
+              {props.footer}
+            </div>
             <Show when={props.footerNote}>
               <p class="ml-auto text-[12.5px] text-brand-700">
                 {props.footerNote}

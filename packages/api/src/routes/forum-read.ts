@@ -19,9 +19,12 @@ import { transportValidator } from "../transport/validator";
 import type { AppEnv } from "../types";
 
 export function createForumReadRoutes(readModel: ForumReadModel) {
+  const viewer = (c: { get: (key: "user") => unknown }) => ({
+    isAuthenticated: Boolean(c.get("user")),
+  });
   return new Hono<AppEnv>()
     .get("/", async (c) => {
-      return c.json(await readModel.getForumIndex());
+      return c.json(await readModel.getForumIndex({ viewer: viewer(c) }));
     })
     .get(
       "/categories/:categorySlug",
@@ -33,6 +36,7 @@ export function createForumReadRoutes(readModel: ForumReadModel) {
           const page = await readModel.getCategoryPage({
             categorySlug: c.req.valid("param").categorySlug,
             topics: { cursor: query.topicCursor, limit: query.topicLimit },
+            viewer: viewer(c),
           });
           return c.json(page);
         } catch (error) {
@@ -53,6 +57,7 @@ export function createForumReadRoutes(readModel: ForumReadModel) {
             categorySlug: params.categorySlug,
             boardId: params.boardId,
             topics: { cursor: query.topicCursor, limit: query.topicLimit },
+            viewer: viewer(c),
           });
           return c.json(page);
         } catch (error) {
@@ -70,7 +75,12 @@ export function createForumReadRoutes(readModel: ForumReadModel) {
         try {
           const page = await readModel.getTopicPage({
             topicSlug: c.req.valid("param").topicSlug,
-            replies: { cursor: query.replyCursor, limit: query.replyLimit },
+            replies: {
+              cursor: query.replyCursor,
+              limit: query.replyLimit,
+              targetReplyId: query.targetReplyId,
+            },
+            viewer: viewer(c),
           });
           return c.json(page);
         } catch (error) {

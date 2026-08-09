@@ -15,6 +15,10 @@ export { EmptyState, type EmptyStateProps } from "./components/EmptyState";
 export { ErrorState, type ErrorStateProps } from "./components/ErrorState";
 export { Field, type FieldProps } from "./components/Field";
 export { Modal, type ModalProps } from "./components/Modal";
+export {
+  NoAccessState,
+  type NoAccessStateProps,
+} from "./components/NoAccessState";
 export { Pagination, type PaginationProps } from "./components/Pagination";
 export { Skeleton, type SkeletonProps } from "./components/Skeleton";
 export { Tag, type TagProps, type TagVariant } from "./components/Tag";

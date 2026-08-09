@@ -19,6 +19,15 @@ const sizeClasses: Record<AvatarSize, string> = {
   xl: "size-[88px]",
 };
 
+const sizePixels: Record<AvatarSize, number> = {
+  xs: 24,
+  shell: 30,
+  sm: 32,
+  md: 40,
+  lg: 64,
+  xl: 88,
+};
+
 export function Avatar(props: AvatarProps) {
   const [local, rest] = splitProps(props, [
     "src",
@@ -29,6 +38,11 @@ export function Avatar(props: AvatarProps) {
   ]);
 
   const sizeClass = () => sizeClasses[local.size ?? "md"];
+  const initialClass = () => {
+    if (local.size === "xl") return "text-4xl";
+    if (local.size === "lg") return "text-lg";
+    return "text-xs";
+  };
 
   const initial = () => {
     const name = local.name?.trim();
@@ -41,8 +55,8 @@ export function Avatar(props: AvatarProps) {
         <Show
           when={local.src}
           fallback={
-            <div class="flex size-full items-center justify-center rounded-none bg-accent font-extrabold text-base-200">
-              <span class="text-xs" aria-hidden="true">
+            <div class="flex size-full items-center justify-center rounded-none bg-primary font-extrabold text-primary-content">
+              <span class={initialClass()} aria-hidden="true">
                 {initial()}
               </span>
             </div>
@@ -53,6 +67,8 @@ export function Avatar(props: AvatarProps) {
               class="size-full rounded-none object-cover"
               src={src()}
               alt={local.alt ?? local.name ?? "Avatar"}
+              width={sizePixels[local.size ?? "md"]}
+              height={sizePixels[local.size ?? "md"]}
             />
           )}
         </Show>

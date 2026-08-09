@@ -14,10 +14,11 @@
     "@forum/api": "workspace:*",
     "@forum/db": "workspace:*",
     "@forum/ui": "workspace:*",
-    "@tanstack/solid-router": "^1.170.22",
-    "@tanstack/solid-start": "^1.168.39",
+    "@tanstack/solid-router": "^1.170.24",
+    "@tanstack/solid-start": "^1.168.41",
     "better-auth": "^1.6.26",
     "hono": "^4.13.1",
+    "lucide-solid": "^1.31.0",
     "solid-js": "^1.9.14"
   },
   "devDependencies": {

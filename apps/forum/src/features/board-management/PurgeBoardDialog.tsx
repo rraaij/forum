@@ -1,4 +1,5 @@
 import { Button, Field } from "@forum/ui";
+import { ArrowRight } from "lucide-solid";
 import { createSignal, Show } from "solid-js";
 import type { BoardTreeNode } from "@/features/forum-read/api";
 import { fetchPurgeImpact, type PurgeImpact } from "./api";
@@ -42,11 +43,18 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
     <section class="mt-5 border-t border-brand-300 pt-4">
       <button
         type="button"
-        class="min-h-9 text-[12.5px] font-medium text-flame-700 hover:underline"
+        class="inline-flex min-h-11 items-center gap-1.5 text-[12.5px] font-medium text-error hover:underline"
         onClick={loadImpact}
         disabled={props.disabled || loading()}
       >
-        {loading() ? "Impact berekenen…" : "Dit forum verwijderen →"}
+        {loading() ? (
+          "Impact berekenen…"
+        ) : (
+          <>
+            Dit forum verwijderen
+            <ArrowRight aria-hidden="true" size={14} strokeWidth={2} />
+          </>
+        )}
       </button>
 
       <Show when={previewError()}>
@@ -88,19 +96,21 @@ export function PurgeBoardDialog(props: PurgeBoardDialogProps) {
             >
               <input
                 id="purge-confirmation"
+                name="confirmationName"
                 type="text"
-                class="input h-[38px]"
+                autocomplete="off"
+                spellcheck={false}
+                class="input min-h-11"
                 value={confirmation()}
                 onInput={(event) => setConfirmation(event.currentTarget.value)}
                 disabled={props.disabled}
-                aria-label="Bevestig forumnaam"
               />
             </Field>
 
             <Button
               type="button"
               variant="error"
-              size="sm"
+              class="min-h-11"
               disabled={
                 props.disabled || confirmation() !== current().boardName
               }

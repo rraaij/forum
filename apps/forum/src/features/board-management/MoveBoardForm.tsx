@@ -15,7 +15,10 @@ function flatten(
   depth = 0,
 ): Array<{ id: string; label: string }> {
   return nodes.flatMap((node) => [
-    { id: node.id, label: `${"— ".repeat(depth)}${node.name}` },
+    {
+      id: node.id,
+      label: `${"— ".repeat(depth)}${node.name}`,
+    },
     ...flatten(node.children, depth + 1),
   ]);
 }
@@ -32,6 +35,8 @@ export function MoveBoardForm(props: MoveBoardFormProps) {
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
+    // Sort keys are domain values, not sibling indexes: persisted trees may
+    // legitimately contain sparse values such as 10 and 20.
     await props.onMove(parentId() || null, Number(sortOrder()) || 0);
   };
 
@@ -42,7 +47,7 @@ export function MoveBoardForm(props: MoveBoardFormProps) {
       <Field label="Bovenliggend forum" for="board-parent">
         <select
           id="board-parent"
-          class="select h-[38px] w-full rounded-none border-brand-300 bg-base-100"
+          class="select min-h-11 w-full rounded-none border-brand-300 bg-base-100"
           value={parentId()}
           onChange={(event) => setParentId(event.currentTarget.value)}
           disabled={props.disabled}
@@ -60,7 +65,7 @@ export function MoveBoardForm(props: MoveBoardFormProps) {
           id="move-sort-order"
           type="number"
           min="0"
-          class="input h-[38px]"
+          class="input min-h-11 w-full rounded-none border-brand-300 bg-base-100"
           value={sortOrder()}
           onInput={(event) => setSortOrder(event.currentTarget.value)}
           disabled={props.disabled}
@@ -70,7 +75,7 @@ export function MoveBoardForm(props: MoveBoardFormProps) {
       <Button
         type="submit"
         variant="surface"
-        size="sm"
+        class="min-h-11"
         loading={props.disabled}
       >
         Verplaatsen

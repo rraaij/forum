@@ -33,5 +33,11 @@ export function dedupeById<T extends { id: string }>(
   incoming: T[],
 ): T[] {
   const seen = new Set(existing.map((item) => item.id));
-  return [...existing, ...incoming.filter((item) => !seen.has(item.id))];
+  const result = [...existing];
+  for (const item of incoming) {
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    result.push(item);
+  }
+  return result;
 }

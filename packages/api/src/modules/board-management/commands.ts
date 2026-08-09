@@ -8,6 +8,7 @@ import { validationError } from "../shared/errors";
 import {
   boardCycle,
   boardNotFound,
+  boardOrderChanged,
   parentBoardNotFound,
   purgeImpactChanged,
   purgeNameMismatch,
@@ -66,6 +67,8 @@ export function createBoardManagement(
       const description = normalizeBoardDescription(input.description);
       const icon = normalizeBoardIcon(input.icon);
       const sortOrder = normalizeSortOrder(input.sortOrder);
+      const isGuestVisible = input.isGuestVisible ?? true;
+      const allowNewTopics = input.allowNewTopics ?? true;
       const now = new Date();
 
       return store.transaction(async (tx) => {
@@ -89,6 +92,8 @@ export function createBoardManagement(
           description,
           icon,
           sortOrder,
+          isGuestVisible,
+          allowNewTopics,
           now,
         });
         return { boardId };
@@ -106,6 +111,8 @@ export function createBoardManagement(
         description?: string | null;
         icon?: string | null;
         sortOrder?: number;
+        isGuestVisible?: boolean;
+        allowNewTopics?: boolean;
       } = {};
 
       if (input.name !== undefined)
@@ -123,6 +130,12 @@ export function createBoardManagement(
       }
       if (input.sortOrder !== undefined) {
         values.sortOrder = normalizeSortOrder(input.sortOrder);
+      }
+      if (input.isGuestVisible !== undefined) {
+        values.isGuestVisible = input.isGuestVisible;
+      }
+      if (input.allowNewTopics !== undefined) {
+        values.allowNewTopics = input.allowNewTopics;
       }
 
       const now = new Date();
@@ -183,6 +196,73 @@ export function createBoardManagement(
         if (conflict) throw siblingConflict(conflict);
 
         await tx.moveBoard(board.id, input.newParentId, sortOrder, now);
+      });
+    },
+
+    async reorderBoardGroups(input) {
+      if (input.groups.length === 0) {
+        throw validationError(
+          "EMPTY_BOARD_ORDER",
+          "At least one sibling group is required",
+          "groups",
+        );
+      }
+      const parentKeys = new Set<string>();
+      const submittedBoardIds = new Set<string>();
+      for (const group of input.groups) {
+        if (group.parentId !== null) assertUuid(group.parentId, "parentId");
+        const parentKey = group.parentId ?? "root";
+        if (parentKeys.has(parentKey)) {
+          throw validationError(
+            "DUPLICATE_BOARD_ORDER_GROUP",
+            "Each sibling group may appear only once",
+            "groups",
+          );
+        }
+        parentKeys.add(parentKey);
+        if (group.boardIds.length === 0) {
+          throw validationError(
+            "EMPTY_BOARD_ORDER_GROUP",
+            "A sibling group cannot be empty",
+            "boardIds",
+          );
+        }
+        for (const boardId of group.boardIds) {
+          assertUuid(boardId, "boardId");
+          if (submittedBoardIds.has(boardId)) {
+            throw validationError(
+              "DUPLICATE_BOARD_ORDER_ID",
+              "A board may appear in only one order group",
+              "boardIds",
+            );
+          }
+          submittedBoardIds.add(boardId);
+        }
+      }
+
+      return store.transaction(async (tx) => {
+        const boards = await tx.allBoards();
+        for (const group of input.groups) {
+          const actualIds = [...boards.values()]
+            .filter((board) => board.parentId === group.parentId)
+            .map((board) => board.id);
+          if (
+            actualIds.length !== group.boardIds.length ||
+            actualIds.some((boardId) => !group.boardIds.includes(boardId))
+          ) {
+            throw boardOrderChanged();
+          }
+        }
+
+        const now = new Date();
+        await tx.reorderBoardGroups(input.groups, now);
+        return {
+          groups: input.groups.length,
+          boards: input.groups.reduce(
+            (total, group) => total + group.boardIds.length,
+            0,
+          ),
+        };
       });
     },
 

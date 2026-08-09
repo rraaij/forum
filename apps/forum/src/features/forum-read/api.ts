@@ -64,10 +64,14 @@ export async function fetchBoardPage(
 export async function fetchTopicPage(
   topicSlug: TopicRequest["param"]["topicSlug"],
   replyCursor?: TopicRequest["query"]["replyCursor"],
+  targetReplyId?: TopicRequest["query"]["targetReplyId"],
 ): Promise<TopicPage> {
   const res = await topicGet({
     param: { topicSlug },
-    query: replyCursor ? { replyCursor } : {},
+    query: {
+      ...(replyCursor ? { replyCursor } : {}),
+      ...(targetReplyId ? { targetReplyId } : {}),
+    },
   });
   if (res.status !== 200) throw await toApiError(res);
   return res.json();

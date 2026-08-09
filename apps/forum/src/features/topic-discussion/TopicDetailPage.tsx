@@ -1,13 +1,19 @@
 import { Avatar, Button, Tag } from "@forum/ui";
-import { Link, useRouter } from "@tanstack/solid-router";
-import { createSignal, For, onMount, Show } from "solid-js";
+import { useRouter } from "@tanstack/solid-router";
+import { createResource, createSignal, onMount, Show } from "solid-js";
+import { RelativeTime } from "@/components/RelativeTime";
 import {
   fetchTopicPage,
   type PostView,
   type TopicPage,
 } from "@/features/forum-read/api";
 import { createPageAccumulator } from "@/features/forum-read/use-page-accumulator";
+import {
+  fetchSubscription,
+  setSubscription,
+} from "@/features/notifications/api";
 import { useSession } from "@/lib/auth-client";
+import { userFacingError } from "@/lib/user-facing-error";
 import { recordTopicView } from "./api";
 import { PostList } from "./PostList";
 import { ReplyComposer } from "./ReplyComposer";
@@ -19,17 +25,6 @@ type TopicDetailPageProps = {
 
 const numberFormatter = new Intl.NumberFormat("nl-NL");
 
-const formatDateTime = (value: string | null | undefined) =>
-  value
-    ? new Date(value).toLocaleString("nl-NL", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "onbekend tijdstip";
-
 export function TopicDetailPage(props: TopicDetailPageProps) {
   const router = useRouter();
   const session = useSession();
@@ -38,12 +33,19 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
   const topic = () => props.page().topic;
   const openingPost = () => props.page().openingPost;
   const breadcrumbs = () => props.page().breadcrumbs;
-  const rootSlug = () => breadcrumbs()[0]?.slug ?? "";
   const boardName = () => breadcrumbs().at(-1)?.name ?? "het forum";
   const openingAuthorName = () =>
     openingPost().author.displayName ?? openingPost().author.name ?? "Onbekend";
 
   const [quotedPost, setQuotedPost] = createSignal<PostView | null>(null);
+  const [subscriptionBusy, setSubscriptionBusy] = createSignal(false);
+  const [subscriptionMessage, setSubscriptionMessage] = createSignal<
+    string | null
+  >(null);
+  const [subscription, { mutate: mutateSubscription }] = createResource(
+    () => (user() ? topic().id : null),
+    fetchSubscription,
+  );
   let focusComposer: (() => void) | undefined;
 
   const replies = createPageAccumulator(
@@ -61,6 +63,10 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
     void recordTopicView(topic().id, getBrowserSessionId()).catch(() => {
       // View recording is best-effort; the page must not fail because of it.
     });
+    requestAnimationFrame(() => {
+      const target = window.location.hash.slice(1);
+      if (target) document.getElementById(target)?.scrollIntoView();
+    });
   });
 
   const canReply = () => Boolean(user()) && !topic().isLocked;
@@ -74,60 +80,42 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
     focusComposer?.();
   };
 
-  return (
-    <div class="-mx-4 -my-2 bg-base-200 text-base-content">
-      <nav
-        class="breadcrumbs border-b-2 border-base-content bg-base-300 px-6 py-2 text-[13.5px] sm:px-10"
-        aria-label="Kruimelpad"
-      >
-        <ul>
-          <li>
-            <Link to="/">Forum</Link>
-          </li>
-          <For each={breadcrumbs()}>
-            {(crumb) => (
-              <li>
-                <Show
-                  when={crumb.isRoot}
-                  fallback={
-                    <Link
-                      to="/categories/$categorySlug/subcategories/$boardId"
-                      params={{
-                        categorySlug: rootSlug(),
-                        boardId: crumb.boardId,
-                      }}
-                    >
-                      {crumb.name}
-                    </Link>
-                  }
-                >
-                  <Link
-                    to="/categories/$categorySlug"
-                    params={{ categorySlug: crumb.slug }}
-                  >
-                    {crumb.name}
-                  </Link>
-                </Show>
-              </li>
-            )}
-          </For>
-          <li>{topic().title}</li>
-        </ul>
-      </nav>
+  const toggleSubscription = async () => {
+    const next = !subscription();
+    setSubscriptionBusy(true);
+    setSubscriptionMessage(null);
+    try {
+      const subscribed = await setSubscription(topic().id, next);
+      mutateSubscription(subscribed);
+      setSubscriptionMessage(
+        subscribed
+          ? "Je krijgt hier meldingen bij nieuwe reacties."
+          : "Je ontvangt geen nieuwe meldingen voor dit topic.",
+      );
+    } catch (error) {
+      setSubscriptionMessage(
+        userFacingError(error, "Abonneren is mislukt. Probeer het nog eens."),
+      );
+    } finally {
+      setSubscriptionBusy(false);
+    }
+  };
 
-      <header class="border-b-2 border-base-content px-6 py-7 sm:px-10">
+  return (
+    <div class="bg-base-200 text-base-content">
+      <header class="border-b-2 border-base-content px-4 py-5 sm:px-10 sm:py-7">
         <div class="flex flex-wrap items-center gap-2 text-[12.5px] text-brand-700">
           <Show when={topic().isPinned}>
             <Tag variant="secondary">Vastgepind</Tag>
           </Show>
-          <span>
+          <span class="min-w-0 [overflow-wrap:anywhere]">
             in {boardName()} · {numberFormatter.format(topic().replyCount)}{" "}
             {topic().replyCount === 1 ? "reactie" : "reacties"} ·{" "}
             {numberFormatter.format(topic().viewCount)} keer bekeken
           </span>
         </div>
 
-        <h1 class="mt-2 max-w-[30ch] text-[34px] leading-[1.08] font-semibold tracking-[-0.01em] text-wrap-balance">
+        <h1 class="mt-2 min-w-0 max-w-[30ch] text-[26px] leading-[1.08] font-semibold tracking-[-0.01em] text-wrap-balance [overflow-wrap:anywhere] sm:text-[34px]">
           {topic().title}
         </h1>
 
@@ -143,24 +131,46 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
               <strong class="font-extrabold text-base-content">
                 {openingAuthorName()}
               </strong>{" "}
-              opende dit topic op {formatDateTime(openingPost().createdAt)}
+              opende dit topic <RelativeTime value={openingPost().createdAt} />
             </p>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <Button variant="surface">Abonneer</Button>
+            <Show when={user()}>
+              <Button
+                variant="surface"
+                class="sm:min-h-9"
+                aria-pressed={subscription() ?? false}
+                loading={subscription.loading || subscriptionBusy()}
+                onClick={() => void toggleSubscription()}
+              >
+                {subscription() ? "Geabonneerd" : "Abonneer"}
+              </Button>
+            </Show>
             <Show when={canReply()}>
-              <Button variant="primary" onClick={() => focusComposer?.()}>
+              <Button
+                variant="primary"
+                class="sm:min-h-9"
+                onClick={() => focusComposer?.()}
+              >
                 Reageer
               </Button>
             </Show>
           </div>
         </div>
+        <Show when={subscriptionMessage()}>
+          {(message) => (
+            <p class="mt-3 text-right text-xs text-brand-700" role="status">
+              {message()}
+            </p>
+          )}
+        </Show>
       </header>
 
       <PostList
         openingPost={openingPost()}
         replies={replies.items()}
+        replyStartIndex={props.page().replyStartIndex}
         onQuote={handleQuote}
         onChanged={reload}
         canReply={canReply()}
@@ -184,7 +194,7 @@ export function TopicDetailPage(props: TopicDetailPageProps) {
       </Show>
 
       <Show when={topic().isLocked}>
-        <div class="border-t-2 border-base-content bg-flame-100 px-6 py-4 text-sm font-semibold text-flame-800 sm:px-10">
+        <div class="bg-base-300 px-6 py-4 text-sm font-semibold text-brand-800 sm:px-10">
           Dit topic is gesloten. Je kunt niet meer reageren.
         </div>
       </Show>

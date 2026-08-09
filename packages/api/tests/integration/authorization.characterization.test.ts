@@ -72,6 +72,23 @@ describe("unauthenticated writes return 401", () => {
     expect(activity.status).toBe(401);
     expect((await activity.json()).error.code).toBe("UNAUTHENTICATED");
   });
+
+  it("subscription and notification state is private", async () => {
+    const id = "6f6dcbcf-2f3e-4c39-9a4a-111111111111";
+    const requests = [
+      app.request("/api/notifications"),
+      app.request("/api/notifications/unread-count"),
+      app.request(`/api/notifications/${id}/read`, { method: "PUT" }),
+      app.request(`/api/topics/${id}/subscription`),
+      app.request(`/api/topics/${id}/subscription`, { method: "PUT" }),
+      app.request(`/api/topics/${id}/subscription`, { method: "DELETE" }),
+    ];
+
+    for (const response of await Promise.all(requests)) {
+      expect(response.status).toBe(401);
+      expect((await response.json()).error.code).toBe("UNAUTHENTICATED");
+    }
+  });
 });
 
 /*

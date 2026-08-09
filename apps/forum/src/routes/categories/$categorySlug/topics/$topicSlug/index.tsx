@@ -6,7 +6,11 @@ import { TopicDetailPage } from "@/features/topic-discussion/TopicDetailPage";
 export const Route = createFileRoute(
   "/categories/$categorySlug/topics/$topicSlug/",
 )({
-  loader: ({ params }) => fetchTopicPage(params.topicSlug),
+  validateSearch: (search: Record<string, unknown>): { post?: string } =>
+    typeof search.post === "string" ? { post: search.post } : {},
+  loaderDeps: ({ search }) => ({ post: search.post }),
+  loader: ({ params, deps }) =>
+    fetchTopicPage(params.topicSlug, undefined, deps.post),
   component: RootTopicRoute,
 });
 
